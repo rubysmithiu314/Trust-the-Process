@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust The Process | The Philanthropy Game</title>
+    <style>
+        :root {
+            --bg-color: #F3E8E3;
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --dark: #2F2E41;
+            --light: #FFFFFF;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--dark);
+            background-image: radial-gradient(var(--dark) 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 15px;
+        }
+
+        /* Memphis Design UI Containers */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--light);
+            border: 4px solid var(--dark);
+            box-shadow: 8px 8px 0px var(--dark);
+            border-radius: 12px;
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+
+        .header {
+            background: var(--accent);
+            border-bottom: 4px solid var(--dark);
+            padding: 15px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Game State & Turn Tracker */
+        .status-bar {
+            background: var(--dark);
+            color: var(--light);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            background: #E0E0E0;
+            border-bottom: 4px solid var(--dark);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            border-right: 2px solid var(--dark);
+            background: #E0E0E0;
+        }
+
+        .tab.active {
+            background: var(--light);
+            border-bottom: none;
+        }
+
+        .tab-content { padding: 15px; display: none; }
+        .tab-content.active { display: block; }
+
+        /* Grid Layout for Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .card {
+            background: var(--light);
+            border: 3px solid var(--dark);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            font-weight: bold;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 4px 4px 0px var(--dark);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--dark); }
+
+        .card.selected { border-color: var(--secondary); background: #E0FFFF; }
+
+        /* Color Coding for Cards */
+        .card.program { background: #FFD166; }
+        .card.action { background: #06D6A0; }
+        .card.crisis { background: #EF476F; color: white; }
+        .card.funding { background: #118AB2; color: white; }
+        .card.job-switch { background: #8338EC; color: white; }
+
+        /* Action Buttons */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            border: 3px solid var(--dark);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--dark);
+            text-transform: uppercase;
+        }
+
+        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--dark); }
+
+        .btn-primary { background: var(--secondary); }
+        .btn-disabled { background: #CCCCCC; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .info-panel {
+            border: 3px solid var(--dark);
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 2px solid var(--dark);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    </div>
+
+<script>
+    // --- APP STATE & INITIAL SETUP ---
+    const gameState = {
+        roomCode: null,
+        role: null,
+        turnIndex: 0,
+        players: [], // Simulating joined players locally for testing
+        isTurnTaken: false,
+        tokens: 3,
+        hand: [],
+        fundingCap: 3, // Foundation limit
+        foundations: {
+            A: { name: "Traditional Funder", program: "🏥 Health", fundingLeft: 3 },
+            B: { name: "Oak Foundation", program: "🌍 Climate", fundingLeft: 3 }
+        }
+    };
+
+    // Card data objects
+    const createCard = (type, name, desc) => ({ id: Math.random().toString(36).substr(2, 5), type, name, desc });
+
+    // Startup Screen
+    function renderStartup() {
+        const app = document.getElementById('app');
+        app.innerHTML = `
+            <div class="header">Trust the Process</div>
+            <div style="padding: 20px;">
+                <h3 style="margin-bottom: 10px;">Select Your Role</h3>
+                <button class="btn btn-primary" onclick="setupPlayer('Nonprofit')">Join as Nonprofit</button>
+                <button class="btn btn-primary" style="background:#FF9F1C;" onclick="setupPlayer('Foundation A')">Join as Traditional Foundation</button>
+                <button class="btn btn-primary" style="background:#4361EE;" onclick="setupPlayer('Foundation B')">Join as Oak Foundation</button>
+            </div>
+        `;
+    }
+
+    function setupPlayer(role) {
+        gameState.role = role;
+        gameState.roomCode = Math.floor(1000 + Math.random() * 9000);
+        
+        if (role === 'Nonprofit') {
+            gameState.hand = [
+                createCard('program', '🏥 Health', 'Matches Traditional'),
+                createCard('action', 'Report', 'Required to apply'),
+                createCard('action', 'Admin Cost', 'Required to apply'),
+                createCard('action', 'Justify Cost', 'Required to apply')
+            ];
+            gameState.tokens = 3;
+        } else {
+            gameState.hand = [ createCard('funding', 'Funding Card', 'Approval Asset') ];
+        }
+        renderGame();
+    }
+
+    // Main Game Rendering (Standardizes both views)
+    function renderGame() {
+        const app = document.getElementById('app');
+        const isNP = gameState.role === 'Nonprofit';
+
+        app.innerHTML = `
+            <div class="header">Trust The Process</div>
+            <div class="status-bar">
+                <span>Role: ${gameState.role}</span>
+                <span>💰 Tokens: ${isNP ? gameState.tokens : 'N/A'}</span>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('hand')">Hand</div>
+                <div class="tab" onclick="switchTab('actions')">${isNP ? 'Apply' : 'Decide'}</div>
+                <div class="tab" onclick="switchTab('players')">Players</div>
+            </div>
+
+            <div id="hand-tab" class="tab-content active">
+                <div class="info-panel">
+                    <strong>Current Game Intel:</strong><br>
+                    🏛️ Traditional Funder focuses on: ${gameState.foundations.A.program}<br>
+                    🌳 Oak Foundation focuses on: ${gameState.foundations.B.program}
+                </div>
+                
+                ${isNP ? `<button class="btn btn-primary ${gameState.isTurnTaken ? 'btn-disabled' : ''}" onclick="gainToken()" id="gain-btn">Gain +1 Turn Token</button>` : ''}
+                <button class="btn btn-primary ${isNP && !gameState.isTurnTaken ? 'btn-disabled' : ''}" onclick="drawCard()" style="background:var(--accent); color:var(--dark);">Draw 1 Card</button>
+
+                <div class="card-grid" id="hand-grid"></div>
+            </div>
+
+            <div id="actions-tab" class="tab-content">
+                ${isNP ? renderNPActionView() : renderFoundationActionView()}
+            </div>
+
+            <div id="players-tab" class="tab-content">
+                <h3>Classroom Leaderboard</h3>
+                <div class="leaderboard-item"><span>▶️ You (${gameState.role})</span><span>${isNP ? gameState.tokens : '-'} pts</span></div>
+                <div class="leaderboard-item"><span>Peer Org 1</span><span>5 pts</span></div>
+                <div class="leaderboard-item"><span>Peer Org 2</span><span>2 pts</span></div>
+                <button class="btn" style="background:var(--primary); color:white;" onclick="endGame()">Facilitator: End Game</button>
+            </div>
+        `;
+
+        renderHandGrid();
+    }
+
+    function renderHandGrid() {
+        const grid = document.getElementById('hand-grid');
+        grid.innerHTML = gameState.hand.map(card => `
+            <div class="card ${card.type}" onclick="selectCard('${card.id}')" id="card-${card.id}">
+                <div>${card.name}</div>
+                <div style="font-size:0.7rem; margin-top:5px; opacity:0.8;">${card.desc}</div>
+            </div>
+        `).join('');
+    }
+
+    // UI and Rule logic
+    function gainToken() {
+        if (gameState.isTurnTaken) return;
+        gameState.tokens++;
+        gameState.isTurnTaken = true;
+        renderGame();
+    }
+
+    function drawCard() {
+        if (gameState.role === 'Nonprofit' && !gameState.isTurnTaken) return;
+
+        const pool = [
+            createCard('program', '🌍 Climate', 'Oak Focus'),
+            createCard('action', 'Report', 'Standard Action'),
+            createCard('crisis', 'Broken Roof', 'Lose 1 Token Auto'),
+            createCard('job-switch', 'Job Switch', 'Trade roles!')
+        ];
+
+        const drawn = pool[Math.floor(Math.random() * pool.length)];
+
+        if (drawn.type === 'crisis') {
+            alert("⚠️ Infrastructure Crisis! You lose a token.");
+            if (gameState.tokens > 0) gameState.tokens--;
+        } else {
+            gameState.hand.push(drawn);
+        }
+
+        gameState.isTurnTaken = false; // Reset turn for next round
+        renderGame();
+    }
+
+    function renderNPActionView() {
+        return `
+            <h3>Submit Application</h3>
+            <p style="font-size:0.8rem; margin-bottom:10px;">Must select 1 Program Card, 3 Action Cards, and pay 3 tokens.</p>
+            
+            <label>Choose Destination:</label>
+            <select id="fund-select" style="width:100%; padding:10px; border:2px solid var(--dark); border-radius:8px; margin-bottom:15px;">
+                <option value="A">Traditional Foundation</option>
+                <option value="B">Oak Foundation</option>
+            </select>
+
+            <button class="btn btn-primary" onclick="submitApp()">Submit Selection (Pay 3 Tokens)</button>
+        `;
+    }
+
+    function submitApp() {
+        if (gameState.tokens < 3) {
+            alert("Not enough tokens to apply!");
+            return;
+        }
+        gameState.tokens -= 3;
+        alert("Application submitted! Wait for Foundation feedback.");
+        renderGame();
+    }
+
+    function renderFoundationActionView() {
+        return `
+            <h3>Review Queue</h3>
+            <div class="info-panel">
+                <strong>Applicant:</strong> Local Health Clinic<br>
+                <strong>Items:</strong> Health Program + 3 Action Cards
+            </div>
+            <button class="btn btn-primary" onclick="approveApp()">Approve (Heads - uses 1 Funding Card)</button>
+            <button class="btn" style="background:var(--primary); color:white;" onclick="alert('Denied! Cards are lost.')">Deny (Tails)</button>
+        `;
+    }
+
+    function approveApp() {
+        const isA = gameState.role === "Foundation A";
+        const f = isA ? gameState.foundations.A : gameState.foundations.B;
+
+        if (f.fundingLeft <= 0) {
+            alert("Out of funding! You cannot approve more apps.");
+            return;
+        }
+
+        f.fundingLeft--;
+        alert(`Approved! You sent a ${isA ? 'Restricted' : 'Unrestricted'} funding card. Left: ${f.fundingLeft}`);
+        renderGame();
+    }
+
+    function endGame() {
+        alert("Time is up! Let's review final tallies and shift into our case study.");
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Find tab DOM element
+        const tabs = document.querySelectorAll('.tab');
+        if (tabName === 'hand') tabs[0].classList.add('active');
+        if (tabName === 'actions') tabs[1].classList.add('active');
+        if (tabName === 'players') tabs[2].classList.add('active');
+    }
+
+    // Boot system
+    renderStartup();
+</script>
+</body>
+</html>
