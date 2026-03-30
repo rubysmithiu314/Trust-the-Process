@@ -1,197 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Nonprofit Survival: Memphis Edition</title>
-    <style>
-        :root {
-            --yellow: #FADC1B;
-            --magenta: #E24A8D;
-            --teal: #1AB5B3;
-            --navy: #1C244C;
-            --cream: #F5F1E6;
-            --white: #FFFFFF;
-        }
-
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            background: var(--cream);
-            background-image: radial-gradient(var(--navy) 15%, transparent 16%),
-                              radial-gradient(var(--navy) 15%, transparent 16%);
-            background-size: 30px 30px;
-            background-position: 0 0, 15px 15px;
-            color: var(--navy);
-            padding: 20px;
-            margin: 0;
-        }
-
-        header {
-            text-align: center;
-            background: var(--magenta);
-            color: white;
-            padding: 15px;
-            border: 5px solid var(--navy);
-            box-shadow: 8px 8px 0px var(--navy);
-            max-width: 1000px;
-            margin: 0 auto 20px auto;
-        }
-
-        h1 { margin: 0; font-size: 2rem; letter-spacing: 3px; }
-
-        #game-container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .dashboard, .play-area {
-            background: rgba(255, 255, 255, 0.95);
-            border: 5px solid var(--navy);
-            box-shadow: 10px 10px 0px var(--navy);
-            padding: 20px;
-        }
-
-        .dashboard h2, .play-area h2 {
-            text-transform: uppercase;
-            border-bottom: 4px solid var(--navy);
-            padding-bottom: 5px;
-        }
-
-        .funder-box {
-            background: var(--white);
-            border: 3px solid var(--navy);
-            padding: 10px;
-            margin-bottom: 15px;
-            box-shadow: 4px 4px 0px var(--navy);
-        }
-
-        /* Memphis Style Cards */
-        .card {
-            width: 140px;
-            height: 200px;
-            border: 4px solid var(--navy);
-            box-shadow: 5px 5px 0px var(--navy);
-            display: inline-block;
-            margin: 10px;
-            padding: 10px;
-            vertical-align: top;
-            cursor: pointer;
-            transition: transform 0.1s;
-            position: relative;
-            background: white;
-            overflow: hidden;
-        }
-        .card:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px var(--navy); }
-        .card.selected { border: 5px solid var(--magenta); transform: translateY(-10px); background-color: #fffde6; }
-
-        /* Card Varieties */
-        .card-action { 
-            background-color: var(--teal); 
-            color: white; 
-            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
-            background-size: 20px 20px;
-        }
-        
-        .card-oaks { 
-            background-color: var(--yellow); 
-            background-image: radial-gradient(var(--magenta) 15%, transparent 16%);
-            background-size: 15px 15px;
-        }
-        
-        .card-trad { 
-            background-color: #E5E5E5; 
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, #CCC 20px),
-                              repeating-linear-gradient(90deg, transparent, transparent 19px, #CCC 20px);
-        }
-
-        .card-crisis { 
-            background-color: var(--magenta); 
-            color: white; 
-        }
-        
-        .card-switch {
-            background: linear-gradient(45deg, var(--yellow) 25%, var(--teal) 25%, var(--teal) 50%, var(--yellow) 50%, var(--yellow) 75%, var(--teal) 75%, var(--teal) 100%);
-            background-size: 40px 40px;
-            color: var(--navy);
-            font-weight: bold;
-        }
-
-        .card h3 { margin: 5px 0; font-size: 2rem; }
-        .card h4 { margin: 5px 0; font-size: 1rem; }
-
-        /* Buttons */
-        .btn {
-            background: var(--yellow);
-            border: 3px solid var(--navy);
-            box-shadow: 4px 4px 0px var(--navy);
-            padding: 10px 20px;
-            font-weight: bold;
-            font-family: inherit;
-            cursor: pointer;
-            margin-right: 10px;
-            text-transform: uppercase;
-        }
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--navy); }
-        .btn-danger { background: var(--magenta); color: white; }
-
-        #hand {
-            min-height: 230px;
-            border: 3px dashed var(--navy);
-            padding: 10px;
-            background: rgba(245, 241, 230, 0.5);
-            margin: 15px 0;
-        }
-
-        .instructions {
-            background: var(--navy);
-            color: white;
-            padding: 15px;
-            margin-top: 20px;
-            border: 4px solid var(--yellow);
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>⚡ NONPROFIT SURVIVAL: MEMPHIS EDITION ⚡</h1>
-    </header>
-
-    <div id="game-container">
-        
-        <div class="dashboard">
-            <h2>Your Status</h2>
-            <h3>💰 Tokens: <span id="token-count" style="color:var(--magenta)">3</span></h3>
-            <p><strong>Role:</strong> Grassroots Nonprofit</p>
-            
-            <h2>🏛️ Foundations</h2>
-            <div class="funder-box" id="oaks-status">Loading...</div>
-            <div class="funder-box" id="trad-status">Loading...</div>
-
-            <div class="instructions">
-                <strong>How to Win:</strong><br>
-                Apply to grants to get tokens. Deal with Crises or they will clog up your hand!
-            </div>
-        </div>
-
-        <div class="play-area">
-            <h2>Your Hand</h2>
-            <button class="btn" onclick="drawCard()">Draw Card</button>
-            <button class="btn btn-danger" onclick="playSelected()">Play Selected Cards</button>
-            
-            <div id="hand"></div>
-            
-            <h2>Rules of the Sector</h2>
-            <p><strong>To apply for a grant:</strong> Select 1 Program card + 3 DIFFERENT Action cards.</p>
-            <p><strong>To resolve a crisis:</strong> Select just the crisis card and pay the token cost.</p>
-            <p id="game-message" style="font-weight:bold; color:var(--magenta);"></p>
-        </div>
-    </div>
-
 <script>
-// 1. GAME DATA & CARD DEFINITIONS
+// ===============================
+// 1. GAME DATA
+// ===============================
+
 const ACTION_POOL = [
     { name: 'Verbal Report', type: 'action', cls: 'card-action', icon: '🗣️' },
     { name: 'Site Visit', type: 'action', cls: 'card-action', icon: '👟' },
@@ -201,11 +12,23 @@ const ACTION_POOL = [
     { name: 'Coalition Meet', type: 'action', cls: 'card-action', icon: '👥' }
 ];
 
+// 🌳 OAKS (realistic priorities)
+const OAKS_PROGRAMS = [
+    'Climate Change',
+    'COVID Response',
+    'Criminal Justice Reform'
+];
+
+// 🏛️ TRADITIONAL
+const TRAD_PROGRAMS = [
+    'Backpack Drive',
+    'Building Repair',
+    'After School Program'
+];
+
 const PROGRAM_POOL = [
-    { name: 'Health Equity', type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🏥' },
-    { name: 'Climate Justice', type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🌍' },
-    { name: 'Backpack Drive', type: 'program', funder: 'trad', cls: 'card-trad', icon: '🎒' },
-    { name: 'Building Repair', type: 'program', funder: 'trad', cls: 'card-trad', icon: '🏠' }
+    ...OAKS_PROGRAMS.map(p => ({ name: p, type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🌳' })),
+    ...TRAD_PROGRAMS.map(p => ({ name: p, type: 'program', funder: 'trad', cls: 'card-trad', icon: '🏛️' }))
 ];
 
 const CRISIS_POOL = [
@@ -221,134 +44,151 @@ let deck = [];
 let hand = [];
 let tokens = 3;
 let selectedIds = [];
+let turn = 1;
 
-// Game state for Foundations
-let oaksProgram = "";
-let tradProgram = "";
+let oaksPrograms = [];
+let tradPrograms = [];
 
-// Helper to generate unique IDs
 let idCounter = 0;
 
-// 2. INITIALIZE GAME
+// ===============================
+// INIT
+// ===============================
+
 function initGame() {
     idCounter = 0;
     deck = [];
-    
-    // Build a deck of ~35 cards
-    // Add multiple actions
-    for(let i=0; i<3; i++) {
-        ACTION_POOL.forEach(a => deck.push({...a, id: idCounter++}));
-    }
-    // Add programs
-    for(let i=0; i<2; i++) {
-        PROGRAM_POOL.forEach(p => deck.push({...p, id: idCounter++}));
-    }
-    // Add crises
-    for(let i=0; i<2; i++) {
-        CRISIS_POOL.forEach(c => deck.push({...c, id: idCounter++}));
-    }
-    // Add exactly ONE Job Switch card
+
+    for(let i=0; i<3; i++) ACTION_POOL.forEach(a => deck.push({...a, id: idCounter++}));
+    for(let i=0; i<2; i++) PROGRAM_POOL.forEach(p => deck.push({...p, id: idCounter++}));
+    for(let i=0; i<2; i++) CRISIS_POOL.forEach(c => deck.push({...c, id: idCounter++}));
+
     deck.push({...RARE_CARD, id: idCounter++});
-    
+
     shuffle(deck);
-    
-    // Assign random starting programs to the foundations
-    oaksProgram = Math.random() > 0.5 ? "Health Equity" : "Climate Justice";
-    tradProgram = Math.random() > 0.5 ? "Backpack Drive" : "Building Repair";
-    
-    document.getElementById('oaks-status').innerHTML = `<strong>🌳 Oaks Foundation</strong><br>Wants: ${oaksProgram}`;
-    document.getElementById('trad-status').innerHTML = `<strong>🏛️ Traditional Funder</strong><br>Wants: ${tradProgram}`;
-    
-    // Draw 5 starting cards
+
+    // Ensure different starting programs
+    let oaksStart = OAKS_PROGRAMS[Math.floor(Math.random()*OAKS_PROGRAMS.length)];
+    let tradStart;
+    do {
+        tradStart = TRAD_PROGRAMS[Math.floor(Math.random()*TRAD_PROGRAMS.length)];
+    } while (tradStart === oaksStart);
+
+    oaksPrograms = [oaksStart];
+    tradPrograms = [tradStart];
+
     hand = [];
-    for(let i=0; i<5; i++) {
-        if(deck.length > 0) hand.push(deck.pop());
-    }
-    
+    for(let i=0;i<5;i++) hand.push(deck.pop());
+
     updateUI();
 }
 
-function shuffle(array) {
-    array.sort(() => Math.random() - 0.5);
-}
+// ===============================
+// TURN SYSTEM
+// ===============================
 
-function drawCard() {
-    if (deck.length > 0) {
-        hand.push(deck.pop());
-        updateUI();
-        showMessage("Drew a card.");
-    } else {
-        showMessage("Deck is empty! No more resources left.");
+function nextTurn() {
+    turn++;
+
+    // 🔥 AUTO PAY CRISES
+    let totalCost = hand
+        .filter(c => c.type === 'crisis')
+        .reduce((sum,c)=>sum+c.cost,0);
+
+    if (totalCost > 0) {
+        if (tokens >= totalCost) {
+            tokens -= totalCost;
+            showMessage(`Paid ${totalCost} tokens for crises.`);
+        } else {
+            alert("💀 GAME OVER: You couldn't afford your crises.");
+            initGame();
+            return;
+        }
     }
+
+    // Draw
+    if (deck.length > 0) hand.push(deck.pop());
+
+    // 🌱 EXPAND FOUNDATIONS EVERY 7 TURNS
+    if (turn % 7 === 0) {
+        expandPrograms();
+    }
+
+    updateUI();
 }
 
-// 3. GAMEPLAY LOGIC
+// ===============================
+// FOUNDATION GROWTH
+// ===============================
+
+function expandPrograms() {
+    if (oaksPrograms.length < 3) {
+        let options = OAKS_PROGRAMS.filter(p => !oaksPrograms.includes(p));
+        if (options.length) oaksPrograms.push(options[Math.floor(Math.random()*options.length)]);
+    }
+
+    if (tradPrograms.length < 3) {
+        let options = TRAD_PROGRAMS.filter(p => !tradPrograms.includes(p));
+        if (options.length) tradPrograms.push(options[Math.floor(Math.random()*options.length)]);
+    }
+
+    showMessage("📈 Foundations expanded their priorities!");
+}
+
+// ===============================
+// GAMEPLAY
+// ===============================
+
 function playSelected() {
     let selectedCards = hand.filter(c => selectedIds.includes(c.id));
-    
-    if (selectedCards.length === 0) {
-        showMessage("Select some cards first!");
-        return;
-    }
 
-    // CHECK FOR JOB SWITCH
     let jobSwitch = selectedCards.find(c => c.type === 'job-switch');
     if (jobSwitch && selectedCards.length === 1) {
-        alert("🎉 JACKPOT! You landed a job at a massive foundation with a million-dollar budget! You get +5 tokens and we're clearing any crises in your hand!");
         tokens += 5;
-        // Clear crises in hand
         hand = hand.filter(c => c.type !== 'crisis');
         discardPlayed(selectedCards);
+        nextTurn();
         return;
     }
 
-    // CHECK FOR CRISIS RESOLUTION
-    let crises = selectedCards.filter(c => c.type === 'crisis');
-    if (crises.length === 1 && selectedCards.length === 1) {
-        let cost = crises[0].cost;
-        if (tokens >= cost) {
-            tokens -= cost;
-            showMessage(`Success! Paid ${cost} tokens to resolve ${crises[0].name}.`);
-            discardPlayed(selectedCards);
-        } else {
-            showMessage("Not enough tokens to resolve this crisis!");
-        }
-        return;
-    }
-
-    // CHECK FOR GRANT SUBMISSION (1 Program + 3 Unique Actions)
     let programs = selectedCards.filter(c => c.type === 'program');
     let actions = selectedCards.filter(c => c.type === 'action');
+
     let uniqueActions = new Set(actions.map(a => a.name));
 
-    if (programs.length === 1 && actions.length === 3) {
-        if (uniqueActions.size !== 3) {
-            showMessage("❌ Application Rejected! You cannot play duplicate action cards.");
+    if (programs.length === 1 && actions.length === 3 && uniqueActions.size === 3) {
+        let prog = programs[0];
+
+        if (prog.funder === 'oaks' && oaksPrograms.includes(prog.name)) {
+            tokens += 3;
+            showMessage("💸 Oaks funded you!");
+            discardPlayed(selectedCards);
+            nextTurn();
             return;
         }
 
-        let prog = programs[0];
-        // Check alignment with automated foundations
-        if (prog.funder === 'oaks' && prog.name === oaksProgram) {
-            showMessage(`💸 SUCCESS! Oaks Foundation loved your proposal. Gain 3 tokens!`);
-            tokens += 3;
-            discardPlayed(selectedCards);
-        } else if (prog.funder === 'trad' && prog.name === tradProgram) {
-            showMessage(`💸 SUCCESS! Traditional Funder approved the project. Gain 2 tokens!`);
+        if (prog.funder === 'trad' && tradPrograms.includes(prog.name)) {
             tokens += 2;
+            showMessage("💸 Traditional funder approved!");
             discardPlayed(selectedCards);
-        } else {
-            showMessage("❌ Denied. That program does not match what the foundations are currently funding.");
+            nextTurn();
+            return;
         }
+
+        showMessage("❌ Not aligned with funders.");
         return;
     }
 
-    showMessage("Invalid move! Try playing 1 Crisis OR (1 Program + 3 Unique Actions).");
+    showMessage("Invalid move.");
 }
 
+// ===============================
+// HELPERS
+// ===============================
+
 function discardPlayed(cards) {
-    let idsToRemove = cards.map(c => c.id);
-    hand = hand.filter(c => !idsToRemove.includes(c.id));
+    let ids = cards.map(c=>c.id);
+    hand = hand.filter(c=>!ids.includes(c.id));
     selectedIds = [];
     updateUI();
 }
@@ -366,38 +206,48 @@ function showMessage(msg) {
     document.getElementById('game-message').innerText = msg;
 }
 
-// 4. UI RENDERER
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// ===============================
+// UI
+// ===============================
+
 function updateUI() {
     document.getElementById('token-count').innerText = tokens;
+
+    document.getElementById('oaks-status').innerHTML =
+        `<strong>🌳 Oaks Foundation</strong><br>Programs:<br>${oaksPrograms.join("<br>")}`;
+
+    document.getElementById('trad-status').innerHTML =
+        `<strong>🏛️ Traditional Funder</strong><br>Programs:<br>${tradPrograms.join("<br>")}`;
+
     let handDiv = document.getElementById('hand');
     handDiv.innerHTML = '';
 
-    if (hand.length === 0) {
-        handDiv.innerHTML = "<p style='color:gray; text-align:center; padding-top:100px;'>Your hand is empty. Click Draw Card.</p>";
-    }
-
     hand.forEach(card => {
-        let cardDiv = document.createElement('div');
-        cardDiv.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
-        cardDiv.onclick = () => toggleSelect(card.id);
-        
-        let subText = "";
-        if (card.type === 'crisis') subText = `<br>Cost: ${card.cost} 🟡`;
-        if (card.type === 'program') subText = `<br>For: ${card.funder === 'oaks' ? 'Oaks' : 'Trad'}`;
-        
-        cardDiv.innerHTML = `
+        let div = document.createElement('div');
+        div.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
+        div.onclick = () => toggleSelect(card.id);
+
+        let sub = "";
+        if (card.type === 'crisis') sub = `<br>Cost: ${card.cost}`;
+
+        div.innerHTML = `
             <h3>${card.icon}</h3>
             <h4>${card.name}</h4>
-            <small>${card.type.toUpperCase()}</small>
-            ${subText}
+            <small>${card.type}</small>
+            ${sub}
         `;
-        handDiv.appendChild(cardDiv);
+
+        handDiv.appendChild(div);
     });
 }
 
-// Run on load
+// ===============================
 initGame();
 </script>
-
-</body>
-</html>
