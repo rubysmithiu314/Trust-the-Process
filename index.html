@@ -1,6 +1,6 @@
 <script>
 // ===============================
-// 1. GAME DATA
+// SAFE GAME VERSION
 // ===============================
 
 const ACTION_POOL = [
@@ -12,23 +12,16 @@ const ACTION_POOL = [
     { name: 'Coalition Meet', type: 'action', cls: 'card-action', icon: '👥' }
 ];
 
-// 🌳 OAKS (realistic priorities)
 const OAKS_PROGRAMS = [
     'Climate Change',
     'COVID Response',
-    'Housing and Homelessness Program'
+    'Criminal Justice Reform'
 ];
 
-// 🏛️ TRADITIONAL
 const TRAD_PROGRAMS = [
     'Backpack Drive',
     'Building Repair',
     'After School Program'
-];
-
-const PROGRAM_POOL = [
-    ...OAKS_PROGRAMS.map(p => ({ name: p, type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🌳' })),
-    ...TRAD_PROGRAMS.map(p => ({ name: p, type: 'program', funder: 'trad', cls: 'card-trad', icon: '🏛️' }))
 ];
 
 const CRISIS_POOL = [
@@ -56,69 +49,72 @@ let idCounter = 0;
 // ===============================
 
 function initGame() {
-    idCounter = 0;
-    deck = [];
+    try {
+        idCounter = 0;
+        deck = [];
 
-    for(let i=0; i<3; i++) ACTION_POOL.forEach(a => deck.push({...a, id: idCounter++}));
-    for(let i=0; i<2; i++) PROGRAM_POOL.forEach(p => deck.push({...p, id: idCounter++}));
-    for(let i=0; i<2; i++) CRISIS_POOL.forEach(c => deck.push({...c, id: idCounter++}));
+        for(let i=0; i<3; i++) ACTION_POOL.forEach(a => deck.push({...a, id: idCounter++}));
+        for(let i=0; i<2; i++) {
+            OAKS_PROGRAMS.forEach(p => deck.push({ name:p, type:'program', funder:'oaks', cls:'card-oaks', icon:'🌳', id:idCounter++ }));
+            TRAD_PROGRAMS.forEach(p => deck.push({ name:p, type:'program', funder:'trad', cls:'card-trad', icon:'🏛️', id:idCounter++ }));
+        }
+        for(let i=0; i<2; i++) CRISIS_POOL.forEach(c => deck.push({...c, id: idCounter++}));
 
-    deck.push({...RARE_CARD, id: idCounter++});
+        deck.push({...RARE_CARD, id: idCounter++});
 
-    shuffle(deck);
+        shuffle(deck);
 
-    // Ensure different starting programs
-    let oaksStart = OAKS_PROGRAMS[Math.floor(Math.random()*OAKS_PROGRAMS.length)];
-    let tradStart;
-    do {
-        tradStart = TRAD_PROGRAMS[Math.floor(Math.random()*TRAD_PROGRAMS.length)];
-    } while (tradStart === oaksStart);
+        // different starts
+        oaksPrograms = [OAKS_PROGRAMS[Math.floor(Math.random()*OAKS_PROGRAMS.length)]];
+        tradPrograms = [TRAD_PROGRAMS[Math.floor(Math.random()*TRAD_PROGRAMS.length)]];
 
-    oaksPrograms = [oaksStart];
-    tradPrograms = [tradStart];
+        hand = [];
+        for(let i=0;i<5;i++) if(deck.length) hand.push(deck.pop());
 
-    hand = [];
-    for(let i=0;i<5;i++) hand.push(deck.pop());
-
-    updateUI();
+        updateUI();
+        showMessage("Game started.");
+    } catch (e) {
+        console.error(e);
+        alert("Error initializing game");
+    }
 }
 
 // ===============================
-// TURN SYSTEM
+// TURN
 // ===============================
 
 function nextTurn() {
-    turn++;
+    try {
+        turn++;
 
-    // 🔥 AUTO PAY CRISES
-    let totalCost = hand
-        .filter(c => c.type === 'crisis')
-        .reduce((sum,c)=>sum+c.cost,0);
+        // PAY CRISES
+        let crises = hand.filter(c => c.type === 'crisis');
+        let totalCost = crises.reduce((sum,c)=>sum+c.cost,0);
 
-    if (totalCost > 0) {
-        if (tokens >= totalCost) {
-            tokens -= totalCost;
-            showMessage(`Paid ${totalCost} tokens for crises.`);
-        } else {
-            alert("💀 GAME OVER: You couldn't afford your crises.");
-            initGame();
-            return;
+        if (totalCost > 0) {
+            if (tokens >= totalCost) {
+                tokens -= totalCost;
+                showMessage(`Paid ${totalCost} tokens for crises.`);
+            } else {
+                alert("GAME OVER: Couldn't afford crises.");
+                initGame();
+                return;
+            }
         }
+
+        if (deck.length) hand.push(deck.pop());
+
+        if (turn % 7 === 0) expandPrograms();
+
+        updateUI();
+    } catch (e) {
+        console.error(e);
+        alert("Turn error");
     }
-
-    // Draw
-    if (deck.length > 0) hand.push(deck.pop());
-
-    // 🌱 EXPAND FOUNDATIONS EVERY 7 TURNS
-    if (turn % 7 === 0) {
-        expandPrograms();
-    }
-
-    updateUI();
 }
 
 // ===============================
-// FOUNDATION GROWTH
+// EXPAND
 // ===============================
 
 function expandPrograms() {
@@ -132,61 +128,71 @@ function expandPrograms() {
         if (options.length) tradPrograms.push(options[Math.floor(Math.random()*options.length)]);
     }
 
-    showMessage("📈 Foundations expanded their priorities!");
+    showMessage("Foundations expanded!");
 }
 
 // ===============================
-// GAMEPLAY
+// PLAY
 // ===============================
 
 function playSelected() {
-    let selectedCards = hand.filter(c => selectedIds.includes(c.id));
+    try {
+        let selected = hand.filter(c => selectedIds.includes(c.id));
 
-    let jobSwitch = selectedCards.find(c => c.type === 'job-switch');
-    if (jobSwitch && selectedCards.length === 1) {
-        tokens += 5;
-        hand = hand.filter(c => c.type !== 'crisis');
-        discardPlayed(selectedCards);
-        nextTurn();
-        return;
-    }
+        if (!selected.length) {
+            showMessage("Select cards.");
+            return;
+        }
 
-    let programs = selectedCards.filter(c => c.type === 'program');
-    let actions = selectedCards.filter(c => c.type === 'action');
-
-    let uniqueActions = new Set(actions.map(a => a.name));
-
-    if (programs.length === 1 && actions.length === 3 && uniqueActions.size === 3) {
-        let prog = programs[0];
-
-        if (prog.funder === 'oaks' && oaksPrograms.includes(prog.name)) {
-            tokens += 3;
-            showMessage("💸 Oaks funded you!");
-            discardPlayed(selectedCards);
+        let job = selected.find(c=>c.type==='job-switch');
+        if (job && selected.length === 1) {
+            tokens += 5;
+            hand = hand.filter(c=>c.type!=='crisis');
+            discard(selected);
             nextTurn();
             return;
         }
 
-        if (prog.funder === 'trad' && tradPrograms.includes(prog.name)) {
-            tokens += 2;
-            showMessage("💸 Traditional funder approved!");
-            discardPlayed(selectedCards);
-            nextTurn();
+        let prog = selected.filter(c=>c.type==='program');
+        let act = selected.filter(c=>c.type==='action');
+
+        let unique = new Set(act.map(a=>a.name));
+
+        if (prog.length===1 && act.length===3 && unique.size===3) {
+            let p = prog[0];
+
+            if (p.funder==='oaks' && oaksPrograms.includes(p.name)) {
+                tokens+=3;
+                showMessage("Oaks funded!");
+                discard(selected);
+                nextTurn();
+                return;
+            }
+
+            if (p.funder==='trad' && tradPrograms.includes(p.name)) {
+                tokens+=2;
+                showMessage("Traditional funded!");
+                discard(selected);
+                nextTurn();
+                return;
+            }
+
+            showMessage("Not aligned.");
             return;
         }
 
-        showMessage("❌ Not aligned with funders.");
-        return;
+        showMessage("Invalid play.");
+    } catch (e) {
+        console.error(e);
+        alert("Play error");
     }
-
-    showMessage("Invalid move.");
 }
 
 // ===============================
 // HELPERS
 // ===============================
 
-function discardPlayed(cards) {
+function discard(cards) {
     let ids = cards.map(c=>c.id);
     hand = hand.filter(c=>!ids.includes(c.id));
     selectedIds = [];
@@ -195,7 +201,7 @@ function discardPlayed(cards) {
 
 function toggleSelect(id) {
     if (selectedIds.includes(id)) {
-        selectedIds = selectedIds.filter(i => i !== id);
+        selectedIds = selectedIds.filter(i=>i!==id);
     } else {
         selectedIds.push(id);
     }
@@ -203,13 +209,14 @@ function toggleSelect(id) {
 }
 
 function showMessage(msg) {
-    document.getElementById('game-message').innerText = msg;
+    let el = document.getElementById('game-message');
+    if (el) el.innerText = msg;
 }
 
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 }
 
@@ -221,30 +228,28 @@ function updateUI() {
     document.getElementById('token-count').innerText = tokens;
 
     document.getElementById('oaks-status').innerHTML =
-        `<strong>🌳 Oaks Foundation</strong><br>Programs:<br>${oaksPrograms.join("<br>")}`;
+        `<strong>🌳 Oaks</strong><br>${oaksPrograms.join("<br>")}`;
 
     document.getElementById('trad-status').innerHTML =
-        `<strong>🏛️ Traditional Funder</strong><br>Programs:<br>${tradPrograms.join("<br>")}`;
+        `<strong>🏛️ Traditional</strong><br>${tradPrograms.join("<br>")}`;
 
     let handDiv = document.getElementById('hand');
+    if (!handDiv) return;
+
     handDiv.innerHTML = '';
 
     hand.forEach(card => {
-        let div = document.createElement('div');
-        div.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
-        div.onclick = () => toggleSelect(card.id);
+        let d = document.createElement('div');
+        d.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
+        d.onclick = () => toggleSelect(card.id);
 
-        let sub = "";
-        if (card.type === 'crisis') sub = `<br>Cost: ${card.cost}`;
-
-        div.innerHTML = `
+        d.innerHTML = `
             <h3>${card.icon}</h3>
             <h4>${card.name}</h4>
             <small>${card.type}</small>
-            ${sub}
         `;
 
-        handDiv.appendChild(div);
+        handDiv.appendChild(d);
     });
 }
 
