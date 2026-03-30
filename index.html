@@ -1,344 +1,291 @@
-function addPlayer(room, name, role) {
-  room.players[name] = {
-    name, role, hand: [], tokens: role === 'NP' ? 3 : 0,
-    gainedCIU: false, drewCard: false,
-    fundingCards: [], lockedProgram: null,
-    oakApprovals: 0, joinedAt: Date.now()
-  };
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Philanthropy Game</title>
+    <style>
+        :root {
+            --yellow: #FADC1B;
+            --magenta: #E24A8D;
+            --teal: #1AB5B3;
+            --navy: #1C244C;
+            --cream: #F5F1E6;
+            --white: #FFFFFF;
+        }
 
-// ============================================================
-// WAITING ROOM & POLLING
-// ============================================================
-function showWaiting(code, isHost) {
-  document.getElementById('displayRoomCode').innerText = code;
-  showScreen('screenWaiting');
-  
-  const startBtn = document.getElementById('startGameArea');
-  const waitingMsg = document.getElementById('waitingMsg');
-  
-  if (isHost) {
-    startBtn.style.display = 'block';
-    waitingMsg.style.display = 'none';
-  } else {
-    startBtn.style.display = 'none';
-    waitingMsg.style.display = 'block';
-  }
-  
-  startPolling(code);
-}
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--cream);
+            background-image: radial-gradient(var(--navy) 15%, transparent 16%),
+                              radial-gradient(var(--navy) 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            color: var(--navy);
+            padding: 20px;
+        }
 
-function startPolling(code) {
-  if (poll) clearInterval(poll);
-  poll = setInterval(() => {
-    const room = getRoom(code);
-    if (!room) return;
-    
-    if (room.status === 'playing' && document.getElementById('screenWaiting').classList.contains('active')) {
-      enterGame();
-    }
-    
-    if (document.getElementById('screenWaiting').classList.contains('active')) {
-      renderWaiting(room);
-    } else if (room.status === 'playing') {
-      renderGame(room);
-    } else if (room.status === 'ended') {
-      showScores(room);
-      clearInterval(poll);
-    }
-  }, 1000);
-}
+        h2 { text-transform: uppercase; letter-spacing: 2px; }
 
-function renderWaiting(room) {
-  const list = document.getElementById('playerList');
-  const count = document.getElementById('playerCount');
-  const players = Object.values(room.players);
-  
-  count.innerText = `(${players.length})`;
-  
-  list.innerHTML = players.map(p => {
-    let roleClass = 'role-np';
-    if (p.role === 'FA' || p.role === 'BANK') roleClass = 'role-fa';
-    if (p.role === 'FB') roleClass = 'role-fb';
-    
-    return `
-      <div class="pi ${roleClass}">
-        <div>
-          <div class="pn">${p.name}</div>
-          <div class="pr">${p.role}</div>
+        /* Game Layout */
+        #game-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard, .play-area {
+            background: rgba(255, 255, 255, 0.9);
+            border: 5px solid var(--navy);
+            box-shadow: 10px 10px 0px var(--navy);
+            padding: 20px;
+        }
+
+        /* Memphis Style Cards */
+        .card {
+            width: 140px;
+            height: 200px;
+            border: 4px solid var(--navy);
+            box-shadow: 5px 5px 0px var(--navy);
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            vertical-align: top;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            background: white;
+        }
+        .card:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0px var(--navy); }
+        .card.selected { border-color: var(--magenta); transform: translateY(-10px); }
+
+        /* Card Varieties */
+        .card-action { background-color: var(--teal); color: white; }
+        .card-oaks { background-color: var(--yellow); }
+        
+        .card-trad { 
+            background-color: #E5E5E5; 
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, #CCC 20px),
+                              repeating-linear-gradient(90deg, transparent, transparent 19px, #CCC 20px);
+        }
+
+        .card-crisis { background-color: var(--magenta); color: white; }
+        
+        .card-switch {
+            background: linear-gradient(45deg, var(--yellow) 25%, var(--teal) 25%, var(--teal) 50%, var(--yellow) 50%, var(--yellow) 75%, var(--teal) 75%, var(--teal) 100%);
+            background-size: 40px 40px;
+            color: var(--navy);
+            font-weight: bold;
+        }
+
+        .btn {
+            background: var(--yellow);
+            border: 3px solid var(--navy);
+            box-shadow: 4px 4px 0px var(--navy);
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--navy); }
+    </style>
+</head>
+<body>
+
+    <center><h1>⚡ NONPROFIT SURVIVAL: MEMPHIS EDITION ⚡</h1></center>
+
+    <div id="game-container">
+        
+        <div class="dashboard">
+            <h2>Your Status</h2>
+            <hr>
+            <h3>💰 Tokens: <span id="token-count">3</span></h3>
+            <p>Role: Grassroots Nonprofit</p>
+            <hr>
+            <h3>🏛️ Foundations</h3>
+            <div id="oaks-status">Oaks Board: Loading...</div>
+            <br>
+            <div id="trad-status">Trad Board: Loading...</div>
         </div>
-      </div>
-    `;
-  }).join('');
-}
 
-// ============================================================
-// GAME LOGIC CORE
-// ============================================================
-function startGame() {
-  const room = getRoom(myCode);
-  if (!room) return;
-  
-  Object.keys(room.players).forEach(pName => {
-    const p = room.players[pName];
-    if (p.role === 'NP') {
-      p.hand = [room.npPile.pop(), room.npPile.pop(), room.npPile.pop()];
-    } else if (p.role === 'FA' || p.role === 'BANK') {
-      p.hand = [room.faPile.pop(), room.faPile.pop()];
-    } else if (p.role === 'FB') {
-      p.hand = [room.fbPile.pop(), room.fbPile.pop()];
-    }
-  });
-  
-  room.status = 'playing';
-  room.log.push('Game started.');
-  saveRoom(myCode, room);
-  enterGame();
-}
-
-function enterGame() {
-  if (myRole === 'NP') {
-    document.getElementById('npName').innerText = myName;
-    showScreen('screenGameNP');
-  } else {
-    document.getElementById('fName').innerText = myName;
-    document.getElementById('fRoleLabel').innerText = myRole;
-    showScreen('screenGameF');
-    if (myRole === 'BANK') {
-      document.getElementById('bankerSection').style.display = 'block';
-    }
-  }
-}
-
-function renderGame(room) {
-  const me = room.players[myName];
-  if (!me) return;
-  
-  if (myRole === 'NP') {
-    document.getElementById('npTokens').innerText = me.tokens;
-    document.getElementById('handCount').innerText = `(${me.hand.length})`;
-    
-    const handDiv = document.getElementById('npHand');
-    handDiv.innerHTML = me.hand.map(cKey => {
-      const c = CD[cKey];
-      return `<div class="card ${c.cls}"><div class="ci">${c.icon}</div><div class="cn">${c.name}</div></div>`;
-    }).join('');
-    
-    const applyHandDiv = document.getElementById('npApplyHand');
-    applyHandDiv.innerHTML = me.hand.map((cKey, idx) => {
-      const c = CD[cKey];
-      const isSel = selApply.includes(idx);
-      return `
-        <div class="card ${c.cls} ${isSel ? 'selected' : ''}" onclick="toggleApply(${idx})">
-          <div class="ci">${c.icon}</div>
-          <div class="cn">${c.name}</div>
+        <div class="play-area">
+            <h2>Your Hand</h2>
+            <button class="btn" onclick="drawCard()">Draw Card</button>
+            <button class="btn" onclick="playSelected()">Play Selected Cards</button>
+            <hr>
+            <div id="hand"></div>
+            <hr>
+            <p id="game-message">Select cards to make a move. Remember: To apply for a grant, you need 1 matching Program card and 3 UNIQUE Action cards.</p>
         </div>
-      `;
-    }).join('');
+    </div>
+
+<script>
+// 1. GAME DATA & CARD DEFINITIONS
+const DECK_TEMPLATE = [
+    // Action Cards (Spam these so users can get 3 unique ones)
+    { id: 'a1', name: 'Verbal Report', type: 'action', cls: 'card-action', icon: '🗣️' },
+    { id: 'a2', name: 'Site Visit', type: 'action', cls: 'card-action', icon: '👟' },
+    { id: 'a3', name: 'Policy Advocacy', type: 'action', cls: 'card-action', icon: '📢' },
+    { id: 'a4', name: 'Mutual Aid', type: 'action', cls: 'card-action', icon: '🤝' },
+    { id: 'a5', name: 'Storytelling', type: 'action', cls: 'card-action', icon: '📖' },
+    { id: 'a6', name: 'Coalition Meet', type: 'action', cls: 'card-action', icon: '👥' },
     
-    const selCardsDiv = document.getElementById('selectedCards');
-    selCardsDiv.innerText = selApply.length === 0 ? 'No cards selected' : selApply.map(idx => CD[me.hand[idx]].name).join(', ');
+    // Program Cards
+    { id: 'po1', name: 'Health Equity', type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🏥' },
+    { id: 'po2', name: 'Climate Justice', type: 'program', funder: 'oaks', cls: 'card-oaks', icon: '🌍' },
+    { id: 'pt1', name: 'Backpack Drive', type: 'program', funder: 'trad', cls: 'card-trad', icon: '🎒' },
+    { id: 'pt2', name: 'Building Repair', type: 'program', funder: 'trad', cls: 'card-trad', icon: '🏠' },
+
+    // Crisis Cards (Must pay tokens to clear)
+    { id: 'c1', name: 'Rent Hike', type: 'crisis', cost: 2, cls: 'card-crisis', icon: '🏢' },
+    { id: 'c2', name: 'Staff Burnout', type: 'crisis', cost: 1, cls: 'card-crisis', icon: '🔥' },
+    { id: 'c3', name: 'Audit Trap', type: 'crisis', cost: 2, cls: 'card-crisis', icon: '📁' },
+
+    // The Golden Rare Card (Only 1 in the whole deck!)
+    { id: 'js1', name: 'JOB SWITCH!', type: 'job-switch', cls: 'card-switch', icon: '🚀' }
+];
+
+let deck = [];
+let hand = [];
+let tokens = 3;
+let selectedIds = [];
+
+// Game state for Foundations
+let oaksProgram = "Health Equity";
+let tradProgram = "Backpack Drive";
+
+// 2. INITIALIZE GAME
+function initGame() {
+    // Fill the deck with duplicates to make a real game pile (~30 cards)
+    deck = [...DECK_TEMPLATE, ...DECK_TEMPLATE.slice(0, 10)]; 
+    shuffle(deck);
     
-    const fns = Object.values(room.players);
-    const fA = fns.find(f => f.role === 'FA' || f.role === 'BANK');
-    const fB = fns.find(f => f.role === 'FB');
+    // Assign random starting programs to the automated foundations
+    oaksProgram = Math.random() > 0.5 ? "Health Equity" : "Climate Justice";
+    tradProgram = Math.random() > 0.5 ? "Backpack Drive" : "Building Repair";
     
-    if (fA) document.getElementById('npFAProgram').innerText = fA.lockedProgram ? CD[fA.lockedProgram].name : 'Not locked yet';
-    if (fB) {
-      document.getElementById('npFBProgram').innerText = fB.lockedProgram ? CD[fB.lockedProgram].name : 'Not locked yet';
-      const req = trustReq(me.oakApprovals);
-      document.getElementById('oakReqLabel').innerText = `1 prog + ${req.actions} action + ${req.ciu} CIU`;
-    }
+    document.getElementById('oaks-status').innerHTML = `<strong>Oaks Foundation</strong> (Trust-Based)<br>Wants: 🌟 ${oaksProgram}`;
+    document.getElementById('trad-status').innerHTML = `<strong>Traditional Funder</strong> (Rigid)<br>Wants: 📦 ${tradProgram}`;
     
-    document.getElementById('npGameLog').innerHTML = room.log.slice(-10).reverse().map(l => `<div>• ${l}</div>`).join('');
-    document.getElementById('gainTokenBtn').classList.toggle('btn-off', me.gainedCIU);
-    document.getElementById('drawCardBtn').classList.toggle('btn-off', me.drewCard);
-    
-  } else {
-    // Foundation side
-    document.getElementById('fFundingLeft').innerText = (myRole === 'FB') ? (3 - room.fundingGiven.FB) : (3 - room.fundingGiven.FA);
-    
-    const handDiv = document.getElementById('fHand');
-    handDiv.innerHTML = me.hand.map(cKey => {
-      const c = CD[cKey];
-      return `<div class="card ${c.cls}"><div class="ci">${c.icon}</div><div class="cn">${c.name}</div></div>`;
-    }).join('');
-    
-    document.getElementById('fPlayProgramBtn').style.display = (me.hand.some(cKey => CD[cKey].type === 'program') && !me.lockedProgram) ? 'block' : 'none';
-    
-    if (me.lockedProgram) {
-      document.getElementById('fProgramBadge').style.display = 'inline-flex';
-      document.getElementById('fProgramName').innerText = CD[me.lockedProgram].name;
-    }
-    
-    const appsDiv = document.getElementById('fApplications');
-    const myApps = room.applications.filter(app => app.to === (myRole === 'FB' ? 'FB' : 'FA') && app.status === 'pending');
-    
-    document.getElementById('appBadge').innerText = myApps.length;
-    document.getElementById('appBadge').style.display = myApps.length > 0 ? 'inline-block' : 'none';
-    
-    if (myApps.length === 0) {
-      appsDiv.innerHTML = `<div style="font-size:12px;color:var(--mid);padding:20px 0;text-align:center;">No pending applications</div>`;
-    } else {
-      appsDiv.innerHTML = myApps.map(app => `
-          <div class="appcard">
-            <div class="appfrom">From: ${app.from}</div>
-            <div class="appcards">${app.cards.map(cKey => `<span class="mc">${CD[cKey].name}</span>`).join(' ')}</div>
-            <div class="btn-row2">
-              <button class="btn btn-y btn-sm" onclick="approveApp('${app.id}')">Approve</button>
-              <button class="btn btn-r btn-sm" onclick="denyApp('${app.id}')">Deny</button>
-            </div>
-          </div>
-      `).join('');
-    }
-    
-    document.getElementById('fGameLog').innerHTML = room.log.slice(-10).reverse().map(l => `<div>• ${l}</div>`).join('');
-  }
+    // Draw 5 starting cards
+    for(let i=0; i<5; i++) drawCard();
+    updateUI();
 }
 
-// ============================================================
-// INTERACTIONS
-// ============================================================
-function toggleApply(idx) {
-  const i = selApply.indexOf(idx);
-  if (i > -1) selApply.splice(i, 1);
-  else selApply.push(idx);
-  renderGame(getRoom(myCode));
-}
-
-function gainToken() {
-  const room = getRoom(myCode);
-  const me = room.players[myName];
-  if (me.gainedCIU) return;
-  me.tokens++;
-  me.gainedCIU = true;
-  room.log.push(`${myName} gained 1 CIU.`);
-  saveRoom(myCode, room);
-  renderGame(room);
+function shuffle(array) {
+    array.sort(() => Math.random() - 0.5);
 }
 
 function drawCard() {
-  const room = getRoom(myCode);
-  const me = room.players[myName];
-  if (me.drewCard || room.npPile.length === 0) return;
-  
-  me.hand.push(room.npPile.pop());
-  me.drewCard = true;
-  me.gainedCIU = false; me.drewCard = false; // Reset for next turn
-  room.log.push(`${myName} drew a card.`);
-  saveRoom(myCode, room);
-  renderGame(room);
+    if (deck.length > 0) {
+        hand.push(deck.pop());
+        updateUI();
+    } else {
+        alert("Deck is empty!");
+    }
 }
 
-function fDrawCard() {
-  const room = getRoom(myCode);
-  const me = room.players[myName];
-  const pile = (myRole === 'FB') ? room.fbPile : room.faPile;
-  if (pile.length === 0) return;
-  
-  me.hand.push(pile.pop());
-  room.log.push(`${myName} drew a card.`);
-  saveRoom(myCode, room);
-  renderGame(room);
+// 3. GAMEPLAY LOGIC
+function playSelected() {
+    let selectedCards = hand.filter(c => selectedIds.includes(c.id));
+    
+    // CHECK FOR JOB SWITCH (Instant Win/Boost!)
+    let jobSwitch = selectedCards.find(c => c.type === 'job-switch');
+    if (jobSwitch) {
+        alert("🎉 CONGRATS! You landed a job at a foundation with a Million Dollar Budget! You get +5 tokens and clear all crises!");
+        tokens += 5;
+        // Automatically clear any crises currently in the player's hand
+        hand = hand.filter(c => c.type !== 'crisis');
+        discardPlayed(selectedCards);
+        return;
+    }
+
+    // CHECK FOR CRISIS RESOLUTION
+    let crises = selectedCards.filter(c => c.type === 'crisis');
+    if (crises.length > 0 && selectedCards.length === 1) {
+        let cost = crises[0].cost;
+        if (tokens >= cost) {
+            tokens -= cost;
+            alert(`You paid ${cost} tokens to resolve ${crises[0].name}.`);
+            discardPlayed(selectedCards);
+        } else {
+            alert("Not enough tokens to resolve this crisis!");
+        }
+        return;
+    }
+
+    // CHECK FOR GRANT SUBMISSION (1 Program + 3 Unique Actions)
+    let programs = selectedCards.filter(c => c.type === 'program');
+    let actions = selectedCards.filter(c => c.type === 'action');
+    let uniqueActions = new Set(actions.map(a => a.name));
+
+    if (programs.length === 1 && actions.length === 3) {
+        if (uniqueActions.size !== 3) {
+            alert("❌ Rejected! You cannot play duplicate action cards. Foundations want variety!");
+            return;
+        }
+
+        let prog = programs[0];
+        // Check alignment with automated foundations
+        if (prog.funder === 'oaks' && prog.name === oaksProgram) {
+            alert(`💸 SUCCESS! Oaks Foundation loved your proposal. Gain 3 tokens!`);
+            tokens += 3;
+            discardPlayed(selectedCards);
+        } else if (prog.funder === 'trad' && prog.name === tradProgram) {
+            alert(`💸 SUCCESS! Traditional Funder approved the line items. Gain 2 tokens!`);
+            tokens += 2;
+            discardPlayed(selectedCards);
+        } else {
+            alert("❌ Denied. That program does not match what the foundations are currently funding.");
+        }
+        return;
+    }
+
+    alert("Invalid move! Try playing 1 Crisis OR (1 Program + 3 Unique Actions).");
 }
 
-function playProgramCard() {
-  const room = getRoom(myCode);
-  const me = room.players[myName];
-  const progIdx = me.hand.findIndex(c => CD[c].type === 'program');
-  if (progIdx > -1) {
-    me.lockedProgram = me.hand[progIdx];
-    me.hand.splice(progIdx, 1);
-    room.log.push(`${myName} locked in program ${CD[me.lockedProgram].name}.`);
-    saveRoom(myCode, room);
-    renderGame(room);
-  }
+function discardPlayed(cards) {
+    let idsToRemove = cards.map(c => c.id);
+    hand = hand.filter(c => !idsToRemove.includes(c.id));
+    selectedIds = [];
+    updateUI();
 }
 
-function applyToFoundation(funder) {
-  const room = getRoom(myCode);
-  const me = room.players[myName];
-  
-  const selectedCards = selApply.map(idx => me.hand[idx]);
-  const programs = selectedCards.filter(c => CD[c].type === 'program');
-  const actions = selectedCards.filter(c => CD[c].type === 'action');
-  
-  const req = (funder === 'FB') ? trustReq(me.oakApprovals) : { actions: 3, ciu: 3 };
-  
-  if (programs.length !== 1 || actions.length < req.actions || me.tokens < req.ciu) {
-    notify('Missing required cards or CIU!', 'error');
-    return;
-  }
-  
-  room.applications.push({
-    id: Math.random().toString(36).substr(2, 5),
-    from: myName, to: funder, cards: selectedCards, status: 'pending'
-  });
-  
-  me.hand = me.hand.filter((_, idx) => !selApply.includes(idx));
-  me.tokens -= req.ciu;
-  selApply = [];
-  
-  room.log.push(`${myName} applied to ${funder}.`);
-  saveRoom(myCode, room);
-  notify('Application submitted', 'success');
-  switchTab('hand');
+function toggleSelect(id) {
+    if (selectedIds.includes(id)) {
+        selectedIds = selectedIds.filter(i => i !== id);
+    } else {
+        selectedIds.push(id);
+    }
+    updateUI();
 }
 
-function approveApp(appId) {
-  const room = getRoom(myCode);
-  const app = room.applications.find(a => a.id === appId);
-  const applicant = room.players[app.from];
-  
-  app.status = 'approved';
-  if (myRole === 'FB') {
-    room.fundingGiven.FB++; applicant.oakApprovals++; applicant.hand.push('unrestricted');
-  } else {
-    room.fundingGiven.FA++; applicant.hand.push('restricted');
-  }
-  
-  room.log.push(`${myName} approved ${app.from}.`);
-  saveRoom(myCode, room);
+// 4. UI RENDERER
+function updateUI() {
+    document.getElementById('token-count').innerText = tokens;
+    let handDiv = document.getElementById('hand');
+    handDiv.innerHTML = '';
+
+    hand.forEach(card => {
+        let cardDiv = document.createElement('div');
+        cardDiv.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
+        cardDiv.onclick = () => toggleSelect(card.id);
+        
+        let costText = card.type === 'crisis' ? `<br><b>Cost: ${card.cost} 🟡</b>` : '';
+        cardDiv.innerHTML = `
+            <h3>${card.icon}</h3>
+            <h4>${card.name}</h4>
+            <small>${card.type.toUpperCase()}</small>
+            ${costText}
+        `;
+        handDiv.appendChild(cardDiv);
+    });
 }
 
-function denyApp(appId) {
-  const room = getRoom(myCode);
-  const app = room.applications.find(a => a.id === appId);
-  app.status = 'denied';
-  room.log.push(`${myName} denied ${app.from}.`);
-  saveRoom(myCode, room);
-}
-
-// ============================================================
-// UI NAVIGATION & HELPERS
-// ============================================================
-function switchTab(t) {
-  document.querySelectorAll('.tc').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
-  document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
-}
-
-function switchFTab(t) {
-  document.querySelectorAll('#screenGameF .tc').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('#screenGameF .tbtn').forEach(b => b.classList.remove('active'));
-  document.getElementById('ftabContent' + t.slice(1).charAt(0).toUpperCase() + t.slice(2)).classList.add('active');
-  document.getElementById('f' + t).classList.add('active');
-}
-
-function notify(msg, type = 'success') {
-  const area = document.getElementById('notifArea');
-  const n = document.createElement('div');
-  n.className = `notif ${type}`;
-  n.innerText = msg;
-  area.appendChild(n);
-  setTimeout(() => n.remove(), 3000);
-}
-
-const savedMe = localStorage.getItem('ttp_me');
-if (savedMe) {
-  const data = JSON.parse(savedMe);
-  myName = data.name; myRole = data.role; myCode = data.code;
-  document.getElementById('homeNameInput').value = myName;
-}
+// Run on load
+initGame();
 </script>
+
+</body>
+</html>
