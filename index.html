@@ -102,9 +102,19 @@
     function init() {
         const app = document.getElementById('app');
         app.innerHTML = `
-            <div class="header">Trust The Process</div>
-            <div style="padding: 20px;">
-                <p style="margin-bottom: 20px; font-weight: bold; text-transform: uppercase;">Select your designation:</p>
+            <div class="header">TRUST THE PROCESS</div>
+            <div style="padding: 20px; text-align: center;">
+                <h2 style="font-family: 'Impact', sans-serif; letter-spacing: 1px; color: var(--primary); font-size: 1.8rem; margin-bottom: 10px;">REVENGE ON THE SECTOR</h2>
+                
+                <div class="info-box" style="text-align: left; font-size: 0.75rem;">
+                    <strong>THE SIMULATION:</strong><br>
+                    6 PLAYERS. 2 FUNDERS. 4 NONPROFITS.<br><br>
+                    NONPROFITS MUST FIGHT FOR SURVIVAL AGAINST SCARCITY VIA COIN-FLIPS OR RELATIONAL DIPLOMACY.<br><br>
+                    FUNDERS MUST WIELD THE AXE OF BUREAUCRACY OR THE SHADOWS OF FAVORITISM.
+                </div>
+                
+                <p style="margin: 15px 0; font-weight: 900; text-transform: uppercase; font-size: 0.8rem;">CHOOSE YOUR DESIGNATION:</p>
+                
                 <button class="btn btn-main" onclick="setRole('Nonprofit')">Nonprofit Org</button>
                 <button class="btn" style="background:var(--secondary); color:var(--dark)" onclick="setRole('Traditional Funder')">Foundation A (Traditional)</button>
                 <button class="btn" style="background:var(--primary); color:white" onclick="setRole('Oak Foundation')">Foundation B (Oak)</button>
@@ -129,6 +139,19 @@
         const app = document.getElementById('app');
         const totalCIU = gameState.ciu + gameState.lockedCIU + (gameState.hand.filter(c => c.type === 'funding-unres').length * 3);
         
+        let tabsHtml = '';
+        if (gameState.role === 'Nonprofit') {
+            tabsHtml = `
+                <div class="tab active" id="t-hand" onclick="showTab('hand')">Dossier</div>
+                <div class="tab" id="t-action" onclick="showTab('action')">Portal</div>
+            `;
+        } else {
+            tabsHtml = `
+                <div class="tab active" id="t-hand" onclick="showTab('hand')">Queue</div>
+                <div class="tab" id="t-action" onclick="showTab('action')">Desk</div>
+            `;
+        }
+        
         app.innerHTML = `
             <div class="header">Trust The Process</div>
             <div class="status-bar">
@@ -136,20 +159,34 @@
                 <span>TOTAL IMPACT: ${totalCIU}</span>
             </div>
             <div class="tabs">
-                <div class="tab active" id="t-hand" onclick="showTab('hand')">Dossier</div>
-                <div class="tab" id="t-action" onclick="showTab('action')">Portal</div>
+                ${tabsHtml}
             </div>
 
             <div id="hand" class="content active">
-                <div class="info-box">
-                    <strong>STATUS:</strong><br>
-                    ${gameState.isTrustEstablished ? 'TRUST VERIFIED WITH OAK FOUNDATION' : 'NO TRUST HISTORY ESTABLISHED'}
-                </div>
                 ${gameState.role === 'Nonprofit' ? `
+                    <div class="info-box">
+                        <strong>STATUS:</strong><br>
+                        ${gameState.isTrustEstablished ? 'TRUST VERIFIED WITH OAK FOUNDATION' : 'NO TRUST HISTORY ESTABLISHED'}
+                    </div>
                     <button class="btn ${gameState.turnTaken ? 'btn-disabled' : ''}" style="background:var(--bg)" onclick="gainCIU()">+1 LIQUID CIU</button>
                     <button class="btn btn-main ${!gameState.turnTaken ? 'btn-disabled' : ''}" onclick="draw()">DRAW CARD</button>
-                ` : ''}
-                <div class="card-grid">${renderHand()}</div>
+                    <div class="card-grid">${renderHand()}</div>
+                ` : `
+                    <div class="info-box">
+                        <strong>INCOMING TRANSCRIPTS</strong><br>
+                        AWAITING INCOMING APPLICATIONS FROM THE LOCAL NETWORK...
+                    </div>
+                    <div class="card-grid">
+                        <div class="card action" style="opacity: 0.4; border-style: dashed; box-shadow: none;">
+                            APP #01<br>
+                            <span style="font-size: 0.6rem;">[WAITING FOR FIREBASE]</span>
+                        </div>
+                        <div class="card action" style="opacity: 0.2; border-style: dashed; box-shadow: none;">
+                            APP #02<br>
+                            <span style="font-size: 0.6rem;">[WAITING FOR FIREBASE]</span>
+                        </div>
+                    </div>
+                `}
             </div>
 
             <div id="action" class="content">
@@ -178,8 +215,8 @@
             return `
                 <h3 style="margin-bottom: 10px; font-family: 'Impact', sans-serif;">APPLICATION PORTAL</h3>
                 <div class="info-box">
-                    <strong>REQUIREMENTS:</strong><br>1 PROGRAM CARD<br>${reqActions} ACTION CARDS<br>${reqCost} CIU FEE<br>
-                    <em>(Tap cards in your Dossier to attach them).</em>
+                    <strong>REQUIREMENTS:</strong><br>1 PROGRAM CARD<br>${reqActions} ACTION CARDS<br>${reqCost} CIU FEE<br><br>
+                    <em>(Go to your Dossier and tap cards to highlight and attach them).</em>
                 </div>
                 <select id="funder-select" class="btn" style="background:white; box-shadow:none; margin-bottom: 10px;">
                     <option value="A">FOUNDATION A (TRADITIONAL)</option>
@@ -263,3 +300,57 @@
     function submitApp() {
         const funder = document.getElementById('funder-select').value;
         const programCount = gameState.hand.filter(c => gameState.selectedIds.includes(c.id) && c.type === 'program').length;
+        const actionCount = gameState.hand.filter(c => gameState.selectedIds.includes(c.id) && c.type === 'action').length;
+        
+        // Strict Oak Slashing Logic
+        const isApplyingToOak = (funder === 'B');
+        const requiredActions = (isApplyingToOak && gameState.isTrustEstablished) ? 1 : 3;
+        const requiredCost = (isApplyingToOak && gameState.isTrustEstablished) ? 0 : 3;
+
+        // Validation Checkpoints
+        if (programCount !== 1) {
+            alert("ERROR: YOU MUST ATTACH EXACTLY 1 PROGRAM CARD.");
+            return;
+        }
+        if (actionCount < requiredActions) {
+            alert(`ERROR: THIS APPLICATION REQUIRES ${requiredActions} ACTION CARD(S).`);
+            return;
+        }
+        if (gameState.ciu < requiredCost) {
+            alert(`ERROR: INSUFFICIENT FUNDS. THIS REQUIRES ${requiredCost} CIU.`);
+            return;
+        }
+
+        // Deduct and submit
+        gameState.hand = gameState.hand.filter(c => !gameState.selectedIds.includes(c.id));
+        gameState.ciu -= requiredCost;
+        gameState.selectedIds = [];
+        
+        alert("APPLICATION SUBMITTED TO " + (funder === 'A' ? 'FOUNDATION A' : 'OAK FOUNDATION') + ".");
+        showTab('hand');
+        render();
+    }
+
+    // Foundation Dummy Buttons (Until Firebase is active)
+    function flipCoin(result) {
+        if (result === 'heads') alert("APPROVED. SENT RESTRICTED FUNDING (+3 LOCKED CIU).");
+        else alert("DENIED. NONPROFIT LOSES ALL SUBMITTED CARDS AND CIU.");
+    }
+
+    function manualApprove() {
+        gameState.isTrustEstablished = true; // This forces the trust discount for next time
+        alert("APPROVED. SENT UNRESTRICTED GRANT. TRUST DISCOUNT SECURED FOR FUTURE APPLICATIONS.");
+        render();
+    }
+
+    function showTab(t) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(c => c.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        document.getElementById('t-' + t).classList.add('active');
+    }
+
+    init();
+</script>
+</body>
+</html>
