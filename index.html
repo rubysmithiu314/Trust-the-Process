@@ -1,356 +1,344 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trust The Process | Vol. 1</title>
-    <style>
-        /* THE KILL BILL / BRUTALIST AESTHETIC */
-        :root { 
-            --bg: #F4DC26; /* Jumpsuit Yellow */
-            --dark: #000000; /* Deep Black */
-            --primary: #990000; /* Blood Red */
-            --secondary: #FFFFFF; /* Stark White */
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-        body { background-color: var(--bg); color: var(--dark); padding: 10px; background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px; }
-        
-        .container { max-width: 500px; margin: 0 auto; background: var(--secondary); border: 6px solid var(--dark); box-shadow: 12px 12px 0px var(--primary); overflow: hidden; }
-        
-        .header { background: var(--dark); color: var(--bg); padding: 15px; text-align: center; border-bottom: 6px solid var(--dark); font-weight: 900; text-transform: uppercase; font-size: 1.5rem; font-family: 'Impact', sans-serif; letter-spacing: 2px; }
-        
-        .status-bar { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; border-bottom: 4px solid var(--dark); text-transform: uppercase; }
-        
-        .tabs { display: flex; border-bottom: 6px solid var(--dark); background: #eee; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 900; border-right: 4px solid var(--dark); text-transform: uppercase; }
-        .tab:last-child { border-right: none; }
-        .tab.active { background: var(--bg); border-bottom: none; color: var(--dark); }
-        
-        .content { padding: 15px; display: none; min-height: 400px; background: var(--secondary); }
-        .content.active { display: block; }
-        
-        .card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .card { border: 4px solid var(--dark); padding: 10px; text-align: center; font-size: 0.75rem; font-weight: 900; min-height: 100px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; background: white; box-shadow: 5px 5px 0px var(--dark); transition: all 0.1s; text-transform: uppercase; }
-        .card.selected { background: var(--dark) !important; color: var(--bg); transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--primary); border-color: var(--primary); }
-        
-        .card.program { background: #E0E0E0; }
-        .card.action { background: #B0B0B0; }
-        .card.funding-unres { background: var(--bg); color: var(--dark); border: 4px dashed var(--dark); }
-        .card.crisis { background: var(--primary); color: white; border-color: var(--dark); }
-        
-        .btn { width: 100%; padding: 15px; margin-top: 15px; border: 4px solid var(--dark); font-weight: 900; cursor: pointer; box-shadow: 6px 6px 0px var(--dark); text-transform: uppercase; font-size: 1rem; font-family: 'Impact', sans-serif; letter-spacing: 1px; transition: all 0.1s; background: var(--secondary); }
-        .btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0px var(--primary); }
-        .btn-main { background: var(--dark); color: var(--bg); }
-        .btn-disabled { background: #555 !important; color: #222 !important; box-shadow: none !important; cursor: not-allowed; border-color: #222; }
-        
-        .info-box { border: 4px solid var(--dark); background: var(--bg); padding: 12px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; line-height: 1.5; text-transform: uppercase; }
-        
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: var(--bg); padding: 25px; border: 8px solid var(--primary); width: 90%; max-width: 400px; box-shadow: 15px 15px 0px var(--dark); text-align: center; }
-        #crisis-title { font-family: 'Impact', sans-serif; color: var(--primary); font-size: 2rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-    </style>
+function addPlayer(room, name, role) {
+  room.players[name] = {
+    name, role, hand: [], tokens: role === 'NP' ? 3 : 0,
+    gainedCIU: false, drewCard: false,
+    fundingCards: [], lockedProgram: null,
+    oakApprovals: 0, joinedAt: Date.now()
+  };
+}
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+// ============================================================
+// WAITING ROOM & POLLING
+// ============================================================
+function showWaiting(code, isHost) {
+  document.getElementById('displayRoomCode').innerText = code;
+  showScreen('screenWaiting');
+  
+  const startBtn = document.getElementById('startGameArea');
+  const waitingMsg = document.getElementById('waitingMsg');
+  
+  if (isHost) {
+    startBtn.style.display = 'block';
+    waitingMsg.style.display = 'none';
+  } else {
+    startBtn.style.display = 'none';
+    waitingMsg.style.display = 'block';
+  }
+  
+  startPolling(code);
+}
 
-        // ==========================================
-        // 🛑 PASTE YOUR FIREBASE CONFIG OBJECT BELOW
-        // ==========================================
-        const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_PROJECT.firebaseapp.com",
-            // databaseURL: "YOUR_DATABASE_URL",
-            // projectId: "YOUR_PROJECT_ID",
-            // storageBucket: "YOUR_PROJECT.appspot.com",
-            // messagingSenderId: "YOUR_ID",
-            // appId: "YOUR_APP_ID"
-        };
-        // ==========================================
-        
-        // We will activate this in the next step once you have your keys!
-        // const app = initializeApp(firebaseConfig);
-        // const db = getDatabase(app);
-    </script>
-</head>
-<body>
+function startPolling(code) {
+  if (poll) clearInterval(poll);
+  poll = setInterval(() => {
+    const room = getRoom(code);
+    if (!room) return;
+    
+    if (room.status === 'playing' && document.getElementById('screenWaiting').classList.contains('active')) {
+      enterGame();
+    }
+    
+    if (document.getElementById('screenWaiting').classList.contains('active')) {
+      renderWaiting(room);
+    } else if (room.status === 'playing') {
+      renderGame(room);
+    } else if (room.status === 'ended') {
+      showScores(room);
+      clearInterval(poll);
+    }
+  }, 1000);
+}
 
-<div class="container" id="app"></div>
+function renderWaiting(room) {
+  const list = document.getElementById('playerList');
+  const count = document.getElementById('playerCount');
+  const players = Object.values(room.players);
+  
+  count.innerText = `(${players.length})`;
+  
+  list.innerHTML = players.map(p => {
+    let roleClass = 'role-np';
+    if (p.role === 'FA' || p.role === 'BANK') roleClass = 'role-fa';
+    if (p.role === 'FB') roleClass = 'role-fb';
+    
+    return `
+      <div class="pi ${roleClass}">
+        <div>
+          <div class="pn">${p.name}</div>
+          <div class="pr">${p.role}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
-<div id="crisis-modal" class="modal">
-    <div class="modal-content">
-        <h2 id="crisis-title">SYSTEM CRISIS</h2>
-        <p id="crisis-desc" style="margin: 15px 0; font-size: 0.9rem; font-weight: bold;"></p>
-        <button class="btn" onclick="resolveCrisis('cash')">PAY 1 CIU (CASH)</button>
-        <button class="btn" onclick="resolveCrisis('labor')">DISCARD 2 ACTION CARDS (LABOR)</button>
-        <button class="btn" onclick="resolveCrisis('burnout')" style="background:var(--primary); color:white">SKIP TURN (BURNOUT)</button>
-    </div>
-</div>
+// ============================================================
+// GAME LOGIC CORE
+// ============================================================
+function startGame() {
+  const room = getRoom(myCode);
+  if (!room) return;
+  
+  Object.keys(room.players).forEach(pName => {
+    const p = room.players[pName];
+    if (p.role === 'NP') {
+      p.hand = [room.npPile.pop(), room.npPile.pop(), room.npPile.pop()];
+    } else if (p.role === 'FA' || p.role === 'BANK') {
+      p.hand = [room.faPile.pop(), room.faPile.pop()];
+    } else if (p.role === 'FB') {
+      p.hand = [room.fbPile.pop(), room.fbPile.pop()];
+    }
+  });
+  
+  room.status = 'playing';
+  room.log.push('Game started.');
+  saveRoom(myCode, room);
+  enterGame();
+}
 
-<script>
-    // GAME LOGIC CORE
-    const gameState = {
-        role: null,
-        ciu: 4,
-        lockedCIU: 0,
-        hand: [],
-        selectedIds: [],
-        isTrustEstablished: false,
-        turnTaken: false
-    };
+function enterGame() {
+  if (myRole === 'NP') {
+    document.getElementById('npName').innerText = myName;
+    showScreen('screenGameNP');
+  } else {
+    document.getElementById('fName').innerText = myName;
+    document.getElementById('fRoleLabel').innerText = myRole;
+    showScreen('screenGameF');
+    if (myRole === 'BANK') {
+      document.getElementById('bankerSection').style.display = 'block';
+    }
+  }
+}
 
-    function init() {
-        const app = document.getElementById('app');
-        app.innerHTML = `
-            <div class="header">TRUST THE PROCESS</div>
-            <div style="padding: 20px; text-align: center;">
-                <h2 style="font-family: 'Impact', sans-serif; letter-spacing: 1px; color: var(--primary); font-size: 1.8rem; margin-bottom: 10px;">REVENGE ON THE SECTOR</h2>
-                
-                <div class="info-box" style="text-align: left; font-size: 0.75rem;">
-                    <strong>THE SIMULATION:</strong><br>
-                    6 PLAYERS. 2 FUNDERS. 4 NONPROFITS.<br><br>
-                    NONPROFITS MUST FIGHT FOR SURVIVAL AGAINST SCARCITY VIA COIN-FLIPS OR RELATIONAL DIPLOMACY.<br><br>
-                    FUNDERS MUST WIELD THE AXE OF BUREAUCRACY OR THE SHADOWS OF FAVORITISM.
-                </div>
-                
-                <p style="margin: 15px 0; font-weight: 900; text-transform: uppercase; font-size: 0.8rem;">CHOOSE YOUR DESIGNATION:</p>
-                
-                <button class="btn btn-main" onclick="setRole('Nonprofit')">Nonprofit Org</button>
-                <button class="btn" style="background:var(--secondary); color:var(--dark)" onclick="setRole('Traditional Funder')">Foundation A (Traditional)</button>
-                <button class="btn" style="background:var(--primary); color:white" onclick="setRole('Oak Foundation')">Foundation B (Oak)</button>
+function renderGame(room) {
+  const me = room.players[myName];
+  if (!me) return;
+  
+  if (myRole === 'NP') {
+    document.getElementById('npTokens').innerText = me.tokens;
+    document.getElementById('handCount').innerText = `(${me.hand.length})`;
+    
+    const handDiv = document.getElementById('npHand');
+    handDiv.innerHTML = me.hand.map(cKey => {
+      const c = CD[cKey];
+      return `<div class="card ${c.cls}"><div class="ci">${c.icon}</div><div class="cn">${c.name}</div></div>`;
+    }).join('');
+    
+    const applyHandDiv = document.getElementById('npApplyHand');
+    applyHandDiv.innerHTML = me.hand.map((cKey, idx) => {
+      const c = CD[cKey];
+      const isSel = selApply.includes(idx);
+      return `
+        <div class="card ${c.cls} ${isSel ? 'selected' : ''}" onclick="toggleApply(${idx})">
+          <div class="ci">${c.icon}</div>
+          <div class="cn">${c.name}</div>
+        </div>
+      `;
+    }).join('');
+    
+    const selCardsDiv = document.getElementById('selectedCards');
+    selCardsDiv.innerText = selApply.length === 0 ? 'No cards selected' : selApply.map(idx => CD[me.hand[idx]].name).join(', ');
+    
+    const fns = Object.values(room.players);
+    const fA = fns.find(f => f.role === 'FA' || f.role === 'BANK');
+    const fB = fns.find(f => f.role === 'FB');
+    
+    if (fA) document.getElementById('npFAProgram').innerText = fA.lockedProgram ? CD[fA.lockedProgram].name : 'Not locked yet';
+    if (fB) {
+      document.getElementById('npFBProgram').innerText = fB.lockedProgram ? CD[fB.lockedProgram].name : 'Not locked yet';
+      const req = trustReq(me.oakApprovals);
+      document.getElementById('oakReqLabel').innerText = `1 prog + ${req.actions} action + ${req.ciu} CIU`;
+    }
+    
+    document.getElementById('npGameLog').innerHTML = room.log.slice(-10).reverse().map(l => `<div>• ${l}</div>`).join('');
+    document.getElementById('gainTokenBtn').classList.toggle('btn-off', me.gainedCIU);
+    document.getElementById('drawCardBtn').classList.toggle('btn-off', me.drewCard);
+    
+  } else {
+    // Foundation side
+    document.getElementById('fFundingLeft').innerText = (myRole === 'FB') ? (3 - room.fundingGiven.FB) : (3 - room.fundingGiven.FA);
+    
+    const handDiv = document.getElementById('fHand');
+    handDiv.innerHTML = me.hand.map(cKey => {
+      const c = CD[cKey];
+      return `<div class="card ${c.cls}"><div class="ci">${c.icon}</div><div class="cn">${c.name}</div></div>`;
+    }).join('');
+    
+    document.getElementById('fPlayProgramBtn').style.display = (me.hand.some(cKey => CD[cKey].type === 'program') && !me.lockedProgram) ? 'block' : 'none';
+    
+    if (me.lockedProgram) {
+      document.getElementById('fProgramBadge').style.display = 'inline-flex';
+      document.getElementById('fProgramName').innerText = CD[me.lockedProgram].name;
+    }
+    
+    const appsDiv = document.getElementById('fApplications');
+    const myApps = room.applications.filter(app => app.to === (myRole === 'FB' ? 'FB' : 'FA') && app.status === 'pending');
+    
+    document.getElementById('appBadge').innerText = myApps.length;
+    document.getElementById('appBadge').style.display = myApps.length > 0 ? 'inline-block' : 'none';
+    
+    if (myApps.length === 0) {
+      appsDiv.innerHTML = `<div style="font-size:12px;color:var(--mid);padding:20px 0;text-align:center;">No pending applications</div>`;
+    } else {
+      appsDiv.innerHTML = myApps.map(app => `
+          <div class="appcard">
+            <div class="appfrom">From: ${app.from}</div>
+            <div class="appcards">${app.cards.map(cKey => `<span class="mc">${CD[cKey].name}</span>`).join(' ')}</div>
+            <div class="btn-row2">
+              <button class="btn btn-y btn-sm" onclick="approveApp('${app.id}')">Approve</button>
+              <button class="btn btn-r btn-sm" onclick="denyApp('${app.id}')">Deny</button>
             </div>
-        `;
+          </div>
+      `).join('');
     }
+    
+    document.getElementById('fGameLog').innerHTML = room.log.slice(-10).reverse().map(l => `<div>• ${l}</div>`).join('');
+  }
+}
 
-    function setRole(role) {
-        gameState.role = role;
-        if (role === 'Nonprofit') {
-            gameState.hand = [
-                { id: 'p1', type: 'program', name: 'HEALTH', desc: 'Core Program' },
-                { id: 'a1', type: 'action', name: 'REPORT', desc: 'Admin' },
-                { id: 'a2', type: 'action', name: 'BUDGET', desc: 'Admin' },
-                { id: 'a3', type: 'action', name: 'AUDIT', desc: 'Admin' }
-            ];
-        }
-        render();
-    }
+// ============================================================
+// INTERACTIONS
+// ============================================================
+function toggleApply(idx) {
+  const i = selApply.indexOf(idx);
+  if (i > -1) selApply.splice(i, 1);
+  else selApply.push(idx);
+  renderGame(getRoom(myCode));
+}
 
-    function render() {
-        const app = document.getElementById('app');
-        const totalCIU = gameState.ciu + gameState.lockedCIU + (gameState.hand.filter(c => c.type === 'funding-unres').length * 3);
-        
-        let tabsHtml = '';
-        if (gameState.role === 'Nonprofit') {
-            tabsHtml = `
-                <div class="tab active" id="t-hand" onclick="showTab('hand')">Dossier</div>
-                <div class="tab" id="t-action" onclick="showTab('action')">Portal</div>
-            `;
-        } else {
-            tabsHtml = `
-                <div class="tab active" id="t-hand" onclick="showTab('hand')">Queue</div>
-                <div class="tab" id="t-action" onclick="showTab('action')">Desk</div>
-            `;
-        }
-        
-        app.innerHTML = `
-            <div class="header">Trust The Process</div>
-            <div class="status-bar">
-                <span>LIQUID CIU: ${gameState.ciu}</span>
-                <span>TOTAL IMPACT: ${totalCIU}</span>
-            </div>
-            <div class="tabs">
-                ${tabsHtml}
-            </div>
+function gainToken() {
+  const room = getRoom(myCode);
+  const me = room.players[myName];
+  if (me.gainedCIU) return;
+  me.tokens++;
+  me.gainedCIU = true;
+  room.log.push(`${myName} gained 1 CIU.`);
+  saveRoom(myCode, room);
+  renderGame(room);
+}
 
-            <div id="hand" class="content active">
-                ${gameState.role === 'Nonprofit' ? `
-                    <div class="info-box">
-                        <strong>STATUS:</strong><br>
-                        ${gameState.isTrustEstablished ? 'TRUST VERIFIED WITH OAK FOUNDATION' : 'NO TRUST HISTORY ESTABLISHED'}
-                    </div>
-                    <button class="btn ${gameState.turnTaken ? 'btn-disabled' : ''}" style="background:var(--bg)" onclick="gainCIU()">+1 LIQUID CIU</button>
-                    <button class="btn btn-main ${!gameState.turnTaken ? 'btn-disabled' : ''}" onclick="draw()">DRAW CARD</button>
-                    <div class="card-grid">${renderHand()}</div>
-                ` : `
-                    <div class="info-box">
-                        <strong>INCOMING TRANSCRIPTS</strong><br>
-                        AWAITING INCOMING APPLICATIONS FROM THE LOCAL NETWORK...
-                    </div>
-                    <div class="card-grid">
-                        <div class="card action" style="opacity: 0.4; border-style: dashed; box-shadow: none;">
-                            APP #01<br>
-                            <span style="font-size: 0.6rem;">[WAITING FOR FIREBASE]</span>
-                        </div>
-                        <div class="card action" style="opacity: 0.2; border-style: dashed; box-shadow: none;">
-                            APP #02<br>
-                            <span style="font-size: 0.6rem;">[WAITING FOR FIREBASE]</span>
-                        </div>
-                    </div>
-                `}
-            </div>
+function drawCard() {
+  const room = getRoom(myCode);
+  const me = room.players[myName];
+  if (me.drewCard || room.npPile.length === 0) return;
+  
+  me.hand.push(room.npPile.pop());
+  me.drewCard = true;
+  me.gainedCIU = false; me.drewCard = false; // Reset for next turn
+  room.log.push(`${myName} drew a card.`);
+  saveRoom(myCode, room);
+  renderGame(room);
+}
 
-            <div id="action" class="content">
-                ${renderRoleActionView()}
-            </div>
-        `;
-    }
+function fDrawCard() {
+  const room = getRoom(myCode);
+  const me = room.players[myName];
+  const pile = (myRole === 'FB') ? room.fbPile : room.faPile;
+  if (pile.length === 0) return;
+  
+  me.hand.push(pile.pop());
+  room.log.push(`${myName} drew a card.`);
+  saveRoom(myCode, room);
+  renderGame(room);
+}
 
-    function renderHand() {
-        if (gameState.hand.length === 0) return `<p style="grid-column: span 3; text-align: center; padding: 20px; font-weight: bold;">YOUR HAND IS EMPTY.</p>`;
-        
-        return gameState.hand.map(c => `
-            <div class="card ${c.type} ${gameState.selectedIds.includes(c.id) ? 'selected' : ''}" 
-                 onclick="${c.type === 'funding-unres' ? `liquify('${c.id}')` : `toggleCard('${c.id}')`}">
-                ${c.name}<br>
-                <span style="font-weight:normal; font-size:0.6rem;">${c.desc}</span>
-                ${c.type === 'funding-unres' ? '<br><br><strong>[LIQUIFY]</strong>' : ''}
-            </div>
-        `).join('');
-    }
+function playProgramCard() {
+  const room = getRoom(myCode);
+  const me = room.players[myName];
+  const progIdx = me.hand.findIndex(c => CD[c].type === 'program');
+  if (progIdx > -1) {
+    me.lockedProgram = me.hand[progIdx];
+    me.hand.splice(progIdx, 1);
+    room.log.push(`${myName} locked in program ${CD[me.lockedProgram].name}.`);
+    saveRoom(myCode, room);
+    renderGame(room);
+  }
+}
 
-    function renderRoleActionView() {
-        if (gameState.role === 'Nonprofit') {
-            const reqActions = gameState.isTrustEstablished ? 1 : 3;
-            const reqCost = gameState.isTrustEstablished ? 0 : 3;
-            return `
-                <h3 style="margin-bottom: 10px; font-family: 'Impact', sans-serif;">APPLICATION PORTAL</h3>
-                <div class="info-box">
-                    <strong>REQUIREMENTS:</strong><br>1 PROGRAM CARD<br>${reqActions} ACTION CARDS<br>${reqCost} CIU FEE<br><br>
-                    <em>(Go to your Dossier and tap cards to highlight and attach them).</em>
-                </div>
-                <select id="funder-select" class="btn" style="background:white; box-shadow:none; margin-bottom: 10px;">
-                    <option value="A">FOUNDATION A (TRADITIONAL)</option>
-                    <option value="B">FOUNDATION B (OAK)</option>
-                </select>
-                <button class="btn btn-main" onclick="submitApp()">SUBMIT PAPERWORK</button>
-            `;
-        } else if (gameState.role === 'Traditional Funder') {
-            return `
-                <h3 style="margin-bottom: 10px; font-family: 'Impact', sans-serif;">BUREAUCRATIC REVIEW</h3>
-                <div class="info-box">APPLY THE COIN FLIP RULE. NO HUMAN JUDGMENT.</div>
-                <button class="btn" style="background:var(--bg); color:var(--dark)" onclick="flipCoin('heads')">APPROVE (HEADS)</button>
-                <button class="btn" style="background:var(--dark); color:var(--bg)" onclick="flipCoin('tails')">DENY (TAILS)</button>
-            `;
-        } else {
-            return `
-                <h3 style="margin-bottom: 10px; font-family: 'Impact', sans-serif;">TRUST-BASED REVIEW</h3>
-                <div class="info-box">REVIEW CANDIDATE. IF THEY MATCH, YOU MAY APPROVE.</div>
-                <button class="btn btn-main" onclick="manualApprove()">APPROVE & BUILD TRUST</button>
-                <button class="btn" style="background:var(--primary); color:white" onclick="alert('APPLICATION DENIED.')">DECLINE</button>
-            `;
-        }
-    }
+function applyToFoundation(funder) {
+  const room = getRoom(myCode);
+  const me = room.players[myName];
+  
+  const selectedCards = selApply.map(idx => me.hand[idx]);
+  const programs = selectedCards.filter(c => CD[c].type === 'program');
+  const actions = selectedCards.filter(c => CD[c].type === 'action');
+  
+  const req = (funder === 'FB') ? trustReq(me.oakApprovals) : { actions: 3, ciu: 3 };
+  
+  if (programs.length !== 1 || actions.length < req.actions || me.tokens < req.ciu) {
+    notify('Missing required cards or CIU!', 'error');
+    return;
+  }
+  
+  room.applications.push({
+    id: Math.random().toString(36).substr(2, 5),
+    from: myName, to: funder, cards: selectedCards, status: 'pending'
+  });
+  
+  me.hand = me.hand.filter((_, idx) => !selApply.includes(idx));
+  me.tokens -= req.ciu;
+  selApply = [];
+  
+  room.log.push(`${myName} applied to ${funder}.`);
+  saveRoom(myCode, room);
+  notify('Application submitted', 'success');
+  switchTab('hand');
+}
 
-    // GAMEPLAY FUNCTIONS
-    function gainCIU() { if (!gameState.turnTaken) { gameState.ciu++; gameState.turnTaken = true; render(); } }
+function approveApp(appId) {
+  const room = getRoom(myCode);
+  const app = room.applications.find(a => a.id === appId);
+  const applicant = room.players[app.from];
+  
+  app.status = 'approved';
+  if (myRole === 'FB') {
+    room.fundingGiven.FB++; applicant.oakApprovals++; applicant.hand.push('unrestricted');
+  } else {
+    room.fundingGiven.FA++; applicant.hand.push('restricted');
+  }
+  
+  room.log.push(`${myName} approved ${app.from}.`);
+  saveRoom(myCode, room);
+}
 
-    function draw() {
-        if (!gameState.turnTaken) return;
-        const pool = [
-            { type: 'action', name: 'REPORT', desc: 'Admin' },
-            { type: 'crisis', name: 'LEAKY ROOF', desc: 'Infrastructure' },
-            { type: 'crisis', name: 'BURNOUT', desc: 'Operational' },
-            { type: 'action', name: 'AUDIT', desc: 'Admin' }
-        ];
-        const c = pool[Math.floor(Math.random() * pool.length)];
-        if (c.type === 'crisis') triggerCrisis(c.name);
-        else gameState.hand.push({ ...c, id: Math.random().toString(36).substr(2, 5) });
-        gameState.turnTaken = false;
-        render();
-    }
+function denyApp(appId) {
+  const room = getRoom(myCode);
+  const app = room.applications.find(a => a.id === appId);
+  app.status = 'denied';
+  room.log.push(`${myName} denied ${app.from}.`);
+  saveRoom(myCode, room);
+}
 
-    function triggerCrisis(name) {
-        document.getElementById('crisis-modal').style.display = 'flex';
-        document.getElementById('crisis-desc').innerText = `CRISIS DETECTED: ${name}`;
-    }
+// ============================================================
+// UI NAVIGATION & HELPERS
+// ============================================================
+function switchTab(t) {
+  document.querySelectorAll('.tc').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+  document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+}
 
-    function resolveCrisis(type) {
-        if (type === 'cash') {
-            if (gameState.ciu < 1) { alert("INSUFFICIENT CIU. CHOOSE ANOTHER OPTION."); return; }
-            gameState.ciu--;
-        }
-        if (type === 'labor') {
-            const actionCards = gameState.hand.filter(c => c.type === 'action');
-            if (actionCards.length < 2) { alert("INSUFFICIENT ACTION CARDS. CHOOSE ANOTHER OPTION."); return; }
-            let removed = 0;
-            gameState.hand = gameState.hand.filter(c => {
-                if (c.type === 'action' && removed < 2) { removed++; return false; }
-                return true;
-            });
-            gameState.selectedIds = [];
-        }
-        if (type === 'burnout') alert("YOUR TEAM IS EXHAUSTED. SKIP YOUR NEXT TURN.");
-        document.getElementById('crisis-modal').style.display = 'none';
-        render();
-    }
+function switchFTab(t) {
+  document.querySelectorAll('#screenGameF .tc').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#screenGameF .tbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ftabContent' + t.slice(1).charAt(0).toUpperCase() + t.slice(2)).classList.add('active');
+  document.getElementById('f' + t).classList.add('active');
+}
 
-    function liquify(id) {
-        gameState.hand = gameState.hand.filter(c => c.id !== id);
-        gameState.ciu += 3;
-        alert("FUNDS LIQUIFIED. +3 SPENDABLE CIU.");
-        render();
-    }
+function notify(msg, type = 'success') {
+  const area = document.getElementById('notifArea');
+  const n = document.createElement('div');
+  n.className = `notif ${type}`;
+  n.innerText = msg;
+  area.appendChild(n);
+  setTimeout(() => n.remove(), 3000);
+}
 
-    function toggleCard(id) {
-        if (gameState.selectedIds.includes(id)) gameState.selectedIds = gameState.selectedIds.filter(i => i !== id);
-        else gameState.selectedIds.push(id);
-        render();
-    }
-
-    function submitApp() {
-        const funder = document.getElementById('funder-select').value;
-        const programCount = gameState.hand.filter(c => gameState.selectedIds.includes(c.id) && c.type === 'program').length;
-        const actionCount = gameState.hand.filter(c => gameState.selectedIds.includes(c.id) && c.type === 'action').length;
-        
-        // Strict Oak Slashing Logic
-        const isApplyingToOak = (funder === 'B');
-        const requiredActions = (isApplyingToOak && gameState.isTrustEstablished) ? 1 : 3;
-        const requiredCost = (isApplyingToOak && gameState.isTrustEstablished) ? 0 : 3;
-
-        // Validation Checkpoints
-        if (programCount !== 1) {
-            alert("ERROR: YOU MUST ATTACH EXACTLY 1 PROGRAM CARD.");
-            return;
-        }
-        if (actionCount < requiredActions) {
-            alert(`ERROR: THIS APPLICATION REQUIRES ${requiredActions} ACTION CARD(S).`);
-            return;
-        }
-        if (gameState.ciu < requiredCost) {
-            alert(`ERROR: INSUFFICIENT FUNDS. THIS REQUIRES ${requiredCost} CIU.`);
-            return;
-        }
-
-        // Deduct and submit
-        gameState.hand = gameState.hand.filter(c => !gameState.selectedIds.includes(c.id));
-        gameState.ciu -= requiredCost;
-        gameState.selectedIds = [];
-        
-        alert("APPLICATION SUBMITTED TO " + (funder === 'A' ? 'FOUNDATION A' : 'OAK FOUNDATION') + ".");
-        showTab('hand');
-        render();
-    }
-
-    // Foundation Dummy Buttons (Until Firebase is active)
-    function flipCoin(result) {
-        if (result === 'heads') alert("APPROVED. SENT RESTRICTED FUNDING (+3 LOCKED CIU).");
-        else alert("DENIED. NONPROFIT LOSES ALL SUBMITTED CARDS AND CIU.");
-    }
-
-    function manualApprove() {
-        gameState.isTrustEstablished = true; // This forces the trust discount for next time
-        alert("APPROVED. SENT UNRESTRICTED GRANT. TRUST DISCOUNT SECURED FOR FUTURE APPLICATIONS.");
-        render();
-    }
-
-    function showTab(t) {
-        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(c => c.classList.remove('active'));
-        document.getElementById(t).classList.add('active');
-        document.getElementById('t-' + t).classList.add('active');
-    }
-
-    init();
+const savedMe = localStorage.getItem('ttp_me');
+if (savedMe) {
+  const data = JSON.parse(savedMe);
+  myName = data.name; myRole = data.role; myCode = data.code;
+  document.getElementById('homeNameInput').value = myName;
+}
 </script>
-</body>
-</html>
