@@ -1,258 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Trust the Process</title>
+
+<style>
+body{
+  background:#0a0a0a;
+  color:#f5f0e8;
+  font-family:monospace;
+  text-align:center;
+  margin:0;
+}
+
+h1{color:#f4dc26}
+
+#stats{
+  margin:10px;
+  font-size:18px;
+}
+
+#hand{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:10px;
+}
+
+.card{
+  width:90px;
+  border:3px solid white;
+  padding:8px;
+  cursor:pointer;
+  background:#222;
+}
+
+.selected{
+  background:#f4dc26;
+  color:black;
+}
+
+button{
+  padding:10px 16px;
+  margin:6px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+#message{
+  margin-top:12px;
+  height:24px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>TRUST THE PROCESS</h1>
+
+<div id="stats">
+Turn: <span id="turn">1</span> |
+Tokens: <span id="tokens">3</span>
+</div>
+
+<div id="hand"></div>
+
+<button onclick="playSelected()">Play Cards</button>
+<button onclick="nextTurn()">Next Turn</button>
+
+<div id="message"></div>
+
 <script>
-// ===============================
-// SAFE GAME VERSION
-// ===============================
+/* =========================
+   SOUND SYSTEM (NO DOWNLOADS)
+========================= */
 
-const ACTION_POOL = [
-    { name: 'Verbal Report', type: 'action', cls: 'card-action', icon: '🗣️' },
-    { name: 'Site Visit', type: 'action', cls: 'card-action', icon: '👟' },
-    { name: 'Policy Advocacy', type: 'action', cls: 'card-action', icon: '📢' },
-    { name: 'Mutual Aid', type: 'action', cls: 'card-action', icon: '🤝' },
-    { name: 'Storytelling', type: 'action', cls: 'card-action', icon: '📖' },
-    { name: 'Coalition Meet', type: 'action', cls: 'card-action', icon: '👥' }
-];
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
 
-const OAKS_PROGRAMS = [
-    'Climate Change',
-    'COVID Response',
-    'Criminal Justice Reform'
-];
+document.addEventListener("click",()=>{
+ if(audioCtx.state==="suspended") audioCtx.resume();
+},{once:true});
 
-const TRAD_PROGRAMS = [
-    'Backpack Drive',
-    'Building Repair',
-    'After School Program'
-];
-
-const CRISIS_POOL = [
-    { name: 'Rent Hike', type: 'crisis', cost: 2, cls: 'card-crisis', icon: '🏢' },
-    { name: 'Staff Burnout', type: 'crisis', cost: 1, cls: 'card-crisis', icon: '🔥' },
-    { name: 'Emergency Audit', type: 'crisis', cost: 2, cls: 'card-crisis', icon: '📁' },
-    { name: 'Scope Creep', type: 'crisis', cost: 1, cls: 'card-crisis', icon: '🐙' }
-];
-
-const RARE_CARD = { name: 'JOB SWITCH!', type: 'job-switch', cls: 'card-switch', icon: '🚀' };
-
-let deck = [];
-let hand = [];
-let tokens = 3;
-let selectedIds = [];
-let turn = 1;
-
-let oaksPrograms = [];
-let tradPrograms = [];
-
-let idCounter = 0;
-
-// ===============================
-// INIT
-// ===============================
-
-function initGame() {
-    try {
-        idCounter = 0;
-        deck = [];
-
-        for(let i=0; i<3; i++) ACTION_POOL.forEach(a => deck.push({...a, id: idCounter++}));
-        for(let i=0; i<2; i++) {
-            OAKS_PROGRAMS.forEach(p => deck.push({ name:p, type:'program', funder:'oaks', cls:'card-oaks', icon:'🌳', id:idCounter++ }));
-            TRAD_PROGRAMS.forEach(p => deck.push({ name:p, type:'program', funder:'trad', cls:'card-trad', icon:'🏛️', id:idCounter++ }));
-        }
-        for(let i=0; i<2; i++) CRISIS_POOL.forEach(c => deck.push({...c, id: idCounter++}));
-
-        deck.push({...RARE_CARD, id: idCounter++});
-
-        shuffle(deck);
-
-        // different starts
-        oaksPrograms = [OAKS_PROGRAMS[Math.floor(Math.random()*OAKS_PROGRAMS.length)]];
-        tradPrograms = [TRAD_PROGRAMS[Math.floor(Math.random()*TRAD_PROGRAMS.length)]];
-
-        hand = [];
-        for(let i=0;i<5;i++) if(deck.length) hand.push(deck.pop());
-
-        updateUI();
-        showMessage("Game started.");
-    } catch (e) {
-        console.error(e);
-        alert("Error initializing game");
-    }
+function beep(freq,dur){
+ const o=audioCtx.createOscillator();
+ const g=audioCtx.createGain();
+ o.frequency.value=freq;
+ o.connect(g);
+ g.connect(audioCtx.destination);
+ o.start();
+ g.gain.setValueAtTime(.2,audioCtx.currentTime);
+ g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+ o.stop(audioCtx.currentTime+dur);
 }
 
-// ===============================
-// TURN
-// ===============================
-
-function nextTurn() {
-    try {
-        turn++;
-
-        // PAY CRISES
-        let crises = hand.filter(c => c.type === 'crisis');
-        let totalCost = crises.reduce((sum,c)=>sum+c.cost,0);
-
-        if (totalCost > 0) {
-            if (tokens >= totalCost) {
-                tokens -= totalCost;
-                showMessage(`Paid ${totalCost} tokens for crises.`);
-            } else {
-                alert("GAME OVER: Couldn't afford crises.");
-                initGame();
-                return;
-            }
-        }
-
-        if (deck.length) hand.push(deck.pop());
-
-        if (turn % 7 === 0) expandPrograms();
-
-        updateUI();
-    } catch (e) {
-        console.error(e);
-        alert("Turn error");
-    }
+function sound(type){
+ if(type==="draw") beep(600,.08);
+ if(type==="play") beep(350,.12);
+ if(type==="win"){beep(700,.15);setTimeout(()=>beep(900,.2),150);}
+ if(type==="lose") beep(120,.6);
+ if(type==="crisis") beep(200,.2);
 }
 
-// ===============================
-// EXPAND
-// ===============================
+/* =========================
+   GAME DATA
+========================= */
 
-function expandPrograms() {
-    if (oaksPrograms.length < 3) {
-        let options = OAKS_PROGRAMS.filter(p => !oaksPrograms.includes(p));
-        if (options.length) oaksPrograms.push(options[Math.floor(Math.random()*options.length)]);
-    }
+const ACTIONS=["Report","Visit","Advocate","Aid","Story","Meet"];
+const PROGRAMS=["Climate","COVID","Justice"];
 
-    if (tradPrograms.length < 3) {
-        let options = TRAD_PROGRAMS.filter(p => !tradPrograms.includes(p));
-        if (options.length) tradPrograms.push(options[Math.floor(Math.random()*options.length)]);
-    }
+let deck=[];
+let hand=[];
+let selected=[];
+let tokens=3;
+let turn=1;
 
-    showMessage("Foundations expanded!");
+const MAX_HAND=7;
+const WIN_TOKENS=15;
+const MAX_TURNS=20;
+
+/* =========================
+   INIT
+========================= */
+
+function initGame(){
+
+deck=[];
+hand=[];
+selected=[];
+tokens=3;
+turn=1;
+
+// build deck
+for(let i=0;i<3;i++)
+  ACTIONS.forEach(a=>deck.push({type:"action",name:a}));
+
+for(let i=0;i<3;i++)
+  PROGRAMS.forEach(p=>deck.push({type:"program",name:p}));
+
+for(let i=0;i<6;i++)
+  deck.push({type:"crisis",name:"Crisis",cost:1});
+
+shuffle(deck);
+
+// starting hand
+for(let i=0;i<5;i++) draw();
+
+updateUI();
+message("Game started.");
 }
 
-// ===============================
-// PLAY
-// ===============================
+/* =========================
+   CORE LOOP
+========================= */
 
-function playSelected() {
-    try {
-        let selected = hand.filter(c => selectedIds.includes(c.id));
+function nextTurn(){
 
-        if (!selected.length) {
-            showMessage("Select cards.");
-            return;
-        }
+turn++;
+message("Turn "+turn);
 
-        let job = selected.find(c=>c.type==='job-switch');
-        if (job && selected.length === 1) {
-            tokens += 5;
-            hand = hand.filter(c=>c.type!=='crisis');
-            discard(selected);
-            nextTurn();
-            return;
-        }
+resolveCrises();
 
-        let prog = selected.filter(c=>c.type==='program');
-        let act = selected.filter(c=>c.type==='action');
+draw();
 
-        let unique = new Set(act.map(a=>a.name));
-
-        if (prog.length===1 && act.length===3 && unique.size===3) {
-            let p = prog[0];
-
-            if (p.funder==='oaks' && oaksPrograms.includes(p.name)) {
-                tokens+=3;
-                showMessage("Oaks funded!");
-                discard(selected);
-                nextTurn();
-                return;
-            }
-
-            if (p.funder==='trad' && tradPrograms.includes(p.name)) {
-                tokens+=2;
-                showMessage("Traditional funded!");
-                discard(selected);
-                nextTurn();
-                return;
-            }
-
-            showMessage("Not aligned.");
-            return;
-        }
-
-        showMessage("Invalid play.");
-    } catch (e) {
-        console.error(e);
-        alert("Play error");
-    }
+if(hand.length>MAX_HAND){
+ hand.shift();
+ message("Too many tasks — lost oldest card.");
 }
 
-// ===============================
-// HELPERS
-// ===============================
+updateUI();
 
-function discard(cards) {
-    let ids = cards.map(c=>c.id);
-    hand = hand.filter(c=>!ids.includes(c.id));
-    selectedIds = [];
-    updateUI();
+checkEnd();
 }
 
-function toggleSelect(id) {
-    if (selectedIds.includes(id)) {
-        selectedIds = selectedIds.filter(i=>i!==id);
-    } else {
-        selectedIds.push(id);
-    }
-    updateUI();
+function resolveCrises(){
+let cost=hand
+ .filter(c=>c.type==="crisis")
+ .reduce((s,c)=>s+c.cost,0);
+
+if(cost>0){
+ sound("crisis");
+
+ if(tokens>=cost){
+   tokens-=cost;
+   message("Paid "+cost+" tokens.");
+ }else{
+   endGame(false);
+ }
+}
 }
 
-function showMessage(msg) {
-    let el = document.getElementById('game-message');
-    if (el) el.innerText = msg;
+/* =========================
+   PLAY CARDS
+========================= */
+
+function playSelected(){
+
+if(selected.length===0){
+ message("Select cards.");
+ return;
 }
 
-function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
+const cards=selected.map(i=>hand[i]);
+
+const actions=cards.filter(c=>c.type==="action");
+const programs=cards.filter(c=>c.type==="program");
+
+const unique=new Set(actions.map(a=>a.name));
+
+if(programs.length===1 && unique.size===3){
+ tokens+=3;
+ sound("play");
+ message("Program funded!");
+ removeSelected();
+ nextTurn();
+ return;
 }
 
-// ===============================
-// UI
-// ===============================
-
-function updateUI() {
-    document.getElementById('token-count').innerText = tokens;
-
-    document.getElementById('oaks-status').innerHTML =
-        `<strong>🌳 Oaks</strong><br>${oaksPrograms.join("<br>")}`;
-
-    document.getElementById('trad-status').innerHTML =
-        `<strong>🏛️ Traditional</strong><br>${tradPrograms.join("<br>")}`;
-
-    let handDiv = document.getElementById('hand');
-    if (!handDiv) return;
-
-    handDiv.innerHTML = '';
-
-    hand.forEach(card => {
-        let d = document.createElement('div');
-        d.className = `card ${card.cls} ${selectedIds.includes(card.id) ? 'selected' : ''}`;
-        d.onclick = () => toggleSelect(card.id);
-
-        d.innerHTML = `
-            <h3>${card.icon}</h3>
-            <h4>${card.name}</h4>
-            <small>${card.type}</small>
-        `;
-
-        handDiv.appendChild(d);
-    });
+message("Invalid combo.");
 }
 
-// ===============================
-initGame();
+/* =========================
+   DRAW + REMOVE
+========================= */
+
+function draw(){
+ if(deck.length===0) return;
+ hand.push(deck.pop());
+ sound("draw");
+}
+
+function removeSelected(){
+ hand=hand.filter((_,i)=>!selected.includes(i));
+ selected=[];
+}
+
+/* =========================
+   END GAME
+========================= */
+
+function checkEnd(){
+ if(tokens>=WIN_TOKENS) endGame(true);
+ if(turn>MAX_TURNS) endGame(false);
+}
+
+function endGame(win){
+ if(win){
+   sound("win");
+   alert("YOU BUILT COMMUNITY POWER!");
+ }else{
+   sound("lose");
+   alert("Burnout overtook the organization.");
+ }
+ initGame();
+}
+
+/* =========================
+   UI
+========================= */
+
+function updateUI(){
+
+document.getElementById("turn").textContent=turn;
+document.getElementById("tokens").textContent=tokens;
+
+const handDiv=document.getElementById("hand");
+handDiv.innerHTML="";
+
+hand.forEach((card,i)=>{
+ const d=document.createElement("div");
+ d.className="card"+(selected.includes(i)?" selected":"");
+ d.innerHTML=
+ `<strong>${card.name}</strong><br><small>${card.type}</small>`;
+ d.onclick=()=>toggle(i);
+ handDiv.appendChild(d);
+});
+}
+
+function toggle(i){
+ if(selected.includes(i))
+   selected=selected.filter(x=>x!==i);
+ else
+   selected.push(i);
+
+updateUI();
+}
+
+function message(m){
+ document.getElementById("message").textContent=m;
+}
+
+function shuffle(a){
+ for(let i=a.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));
+   [a[i],a[j]]=[a[j],a[i]];
+ }
+}
+
+/* ========================= */
+
+window.onload=initGame;
+
 </script>
+</body>
+</html>
