@@ -4,2019 +4,889 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trust the Process — A Grantmaking Simulation</title>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Mono:wght@400;500&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --yellow: #F4DC26;
-  --pink: #FF2D78;
-  --teal: #00C2C7;
-  --purple: #6B2FD9;
-  --navy: #0D1B3E;
-  --white: #FAFAF5;
-  --red: #E8261A;
-  --orange: #FF6B35;
-  --green: #2ECC40;
-  --gray: #8892A4;
+  --yellow:#F4DC26; --pink:#FF2D78; --teal:#00C2C7;
+  --purple:#6B2FD9; --navy:#0D1B3E; --white:#FAFAF5;
+  --red:#E8261A; --orange:#FF6B35; --green:#27AE60; --gray:#8892A4;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);position:relative;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'DM Mono', monospace;
-  background: var(--navy);
-  color: var(--white);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* ---- MEMPHIS BACKGROUND ---- */
-#bg-canvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.18;
-}
+#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.15;}
 
 /* ---- SCREENS ---- */
-.screen {
-  display: none;
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-}
-.screen.active { display: block; }
+.screen{position:fixed;inset:0;z-index:1;display:none;overflow-y:auto;flex-direction:column;}
+.screen.active{display:flex;}
 
-/* ---- TITLE SCREEN ---- */
-#screen-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  min-height: 100vh;
-  text-align: center;
-}
+/* ---- TITLE ---- */
+#screen-title{align-items:center;justify-content:center;padding:28px 20px;text-align:center;gap:14px;}
+.t-kicker{background:var(--yellow);color:var(--navy);font-family:'Special Elite',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:5px 14px;border:3px solid var(--navy);box-shadow:3px 3px 0 var(--navy);}
+.t-title{font-family:'Special Elite',serif;font-size:clamp(42px,10vw,86px);color:var(--white);line-height:.88;letter-spacing:-2px;text-shadow:5px 5px 0 var(--pink),10px 10px 0 var(--purple);}
+.t-sub{font-size:11px;color:var(--teal);letter-spacing:4px;text-transform:uppercase;}
+.t-card{background:var(--white);color:var(--navy);border:4px solid var(--navy);box-shadow:7px 7px 0 var(--pink);padding:20px 24px;max-width:530px;width:100%;text-align:left;}
+.t-card h3{font-family:'Special Elite',serif;font-size:16px;margin-bottom:9px;color:var(--purple);}
+.t-card p{font-size:12px;line-height:1.7;margin-bottom:6px;}
+.t-cite{font-size:10px;color:var(--gray);font-style:italic;border-top:2px solid #ddd;padding-top:9px;margin-top:9px;}
 
-.title-badge {
-  background: var(--yellow);
-  color: var(--navy);
-  font-family: 'Special Elite', serif;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  padding: 6px 14px;
-  border: 3px solid var(--navy);
-  box-shadow: 4px 4px 0 var(--navy);
-  margin-bottom: 20px;
-  display: inline-block;
-}
-
-.game-title {
-  font-family: 'Special Elite', serif;
-  font-size: clamp(42px, 10vw, 96px);
-  color: var(--white);
-  line-height: 0.9;
-  letter-spacing: -2px;
-  text-shadow: 6px 6px 0 var(--pink), 12px 12px 0 var(--purple);
-  margin-bottom: 12px;
-}
-
-.game-subtitle {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  color: var(--teal);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  margin-bottom: 40px;
-}
-
-.title-card {
-  background: var(--white);
-  color: var(--navy);
-  border: 4px solid var(--navy);
-  box-shadow: 8px 8px 0 var(--pink);
-  padding: 28px 32px;
-  max-width: 560px;
-  width: 100%;
-  margin-bottom: 32px;
-  text-align: left;
-}
-
-.title-card h3 {
-  font-family: 'Special Elite', serif;
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: var(--purple);
-}
-
-.title-card p {
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--navy);
-  margin-bottom: 8px;
-}
-
-.citation {
-  font-size: 10px;
-  color: var(--gray);
-  font-style: italic;
-  border-top: 2px solid var(--navy);
-  padding-top: 12px;
-  margin-top: 12px;
-}
-
-.btn {
-  font-family: 'Special Elite', serif;
-  font-size: 18px;
-  letter-spacing: 1px;
-  padding: 14px 36px;
-  border: 4px solid var(--navy);
-  cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
-  display: inline-block;
-  text-decoration: none;
-  position: relative;
-}
-
-.btn:active { transform: translate(4px, 4px); box-shadow: none !important; }
-
-.btn-primary {
-  background: var(--pink);
-  color: var(--white);
-  box-shadow: 6px 6px 0 var(--navy);
-}
-.btn-primary:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
-
-.btn-teal {
-  background: var(--teal);
-  color: var(--navy);
-  box-shadow: 6px 6px 0 var(--navy);
-}
-.btn-teal:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
-
-.btn-yellow {
-  background: var(--yellow);
-  color: var(--navy);
-  box-shadow: 6px 6px 0 var(--navy);
-}
-.btn-yellow:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
-
-.btn-purple {
-  background: var(--purple);
-  color: var(--white);
-  box-shadow: 6px 6px 0 var(--navy);
-}
-.btn-purple:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
-
-.btn-sm {
-  font-size: 12px;
-  padding: 8px 16px;
-  border-width: 3px;
-  box-shadow: 4px 4px 0 var(--navy);
-}
-.btn-sm:hover { box-shadow: 6px 6px 0 var(--navy); transform: translate(-2px,-2px); }
-
-.btn-red {
-  background: var(--red);
-  color: var(--white);
-  box-shadow: 6px 6px 0 var(--navy);
-}
+/* ---- BUTTONS ---- */
+.btn{font-family:'Special Elite',serif;font-size:15px;padding:11px 26px;border:4px solid var(--navy);cursor:pointer;transition:transform .1s,box-shadow .1s;display:inline-block;line-height:1;}
+.btn:active{transform:translate(4px,4px)!important;box-shadow:none!important;}
+.btn-pink{background:var(--pink);color:var(--white);box-shadow:6px 6px 0 var(--navy);}
+.btn-teal{background:var(--teal);color:var(--navy);box-shadow:6px 6px 0 var(--navy);}
+.btn-yellow{background:var(--yellow);color:var(--navy);box-shadow:6px 6px 0 var(--navy);}
+.btn-purple{background:var(--purple);color:var(--white);box-shadow:6px 6px 0 var(--navy);}
+.btn-gray{background:var(--gray);color:var(--white);box-shadow:6px 6px 0 var(--navy);}
+.btn:hover{transform:translate(-2px,-2px);}
+.btn-pink:hover,.btn-teal:hover,.btn-yellow:hover,.btn-purple:hover,.btn-gray:hover{box-shadow:8px 8px 0 var(--navy);}
+.btn-sm{font-size:12px;padding:7px 13px;border-width:3px;box-shadow:4px 4px 0 var(--navy);}
+.btn-sm:hover{box-shadow:6px 6px 0 var(--navy);}
+.btn:disabled{opacity:.4;pointer-events:none;transform:none!important;}
 
 /* ---- GAME LAYOUT ---- */
-#screen-game {
-  padding: 0;
-}
+#screen-game{display:none;flex-direction:column;height:100vh;overflow:hidden;}
+#screen-game.active{display:flex;}
 
-.game-header {
-  background: var(--navy);
-  border-bottom: 4px solid var(--yellow);
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-title {
-  font-family: 'Special Elite', serif;
-  font-size: 20px;
-  color: var(--yellow);
-  letter-spacing: 1px;
-}
-
-.turn-badge {
-  background: var(--pink);
-  color: var(--white);
-  border: 3px solid var(--white);
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'DM Mono', monospace;
-  box-shadow: 3px 3px 0 var(--pink);
-}
-
-.budget-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 200px;
-}
-
-.budget-label {
-  font-size: 11px;
-  color: var(--teal);
-  letter-spacing: 2px;
-  white-space: nowrap;
-}
-
-.budget-bar-wrap {
-  flex: 1;
-  height: 16px;
-  background: rgba(255,255,255,0.1);
-  border: 2px solid var(--white);
-  position: relative;
-  min-width: 80px;
-}
-
-.budget-bar {
-  height: 100%;
-  background: var(--yellow);
-  transition: width 0.4s ease;
-  position: relative;
-}
-
-.budget-bar.warning { background: var(--orange); }
-.budget-bar.danger { background: var(--red); }
-
-.budget-val {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--yellow);
-  white-space: nowrap;
-}
+.g-header{background:var(--navy);border-bottom:4px solid var(--yellow);padding:7px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;z-index:10;}
+.g-title{font-family:'Special Elite',serif;font-size:16px;color:var(--yellow);}
+.turn-pill{background:var(--pink);color:var(--white);border:3px solid var(--white);padding:3px 9px;font-size:11px;}
+.bbar-wrap{display:flex;align-items:center;gap:7px;flex:1;min-width:140px;}
+.bbar-lbl{font-size:9px;color:var(--teal);letter-spacing:2px;white-space:nowrap;}
+.bbar-track{flex:1;height:13px;background:rgba(255,255,255,.1);border:2px solid var(--white);min-width:50px;}
+.bbar-fill{height:100%;background:var(--yellow);transition:width .3s;}
+.bbar-fill.warn{background:var(--orange);}
+.bbar-fill.danger{background:var(--red);}
+.bbar-val{font-size:11px;color:var(--yellow);white-space:nowrap;}
+.snd-wrap{display:flex;gap:4px;margin-left:auto;flex-shrink:0;}
+.snd-btn{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);color:var(--white);font-size:12px;padding:3px 7px;cursor:pointer;transition:all .15s;}
+.snd-btn.on{background:var(--yellow);color:var(--navy);border-color:var(--yellow);}
+.snd-btn:hover{border-color:var(--white);}
 
 /* ---- TABS ---- */
-.tabs {
-  display: flex;
-  border-bottom: 4px solid var(--purple);
-  background: rgba(13,27,62,0.95);
-  position: sticky;
-  top: 68px;
-  z-index: 99;
-  overflow-x: auto;
-}
+.tabs{display:flex;border-bottom:4px solid var(--purple);background:rgba(13,27,62,.97);flex-shrink:0;overflow-x:auto;z-index:9;}
+.tab-btn{font-family:'Special Elite',serif;font-size:12px;letter-spacing:.5px;padding:9px 15px;background:transparent;color:var(--gray);border:none;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-4px;transition:all .15s;white-space:nowrap;}
+.tab-btn:hover{color:var(--white);}
+.tab-btn.active{color:var(--yellow);border-bottom-color:var(--yellow);background:rgba(244,220,38,.07);}
 
-.tab-btn {
-  font-family: 'Special Elite', serif;
-  font-size: 13px;
-  letter-spacing: 1px;
-  padding: 12px 20px;
-  background: transparent;
-  color: var(--gray);
-  border: none;
-  cursor: pointer;
-  border-bottom: 4px solid transparent;
-  margin-bottom: -4px;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
+/* ---- TAB PANELS ---- */
+.tab-panels{flex:1;overflow:hidden;position:relative;}
+.tab-panel{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;}
+.tab-panel.active{display:block;}
 
-.tab-btn:hover { color: var(--white); }
-.tab-btn.active {
-  color: var(--yellow);
-  border-bottom-color: var(--yellow);
-  background: rgba(244,220,38,0.08);
-}
+/* ---- SECTION LABEL ---- */
+.sec-lbl{font-family:'Special Elite',serif;font-size:12px;color:var(--yellow);letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid var(--yellow);padding-bottom:4px;margin-bottom:9px;}
 
-.tab-content { display: none; padding: 20px; }
-.tab-content.active { display: block; }
+/* ---- BUDGET BOXES ---- */
+.bboxes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.bbox{border:3px solid var(--navy);padding:9px 11px;}
+.bbox-free{background:rgba(244,220,38,.1);box-shadow:4px 4px 0 var(--yellow);}
+.bbox-restr{background:rgba(107,47,217,.15);box-shadow:4px 4px 0 var(--purple);}
+.bbox-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:2px;}
+.bbox-val{font-family:'Special Elite',serif;font-size:30px;line-height:1;}
+.bbox-free .bbox-val{color:var(--yellow);}
+.bbox-restr .bbox-val{color:var(--purple);}
+.bbox-note{font-size:9px;color:var(--gray);margin-top:2px;line-height:1.4;}
 
-/* ---- STATUS BAR ---- */
-.status-bar {
-  background: rgba(107,47,217,0.25);
-  border: 3px solid var(--purple);
-  padding: 10px 16px;
-  margin-bottom: 20px;
-  font-size: 12px;
-  color: var(--white);
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+/* ---- ACT ROW ---- */
+.act-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;}
 
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  border: 2px solid var(--navy);
-  flex-shrink: 0;
-}
-
-/* ---- CARDS ---- */
-.card-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.card {
-  border: 3px solid var(--navy);
-  padding: 12px 14px;
-  width: 150px;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.1s, box-shadow 0.1s;
-  user-select: none;
-}
-
-.card:hover { transform: translate(-3px, -3px); }
-.card.selected { transform: translate(-3px, -3px) rotate(-2deg); }
-
-.card-action {
-  background: #C8D0DC;
-  color: var(--navy);
-  box-shadow: 5px 5px 0 var(--navy);
-}
-.card-action.selected { box-shadow: 7px 7px 0 var(--pink); border-color: var(--pink); }
-
-.card-program {
-  background: var(--teal);
-  color: var(--navy);
-  box-shadow: 5px 5px 0 var(--navy);
-}
-.card-program.selected { box-shadow: 7px 7px 0 var(--purple); border-color: var(--purple); }
-
-.card-crisis {
-  background: var(--red);
-  color: var(--white);
-  box-shadow: 5px 5px 0 var(--navy);
-}
-
-.card-fundraising {
-  background: var(--orange);
-  color: var(--white);
-  box-shadow: 5px 5px 0 var(--navy);
-}
-
-.card-wild {
-  background: var(--yellow);
-  color: var(--navy);
-  box-shadow: 5px 5px 0 var(--navy);
-}
-.card-wild.selected { box-shadow: 7px 7px 0 var(--pink); border-color: var(--pink); }
-
-.card-label {
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 500;
-  margin-bottom: 6px;
-  opacity: 0.7;
-}
-
-.card-name {
-  font-family: 'Special Elite', serif;
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.card-desc {
-  font-size: 9px;
-  margin-top: 6px;
-  line-height: 1.4;
-  opacity: 0.8;
-}
-
-.card-checkmark {
-  position: absolute;
-  top: 6px; right: 8px;
-  font-size: 16px;
-  display: none;
-}
-.card.selected .card-checkmark { display: block; }
+/* ---- NOTIF POPUP (left side) ---- */
+#notif-area{position:fixed;left:12px;top:74px;z-index:500;width:195px;display:flex;flex-direction:column;gap:5px;pointer-events:none;}
+.notif{border:3px solid var(--navy);padding:9px 11px;font-size:12px;line-height:1.4;box-shadow:4px 4px 0 var(--navy);animation:nIn .25s ease;pointer-events:none;}
+.n-budget{background:var(--yellow);color:var(--navy);}
+.n-fund{background:var(--orange);color:var(--white);}
+.n-maint{background:var(--red);color:var(--white);}
+.n-approve{background:var(--teal);color:var(--navy);}
+.n-deny{background:var(--gray);color:var(--white);}
+@keyframes nIn{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:none;}}
 
 /* ---- FOUNDATION PANELS ---- */
-.foundation-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
+.found-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+@media(max-width:500px){.found-grid{grid-template-columns:1fr;}}
+.found-panel{border:3px solid var(--navy);padding:11px;}
+.found-a{background:rgba(200,208,220,.1);box-shadow:5px 5px 0 var(--gray);}
+.found-b{background:rgba(0,194,199,.1);box-shadow:5px 5px 0 var(--teal);}
+.found-name{font-family:'Special Elite',serif;font-size:13px;margin-bottom:3px;}
+.found-rate{font-size:11px;color:var(--yellow);margin-bottom:4px;}
+.found-progs{font-size:10px;color:var(--teal);margin-bottom:5px;}
+.found-cost{font-size:10px;color:var(--orange);}
+.trust-box{background:rgba(244,220,38,.1);border:2px solid var(--yellow);padding:6px 9px;font-size:10px;margin-top:7px;}
+.t-pip{display:inline-block;width:11px;height:11px;border:2px solid var(--yellow);margin-right:3px;background:rgba(255,255,255,.1);vertical-align:middle;}
+.t-pip.on{background:var(--yellow);}
 
-@media (max-width: 600px) {
-  .foundation-grid { grid-template-columns: 1fr; }
-}
-
-.foundation-panel {
-  border: 4px solid var(--navy);
-  padding: 16px;
-  position: relative;
-}
-
-.foundation-a { background: rgba(200,208,220,0.12); box-shadow: 6px 6px 0 var(--gray); }
-.foundation-b { background: rgba(0,194,199,0.12); box-shadow: 6px 6px 0 var(--teal); }
-
-.foundation-name {
-  font-family: 'Special Elite', serif;
-  font-size: 16px;
-  margin-bottom: 4px;
-}
-
-.foundation-rate {
-  font-size: 11px;
-  color: var(--yellow);
-  margin-bottom: 8px;
-  letter-spacing: 1px;
-}
-
-.foundation-programs {
-  font-size: 11px;
-  color: var(--teal);
-  margin-bottom: 8px;
-}
-
-.trust-ladder {
-  background: rgba(244,220,38,0.1);
-  border: 2px solid var(--yellow);
-  padding: 8px 10px;
-  font-size: 11px;
-  margin-top: 8px;
-}
-
-.trust-pip {
-  display: inline-block;
-  width: 12px; height: 12px;
-  background: rgba(255,255,255,0.2);
-  border: 2px solid var(--yellow);
-  margin-right: 3px;
-  vertical-align: middle;
-}
-.trust-pip.filled { background: var(--yellow); }
-
-/* ---- SECTION LABELS ---- */
-.section-label {
-  font-family: 'Special Elite', serif;
-  font-size: 14px;
-  color: var(--yellow);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  border-bottom: 2px solid var(--yellow);
-  padding-bottom: 6px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ---- BUDGET PANEL ---- */
-.budget-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.budget-box {
-  border: 3px solid var(--navy);
-  padding: 14px;
-}
-
-.budget-box-free {
-  background: rgba(244,220,38,0.1);
-  box-shadow: 4px 4px 0 var(--yellow);
-}
-
-.budget-box-restricted {
-  background: rgba(107,47,217,0.15);
-  box-shadow: 4px 4px 0 var(--purple);
-}
-
-.budget-box-label {
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  color: var(--gray);
-}
-
-.budget-box-val {
-  font-family: 'Special Elite', serif;
-  font-size: 36px;
-  line-height: 1;
-}
-
-.budget-box-free .budget-box-val { color: var(--yellow); }
-.budget-box-restricted .budget-box-val { color: var(--purple); }
-
-.budget-box-note {
-  font-size: 10px;
-  margin-top: 4px;
-  color: var(--gray);
-  line-height: 1.4;
-}
-
-/* ---- ACTION BUTTONS ---- */
-.action-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+/* ---- CARDS ---- */
+.hand-wrap{display:flex;flex-wrap:wrap;gap:8px;min-height:55px;}
+.card{border:3px solid var(--navy);padding:9px 11px;width:126px;cursor:pointer;position:relative;transition:transform .1s,box-shadow .1s;user-select:none;flex-shrink:0;}
+.card:hover{transform:translate(-2px,-2px);}
+.card-action{background:#BDC8D8;color:var(--navy);box-shadow:5px 5px 0 var(--navy);}
+.card-program{background:var(--teal);color:var(--navy);box-shadow:5px 5px 0 var(--navy);}
+.card-crisis{background:var(--red);color:var(--white);box-shadow:5px 5px 0 var(--navy);}
+.card-fundraising{background:var(--orange);color:var(--white);box-shadow:5px 5px 0 var(--navy);}
+.card-wild{background:var(--yellow);color:var(--navy);box-shadow:5px 5px 0 var(--navy);}
+.card.sel{transform:translate(-2px,-2px) rotate(-2deg);box-shadow:6px 6px 0 var(--pink)!important;border-color:var(--pink)!important;}
+.c-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:3px;}
+.c-name{font-family:'Special Elite',serif;font-size:12px;line-height:1.2;}
+.c-desc{font-size:9px;margin-top:4px;line-height:1.4;opacity:.8;}
+.c-chk{position:absolute;top:5px;right:6px;font-size:13px;display:none;}
+.card.sel .c-chk{display:block;}
+.empty-hand{border:3px dashed var(--gray);padding:16px;text-align:center;color:var(--gray);font-size:11px;width:100%;}
 
 /* ---- PROGRAMS TAB ---- */
-.program-list { margin-bottom: 20px; }
-
-.program-item {
-  border: 3px solid var(--navy);
-  padding: 12px 16px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(0,194,199,0.1);
-}
-
-.program-item.dropped {
-  background: rgba(232,38,26,0.1);
-  opacity: 0.6;
-}
-
-.program-icon {
-  width: 36px; height: 36px;
-  background: var(--teal);
-  border: 3px solid var(--navy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.program-item.dropped .program-icon { background: var(--red); }
-
-.program-info { flex: 1; }
-.program-info-name { font-family: 'Special Elite', serif; font-size: 14px; }
-.program-info-meta { font-size: 10px; color: var(--gray); margin-top: 2px; }
-
-.program-badge {
-  font-size: 10px;
-  padding: 3px 8px;
-  border: 2px solid var(--navy);
-  letter-spacing: 1px;
-}
-
-.badge-unrestricted { background: var(--green); color: var(--navy); }
-.badge-restricted { background: var(--purple); color: var(--white); }
-
-/* ---- LOG TAB ---- */
-.log-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.log-entry {
-  font-size: 11px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.log-turn { color: var(--yellow); font-weight: 500; flex-shrink: 0; width: 50px; }
-.log-text { color: var(--white); }
-.log-text.good { color: var(--teal); }
-.log-text.bad { color: var(--red); }
-.log-text.neutral { color: var(--gray); }
+.prog-item{border:3px solid var(--navy);padding:10px 13px;margin-bottom:7px;display:flex;align-items:center;gap:9px;background:rgba(0,194,199,.1);}
+.prog-item.dropped{background:rgba(232,38,26,.1);opacity:.65;}
+.prog-icon{width:32px;height:32px;background:var(--teal);border:3px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.prog-item.dropped .prog-icon{background:var(--red);}
+.prog-info{flex:1;}
+.prog-name{font-family:'Special Elite',serif;font-size:12px;}
+.prog-meta{font-size:9px;color:var(--gray);margin-top:2px;}
+.prog-multi{font-size:9px;color:var(--teal);margin-top:2px;font-style:italic;}
+.prog-badge{font-size:9px;padding:3px 6px;border:2px solid var(--navy);letter-spacing:1px;}
+.badge-u{background:var(--green);color:var(--white);}
+.badge-r{background:var(--purple);color:var(--white);}
 
 /* ---- APPLY TAB ---- */
-.apply-instructions {
-  background: rgba(0,194,199,0.1);
-  border: 3px solid var(--teal);
-  padding: 14px;
-  font-size: 12px;
-  margin-bottom: 20px;
-  line-height: 1.7;
-}
+.apply-info{background:rgba(0,194,199,.1);border:3px solid var(--teal);padding:11px 13px;font-size:11px;margin-bottom:13px;line-height:1.7;}
+.cost-chips{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0;}
+.chip{font-size:10px;padding:3px 8px;border:2px solid var(--gray);color:var(--gray);letter-spacing:.5px;}
+.chip.met{border-color:var(--teal);color:var(--teal);background:rgba(0,194,199,.1);}
+.chip.unmet{border-color:var(--red);color:var(--red);background:rgba(232,38,26,.1);}
 
-.cost-display {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 12px 0;
-}
-
-.cost-chip {
-  background: rgba(255,255,255,0.1);
-  border: 2px solid var(--white);
-  padding: 4px 10px;
-  font-size: 11px;
-  letter-spacing: 1px;
-}
-
-.cost-chip.met { border-color: var(--teal); color: var(--teal); background: rgba(0,194,199,0.1); }
-.cost-chip.unmet { border-color: var(--red); color: var(--red); background: rgba(232,38,26,0.1); }
+/* ---- LOG ---- */
+.log-entry{font-size:11px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:7px;line-height:1.5;}
+.l-t{color:var(--yellow);font-weight:500;width:42px;flex-shrink:0;}
+.l-good{color:var(--teal);}
+.l-bad{color:var(--red);}
+.l-neutral{color:var(--gray);}
 
 /* ---- MODAL ---- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(13,27,62,0.9);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
+.modal-bg{position:fixed;inset:0;background:rgba(13,27,62,.88);z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;}
+.modal-bg.hide{display:none;}
+.modal{background:var(--white);color:var(--navy);border:5px solid var(--navy);box-shadow:9px 9px 0 var(--pink);padding:24px;max-width:450px;width:100%;text-align:center;}
+.modal.crisis{box-shadow:9px 9px 0 var(--red);}
+.modal.fund{box-shadow:9px 9px 0 var(--orange);}
+.modal.win{box-shadow:9px 9px 0 var(--teal);}
+.modal-ico{font-size:44px;margin-bottom:8px;display:block;}
+.modal h2{font-family:'Special Elite',serif;font-size:22px;margin-bottom:7px;}
+.modal p{font-size:12px;line-height:1.65;margin-bottom:16px;color:#333;}
+.modal-acts{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;}
+.wild-grid{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+.wild-opt{background:var(--teal);color:var(--navy);border:3px solid var(--navy);box-shadow:4px 4px 0 var(--navy);padding:7px 11px;cursor:pointer;font-family:'Special Elite',serif;font-size:12px;transition:all .1s;}
+.wild-opt:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--navy);}
 
-.modal-overlay.hidden { display: none; }
+/* ---- END/ELIM SCREENS ---- */
+#screen-end,#screen-eliminated{align-items:center;justify-content:center;padding:36px 20px;text-align:center;gap:14px;}
+.end-title{font-family:'Special Elite',serif;font-size:clamp(34px,8vw,70px);color:var(--yellow);text-shadow:5px 5px 0 var(--pink);}
+.elim-title{font-family:'Special Elite',serif;font-size:clamp(34px,8vw,70px);color:var(--red);text-shadow:5px 5px 0 var(--navy);}
+.score-card{background:var(--white);color:var(--navy);border:5px solid var(--navy);box-shadow:8px 8px 0 var(--teal);padding:22px;max-width:400px;width:100%;}
+.score-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:2px solid rgba(13,27,62,.1);font-size:13px;}
+.score-row:last-child{border:none;}
+.score-row.total{font-family:'Special Elite',serif;font-size:19px;border-top:3px solid var(--navy);padding-top:9px;margin-top:5px;}
+.s-val{font-weight:700;color:var(--purple);}
+.score-row.total .s-val{color:var(--pink);font-size:22px;}
+.debrief-box{background:rgba(0,194,199,.1);border:3px solid var(--teal);padding:13px;max-width:400px;width:100%;font-size:11px;line-height:1.8;text-align:left;}
+.elim-context{background:rgba(232,38,26,.1);border:3px solid var(--red);padding:14px;max-width:390px;width:100%;font-size:12px;line-height:1.7;color:var(--white);text-align:left;}
+.survive-msg{max-width:390px;font-size:13px;color:var(--teal);line-height:1.6;}
+.ciu-badge{display:inline-block;background:var(--purple);color:var(--white);border:2px solid var(--navy);padding:2px 6px;font-size:10px;letter-spacing:1px;vertical-align:middle;}
+.maint-due{background:rgba(232,38,26,.15);border:2px solid var(--red);padding:6px 10px;font-size:10px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;display:none;}
 
-.modal {
-  background: var(--white);
-  color: var(--navy);
-  border: 6px solid var(--navy);
-  box-shadow: 12px 12px 0 var(--pink);
-  padding: 32px;
-  max-width: 480px;
-  width: 100%;
-  text-align: center;
-  position: relative;
-}
-
-.modal.modal-crisis { box-shadow: 12px 12px 0 var(--red); border-color: var(--red); }
-.modal.modal-win { box-shadow: 12px 12px 0 var(--teal); }
-
-.modal-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  display: block;
-}
-
-.modal h2 {
-  font-family: 'Special Elite', serif;
-  font-size: 26px;
-  margin-bottom: 8px;
-  color: var(--navy);
-}
-
-.modal p {
-  font-size: 13px;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* ---- END SCREEN ---- */
-#screen-end {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.end-title {
-  font-family: 'Special Elite', serif;
-  font-size: clamp(36px, 8vw, 72px);
-  color: var(--yellow);
-  text-shadow: 5px 5px 0 var(--pink);
-  margin-bottom: 8px;
-}
-
-.score-card {
-  background: var(--white);
-  color: var(--navy);
-  border: 6px solid var(--navy);
-  box-shadow: 10px 10px 0 var(--teal);
-  padding: 32px;
-  max-width: 440px;
-  width: 100%;
-  margin: 24px 0;
-}
-
-.score-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 2px solid rgba(13,27,62,0.1);
-  font-size: 14px;
-}
-
-.score-row:last-child { border-bottom: none; }
-
-.score-row.total {
-  font-family: 'Special Elite', serif;
-  font-size: 22px;
-  border-top: 3px solid var(--navy);
-  margin-top: 8px;
-  padding-top: 12px;
-}
-
-.score-val { font-weight: 700; color: var(--purple); }
-.score-row.total .score-val { color: var(--pink); font-size: 26px; }
-
-.end-msg {
-  font-size: 13px;
-  color: var(--teal);
-  margin-bottom: 24px;
-  max-width: 400px;
-  line-height: 1.6;
-}
-
-/* ---- WILD CARD PICKER ---- */
-.wild-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.wild-option {
-  background: var(--teal);
-  color: var(--navy);
-  border: 3px solid var(--navy);
-  box-shadow: 4px 4px 0 var(--navy);
-  padding: 10px 14px;
-  cursor: pointer;
-  font-family: 'Special Elite', serif;
-  font-size: 13px;
-  transition: all 0.1s;
-}
-
-.wild-option:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--navy); }
-
-/* ---- NOTIFICATION TOAST ---- */
-.toast {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  z-index: 2000;
-  max-width: 300px;
-  transition: opacity 0.3s, transform 0.3s;
-  opacity: 0;
-  transform: translateX(20px);
-  pointer-events: none;
-}
-.toast.show { opacity: 1; transform: translateX(0); }
-
-.toast-inner {
-  border: 3px solid var(--navy);
-  padding: 12px 16px;
-  font-size: 12px;
-  line-height: 1.5;
-  box-shadow: 5px 5px 0 var(--navy);
-}
-
-.toast-good { background: var(--teal); color: var(--navy); }
-.toast-bad { background: var(--red); color: var(--white); }
-.toast-neutral { background: var(--yellow); color: var(--navy); }
-
-/* ---- CRISIS INCOMING INDICATOR ---- */
-.maintenance-warning {
-  background: rgba(232,38,26,0.15);
-  border: 2px solid var(--red);
-  padding: 8px 12px;
-  font-size: 11px;
-  color: var(--red);
-  margin-bottom: 12px;
-  letter-spacing: 1px;
-}
-
-/* ---- DRAW PILE ---- */
-.deck-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.deck-icon {
-  width: 44px; height: 60px;
-  background: var(--purple);
-  border: 3px solid var(--navy);
-  box-shadow: 4px 4px 0 var(--navy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  position: relative;
-}
-
-.deck-icon::before, .deck-icon::after {
-  content: '';
-  position: absolute;
-  width: 100%; height: 100%;
-  background: var(--purple);
-  border: 3px solid var(--navy);
-}
-.deck-icon::before { top: -6px; left: -6px; z-index: -1; }
-.deck-icon::after { top: -12px; left: -12px; z-index: -2; }
-
-.deck-info { font-size: 12px; color: var(--gray); }
-.deck-count { font-family: 'Special Elite', serif; font-size: 24px; color: var(--white); }
-
-/* ---- PHASE INDICATOR ---- */
-.phase-indicator {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.phase-step {
-  font-size: 10px;
-  padding: 4px 10px;
-  border: 2px solid var(--gray);
-  color: var(--gray);
-  letter-spacing: 1px;
-}
-
-.phase-step.done { border-color: var(--teal); color: var(--teal); background: rgba(0,194,199,0.1); }
-.phase-step.active { border-color: var(--yellow); color: var(--navy); background: var(--yellow); }
-
-/* ---- SCROLLBAR ---- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-::-webkit-scrollbar-thumb { background: var(--purple); }
-
-/* ---- ELIMINATED ---- */
-#screen-eliminated {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.elim-title {
-  font-family: 'Special Elite', serif;
-  font-size: clamp(36px, 8vw, 72px);
-  color: var(--red);
-  text-shadow: 5px 5px 0 var(--navy);
-  margin-bottom: 16px;
-}
-
-/* ---- HAND EMPTY MSG ---- */
-.empty-state {
-  border: 3px dashed var(--gray);
-  padding: 24px;
-  text-align: center;
-  color: var(--gray);
-  font-size: 12px;
-  margin: 16px 0;
-}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.04);}
+::-webkit-scrollbar-thumb{background:var(--purple);}
 </style>
 </head>
 <body>
-
-<!-- Memphis Background Canvas -->
 <canvas id="bg-canvas"></canvas>
 
-<!-- TITLE SCREEN -->
+<!-- TITLE -->
 <div id="screen-title" class="screen active">
-  <div class="title-badge">A Grantmaking Simulation</div>
-  <h1 class="game-title">Trust<br>the<br>Process</h1>
-  <div class="game-subtitle">Oak Foundation Case Study</div>
-  
-  <div class="title-card">
+  <div class="t-kicker">A Grantmaking Simulation</div>
+  <h1 class="t-title">Trust<br>the<br>Process</h1>
+  <div class="t-sub">Oak Foundation Case Study</div>
+  <div class="t-card">
     <h3>How to Play</h3>
-    <p>You are a nonprofit director navigating the grant economy. Each turn, gain 1 Budget and draw a card. Apply to foundations for funding. Survive 30 turns. Collect programs. Highest combined score wins.</p>
-    <p><strong>Win Condition:</strong> After 30 turns, your <span style="color:var(--pink)">Final CIU Score</span> = Budget + (Programs × 10). Compare with classmates during debrief.</p>
-    <p><strong>Trust-Based Philanthropy:</strong> Foundation B (Oak Foundation) rewards established relationships — each approval reduces application costs and raises your approval rate up to 80%.</p>
-    <div class="citation">
-      Approval rates based on GrantWatch (2025): foundations fund 15–30% of applicants. Established relationships improve success to 80%+ (Funding for Good, 2020).
-    </div>
+    <p>You lead a nonprofit. Each turn: <strong>gain 1 Budget</strong>, then <strong>draw a card</strong>. Apply to foundations to earn programs. Survive 30 turns.</p>
+    <p><strong>Win Condition:</strong> Your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> = Budget + (Programs × 10). <em>CIU = Collective Impact Units</em> — a composite score measuring your org's financial health and programmatic reach. Compare with classmates at debrief.</p>
+    <p><strong>Funding types matter:</strong> Foundation A gives 7 <em>Restricted Budget</em> (programs only). Foundation B (Oak) gives 7 <em>Unrestricted Budget</em> (spend freely). Unrestricted is rarer but far more flexible.</p>
+    <p><strong>Trust-Based Philanthropy:</strong> Each Oak approval raises your rate (max 80%) and lowers application costs — and opens multi-year funding after 2 approvals.</p>
+    <p><strong>Housing</strong> is accepted by both foundations — the only overlap card. Strategic to hold.</p>
+    <div class="t-cite">Approval rates based on GrantWatch (2025): foundations fund 15–30% of applicants. Established relationships improve success to 80%+ (Funding for Good, 2020).</div>
   </div>
-  
-  <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+  <button class="btn btn-pink" onclick="startGame()">Start Game</button>
 </div>
 
-<!-- GAME SCREEN -->
+<!-- GAME -->
 <div id="screen-game" class="screen">
-  <div class="game-header">
-    <div class="header-title">Trust the Process</div>
-    <div class="turn-badge" id="turn-badge">Turn 1 / 30</div>
-    <div class="budget-display">
-      <div class="budget-label">BUDGET</div>
-      <div class="budget-bar-wrap">
-        <div class="budget-bar" id="budget-bar" style="width:6%"></div>
-      </div>
-      <div class="budget-val" id="budget-val">3 / 50</div>
+  <div class="g-header">
+    <div class="g-title">Trust the Process</div>
+    <div class="turn-pill" id="turn-pill">Turn 1/30</div>
+    <div class="bbar-wrap">
+      <div class="bbar-lbl">BUDGET</div>
+      <div class="bbar-track"><div class="bbar-fill" id="bbar" style="width:6%"></div></div>
+      <div class="bbar-val" id="bbar-val">3/50</div>
+    </div>
+    <div class="snd-wrap">
+      <button class="snd-btn on" id="btn-music" onclick="toggleSnd('music')" title="Music">🎵</button>
+      <button class="snd-btn on" id="btn-sfx"   onclick="toggleSnd('sfx')"   title="SFX">🔊</button>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('dossier')">📋 Dossier</button>
-    <button class="tab-btn" onclick="switchTab('apply')">📨 Apply</button>
-    <button class="tab-btn" onclick="switchTab('programs')">🏛️ Programs</button>
-    <button class="tab-btn" onclick="switchTab('log')">📜 Log</button>
+    <button class="tab-btn active" onclick="showTab('dossier')">📋 Dossier</button>
+    <button class="tab-btn"        onclick="showTab('apply')">📨 Apply</button>
+    <button class="tab-btn"        onclick="showTab('programs')">🏛 Programs</button>
+    <button class="tab-btn"        onclick="showTab('log')">📜 Log</button>
   </div>
 
-  <!-- DOSSIER TAB -->
-  <div id="tab-dossier" class="tab-content active">
-    
-    <div class="status-bar" id="status-bar">
-      <div class="status-item">
-        <div class="status-dot" style="background:var(--yellow)" id="phase-gain-dot"></div>
-        <span id="phase-gain-label">Gain Budget</span>
+  <!-- LEFT-SIDE NOTIFICATIONS -->
+  <div id="notif-area"></div>
+
+  <div class="tab-panels">
+
+    <!-- DOSSIER -->
+    <div class="tab-panel active" id="panel-dossier">
+      <div class="maint-due" id="maint-due"></div>
+      <div class="act-row">
+        <button class="btn btn-yellow btn-sm" id="btn-gain" onclick="doGain()">+ Gain 1 Budget</button>
+        <button class="btn btn-teal   btn-sm" id="btn-draw" onclick="doDraw()" disabled>Draw Card →</button>
+        <span style="font-size:10px;color:var(--gray);" id="phase-hint">Gain Budget first.</span>
       </div>
-      <div class="status-item">
-        <div class="status-dot" style="background:var(--teal)" id="phase-draw-dot"></div>
-        <span id="phase-draw-label">Draw Card</span>
+
+      <div class="sec-lbl">💰 Treasury</div>
+      <div class="bboxes">
+        <div class="bbox bbox-free">
+          <div class="bbox-lbl">Free Budget</div>
+          <div class="bbox-val" id="free-disp">3</div>
+          <div class="bbox-note">Use for anything</div>
+        </div>
+        <div class="bbox bbox-restr">
+          <div class="bbox-lbl">Restricted Funding</div>
+          <div class="bbox-val" id="restr-disp">0</div>
+          <div class="bbox-note">Program maintenance only</div>
+        </div>
       </div>
-      <div class="status-item">
-        <div class="status-dot" style="background:var(--purple)" id="phase-apply-label-dot"></div>
-        <span>Apply (optional)</span>
+
+      <div class="sec-lbl">✋ Hand <span style="color:var(--gray);font-size:10px;" id="hand-count"></span></div>
+      <div class="hand-wrap" id="hand-dossier"></div>
+
+      <div class="sec-lbl" style="margin-top:12px;">🏦 Foundations</div>
+      <div class="found-grid">
+        <div class="found-panel found-a">
+          <div class="found-name">Foundation A</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:3px;">Traditional Philanthropy</div>
+          <div class="found-rate">Rate: 20% (flat)</div>
+          <div class="found-progs" id="fa-progs">Open: Health</div>
+          <div class="found-cost">Cost: 1 prog + 3 action + 3 Budget<br>Gives: <strong>7 Restricted Budget</strong></div>
+        </div>
+        <div class="found-panel found-b">
+          <div class="found-name">Foundation B — Oak</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:3px;">Trust-Based Philanthropy</div>
+          <div class="found-rate" id="fb-rate">Rate: 35%</div>
+          <div class="found-progs" id="fb-progs">Open: Environment &amp; Climate</div>
+          <div class="found-cost" id="fb-cost-txt">Cost: 1 prog + 3 action + 3 Budget<br>Gives: <strong>7 Unrestricted Budget</strong></div>
+          <div class="trust-box">
+            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:3px;">TRUST LADDER</div>
+            <div id="trust-pips"></div>
+            <div style="font-size:9px;margin-top:3px;" id="trust-lbl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-lbl" style="margin-top:10px;">🃏 Deck</div>
+      <div style="font-size:12px;color:var(--gray);">
+        <span style="font-family:'Special Elite',serif;font-size:20px;color:var(--white);" id="deck-count">45</span> cards remaining
       </div>
     </div>
 
-    <!-- Phase actions -->
-    <div class="action-row">
-      <button class="btn btn-yellow btn-sm" id="btn-gain" onclick="gainBudget()">+ Gain 1 Budget</button>
-      <button class="btn btn-teal btn-sm" id="btn-draw" onclick="drawCard()" disabled>Draw Card →</button>
-    </div>
-
-    <!-- Budget boxes -->
-    <div class="section-label">💰 Treasury</div>
-    <div class="budget-panel">
-      <div class="budget-box budget-box-free">
-        <div class="budget-box-label">Free Budget</div>
-        <div class="budget-box-val" id="free-budget-disp">3</div>
-        <div class="budget-box-note">Spend on anything: applications, costs</div>
+    <!-- APPLY -->
+    <div class="tab-panel" id="panel-apply">
+      <div class="apply-info">
+        Tap cards to select, then apply to a foundation.<br>
+        <strong>Housing</strong> is accepted by <em>both</em> — the only dual-use program card.<br>
+        Foundation A → 7 Restricted &nbsp;|&nbsp; Foundation B → 7 Unrestricted
       </div>
-      <div class="budget-box budget-box-restricted">
-        <div class="budget-box-label">Restricted Funding</div>
-        <div class="budget-box-val" id="restricted-budget-disp">0</div>
-        <div class="budget-box-note">Programs costs ONLY — cannot apply with this</div>
-      </div>
-    </div>
-
-    <!-- Deck -->
-    <div class="section-label">🃏 Draw Pile</div>
-    <div class="deck-indicator">
-      <div class="deck-icon">🂠</div>
-      <div>
-        <div class="deck-count" id="deck-count">45</div>
-        <div class="deck-info">cards remaining</div>
-      </div>
-    </div>
-
-    <!-- Hand -->
-    <div class="section-label">✋ Your Hand</div>
-    <div id="hand-display" class="card-grid">
-      <div class="empty-state">No cards yet — gain Budget then draw to begin your turn</div>
-    </div>
-
-    <!-- Foundations -->
-    <div class="section-label">🏦 Foundations</div>
-    <div class="foundation-grid">
-      <div class="foundation-panel foundation-a">
-        <div class="foundation-name">Foundation A</div>
-        <div style="font-size:11px;color:var(--gray);margin-bottom:6px;">Traditional Philanthropy</div>
-        <div class="foundation-rate" id="fa-rate">Approval Rate: 20%</div>
-        <div class="foundation-programs" id="fa-programs">Programs: Health</div>
-        <div style="font-size:10px;color:var(--gray);">Gives: Restricted Funding (+3 Budget restricted)</div>
-        <div style="font-size:10px;margin-top:6px;color:var(--orange);">Cost: 1 program + 3 action + 3 Budget</div>
-      </div>
-      <div class="foundation-panel foundation-b">
-        <div class="foundation-name">Foundation B</div>
-        <div style="font-size:11px;color:var(--gray);margin-bottom:6px;">Oak Foundation</div>
-        <div class="foundation-rate" id="fb-rate">Approval Rate: 35%</div>
-        <div class="foundation-programs" id="fb-programs">Programs: Environment & Climate</div>
-        <div style="font-size:10px;color:var(--gray);">Gives: Unrestricted Funding (+3 Budget free)</div>
-        <div class="trust-ladder" id="trust-ladder">
-          <div style="font-size:10px;color:var(--yellow);margin-bottom:4px;">TRUST LADDER</div>
-          <div id="trust-pips"></div>
-          <div style="font-size:10px;margin-top:4px;" id="trust-cost">Current cost: 1 prog + 3 action + 3 Budget</div>
+      <div class="sec-lbl">✋ Select Cards to Apply</div>
+      <div class="hand-wrap" id="hand-apply"></div>
+      <div class="found-grid" style="margin-top:13px;">
+        <div class="found-panel found-a" style="padding:11px;">
+          <div class="found-name" style="font-size:13px;">Foundation A</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: Health, Education, Housing</div>
+          <div class="cost-chips" id="fa-chips"></div>
+          <button class="btn btn-gray btn-sm" id="btn-app-a" onclick="applyTo('A')">Apply to A</button>
+        </div>
+        <div class="found-panel found-b" style="padding:11px;">
+          <div class="found-name" style="font-size:13px;">Foundation B (Oak)</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: Env &amp; Climate, Human Rights, Housing &amp; Homelessness, Housing</div>
+          <div class="cost-chips" id="fb-chips"></div>
+          <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')">Apply to B</button>
         </div>
       </div>
     </div>
 
-    <!-- Maintenance warning -->
-    <div id="maintenance-warn" class="maintenance-warning" style="display:none"></div>
-  </div>
-
-  <!-- APPLY TAB -->
-  <div id="tab-apply" class="tab-content">
-    <div class="apply-instructions">
-      Select cards from your hand below, then choose a foundation to apply to. You can apply at any point before drawing (or not at all — it's optional).<br><br>
-      <strong>Foundation A:</strong> 1 matching program card + 3 action cards + 3 free Budget<br>
-      <strong>Foundation B (Oak):</strong> Trust-based costs (see Dossier for current rates)
-    </div>
-
-    <div class="section-label">✋ Select Cards to Apply</div>
-    <div id="apply-hand" class="card-grid">
-      <div class="empty-state">No cards in hand yet</div>
-    </div>
-
-    <div class="section-label" style="margin-top:16px;">🎯 Application Targets</div>
-    
-    <div class="foundation-grid">
-      <div class="foundation-panel foundation-a" style="padding:14px;">
-        <div class="foundation-name" style="font-size:14px;">Foundation A</div>
-        <div id="fa-cost-chips" class="cost-display"></div>
-        <button class="btn btn-sm" style="background:var(--gray);color:var(--white);box-shadow:4px 4px 0 var(--navy);border:3px solid var(--navy);" id="btn-apply-a" onclick="applyToFoundation('A')">Apply to A</button>
+    <!-- PROGRAMS -->
+    <div class="tab-panel" id="panel-programs">
+      <div class="sec-lbl">🏛 Programs</div>
+      <div style="font-size:11px;color:var(--gray);margin-bottom:12px;">
+        Every 5 turns: each program costs 3 Budget (restricted first). Dropped if unpayable.<br>
+        Each active program = <strong>10 <span class="ciu-badge">CIU</span></strong> at game end.<br>
+        <span style="color:var(--teal);font-size:10px;font-style:italic;">CIU (Collective Impact Units) = financial health + programmatic reach combined.</span>
       </div>
-      <div class="foundation-panel foundation-b" style="padding:14px;">
-        <div class="foundation-name" style="font-size:14px;">Foundation B (Oak)</div>
-        <div id="fb-cost-chips" class="cost-display"></div>
-        <button class="btn btn-teal btn-sm" id="btn-apply-b" onclick="applyToFoundation('B')">Apply to B</button>
-      </div>
+      <div id="prog-list"></div>
+      <div style="font-size:12px;color:var(--yellow);margin-top:10px;" id="prog-ciu">Projected CIU: 0</div>
     </div>
-  </div>
 
-  <!-- PROGRAMS TAB -->
-  <div id="tab-programs" class="tab-content">
-    <div class="section-label">🏛️ Active Programs</div>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:14px;">Each program costs 3 Budget every 5 turns. Restricted funds used first. Programs dropped if unpayable. Each surviving program = 10 CIU at game end.</div>
-    <div id="program-list" class="program-list">
-      <div class="empty-state">No programs yet — apply to foundations to win grants</div>
+    <!-- LOG -->
+    <div class="tab-panel" id="panel-log">
+      <div class="sec-lbl">📜 Game Log</div>
+      <div id="log-entries"></div>
     </div>
-    <div style="font-size:12px;color:var(--yellow);margin-top:12px;" id="programs-ciu">Projected CIU from programs: 0</div>
-  </div>
 
-  <!-- LOG TAB -->
-  <div id="tab-log" class="tab-content">
-    <div class="section-label">📜 Game Log</div>
-    <div id="log-list" class="log-list"></div>
   </div>
 </div>
 
-<!-- ELIMINATED SCREEN -->
+<!-- ELIMINATED -->
 <div id="screen-eliminated" class="screen">
-  <span style="font-size:80px;margin-bottom:16px;">💀</span>
+  <span style="font-size:68px;">💀</span>
   <div class="elim-title">Eliminated</div>
-  <p style="max-width:400px;color:var(--gray);font-size:13px;line-height:1.7;margin-bottom:32px;">
-    Your organization ran out of budget and couldn't survive the crisis. This is the reality for many nonprofits navigating a restrictive grant economy.
-  </p>
-  <div style="background:var(--white);color:var(--navy);border:4px solid var(--navy);box-shadow:8px 8px 0 var(--red);padding:24px;max-width:360px;width:100%;margin-bottom:32px;" id="elim-stats"></div>
-  <button class="btn btn-primary" onclick="resetGame()">Try Again</button>
-</div>
-
-<!-- END SCREEN -->
-<div id="screen-end" class="screen">
-  <span style="font-size:64px;margin-bottom:8px;">🏆</span>
-  <div class="end-title">You Survived!</div>
-  <div class="end-msg" id="end-msg">Compare your score with classmates during debrief to see how different philanthropic strategies played out.</div>
-  
-  <div class="score-card" id="score-card"></div>
-  
-  <div style="background:rgba(0,194,199,0.1);border:3px solid var(--teal);padding:16px;max-width:440px;width:100%;font-size:12px;line-height:1.7;margin-bottom:24px;">
-    <strong style="color:var(--teal);">Debrief Questions:</strong><br>
-    • How did restricted vs unrestricted funding affect your strategy?<br>
-    • Did the trust ladder change how you approached Foundation B?<br>
-    • What does this reveal about real nonprofit funding dynamics?
+  <div class="elim-context">
+    <strong>Your organization ran out of budget and couldn't absorb the crisis.</strong><br><br>
+    This mirrors reality: thousands of nonprofits close each year because one unexpected expense — a crisis card — hits when reserves are at zero. Restricted funding from Foundation A couldn't help you here, because it can only be used for program maintenance, not operational emergencies.<br><br>
+    <strong>The lesson:</strong> Unrestricted funding from trust-based funders like Oak Foundation creates the buffer that keeps organizations alive. Restricted funding keeps programs running. You need both.
   </div>
-  
+  <div class="score-card" id="elim-stats"></div>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-    <button class="btn btn-primary" onclick="resetGame()">Play Again</button>
-    <button class="btn btn-teal" onclick="switchTab('log'); showScreen('game')">View Full Log</button>
+    <button class="btn btn-pink" onclick="resetGame()">Try Again</button>
   </div>
 </div>
 
-<!-- MODALS -->
-<div id="modal-overlay" class="modal-overlay hidden">
-  <div class="modal" id="modal-box">
-    <span class="modal-icon" id="modal-icon">🃏</span>
-    <h2 id="modal-title">Card Drawn</h2>
-    <p id="modal-body">Something happened.</p>
-    <div class="modal-actions" id="modal-actions">
-      <button class="btn btn-primary" onclick="closeModal()">OK</button>
-    </div>
+<!-- END -->
+<div id="screen-end" class="screen">
+  <span style="font-size:60px;">🏆</span>
+  <div class="end-title">You Survived!</div>
+  <div class="survive-msg" id="survive-msg"></div>
+  <div class="score-card" id="score-card"></div>
+  <div class="debrief-box">
+    <strong style="color:var(--teal);">Debrief Questions:</strong><br>
+    • How did restricted vs. unrestricted funding shape your strategy?<br>
+    • Did the Oak trust ladder change how you played?<br>
+    • What does the application cost vs. award gap reveal about real grant economics?<br>
+    • How would your play differ if you could only receive restricted funding?
+  </div>
+  <div style="display:flex;gap:11px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-pink"   onclick="resetGame()">Play Again</button>
+    <button class="btn btn-purple" onclick="viewLog()">Full Log</button>
   </div>
 </div>
 
-<!-- Wild Card Picker -->
-<div id="modal-wild" class="modal-overlay hidden">
-  <div class="modal">
-    <span class="modal-icon">🃏</span>
+<!-- GENERAL MODAL -->
+<div class="modal-bg hide" id="mod-bg">
+  <div class="modal" id="mod-box">
+    <span class="modal-ico" id="mod-ico">🃏</span>
+    <h2 id="mod-title"></h2>
+    <p id="mod-body"></p>
+    <div class="modal-acts" id="mod-acts"></div>
+  </div>
+</div>
+
+<!-- WILD PICKER -->
+<div class="modal-bg hide" id="mod-wild">
+  <div class="modal win">
+    <span class="modal-ico">🃏</span>
     <h2>Job Switch!</h2>
-    <p>Choose any program card to add to your hand. Strategic tip: Oak Foundation only accepts their 3 programs.</p>
-    <div class="wild-picker" id="wild-options"></div>
+    <p>Pick any program card for your hand. <strong>Housing</strong> works for both foundations — the most strategic pick.</p>
+    <div class="wild-grid" id="wild-opts"></div>
   </div>
-</div>
-
-<!-- Toast -->
-<div id="toast" class="toast">
-  <div class="toast-inner" id="toast-inner"></div>
 </div>
 
 <script>
-// ================================
-// MEMPHIS BACKGROUND ANIMATION
-// ================================
-(function() {
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  const shapes = [];
-  const colors = ['#F4DC26','#FF2D78','#00C2C7','#6B2FD9','#FF6B35'];
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function rnd(a,b) { return a + Math.random()*(b-a); }
-
-  // Init shapes
-  for(let i=0;i<25;i++) {
-    shapes.push({
-      type: ['circle','rect','triangle','ring','squiggle'][Math.floor(Math.random()*5)],
-      x: rnd(0, window.innerWidth),
-      y: rnd(0, window.innerHeight),
-      size: rnd(20, 80),
-      color: colors[Math.floor(Math.random()*colors.length)],
-      speed: rnd(0.2, 0.8),
-      dx: rnd(-0.5,0.5),
-      dy: rnd(-0.5,0.5),
-      rot: rnd(0, Math.PI*2),
-      rotSpeed: rnd(-0.01,0.01)
-    });
-  }
-
-  function drawShape(s) {
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.rotate(s.rot);
-    ctx.fillStyle = s.color;
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = 3;
-
-    if(s.type==='circle') {
-      ctx.beginPath(); ctx.arc(0,0,s.size/2,0,Math.PI*2); ctx.fill();
-    } else if(s.type==='rect') {
-      ctx.fillRect(-s.size/2,-s.size/3,s.size,s.size*0.6);
-    } else if(s.type==='triangle') {
-      ctx.beginPath();
-      ctx.moveTo(0,-s.size/2);
-      ctx.lineTo(s.size/2,s.size/2);
-      ctx.lineTo(-s.size/2,s.size/2);
-      ctx.closePath(); ctx.fill();
-    } else if(s.type==='ring') {
-      ctx.beginPath(); ctx.arc(0,0,s.size/2,0,Math.PI*2);
-      ctx.stroke();
-      ctx.beginPath(); ctx.arc(0,0,s.size/3,0,Math.PI*2);
-      ctx.stroke();
-    } else if(s.type==='squiggle') {
-      ctx.beginPath();
-      ctx.moveTo(-s.size/2,0);
-      for(let i=0;i<=4;i++) {
-        ctx.quadraticCurveTo(
-          -s.size/2+i*(s.size/4), (i%2===0?-s.size/4:s.size/4),
-          -s.size/2+(i+1)*(s.size/4), 0
-        );
-      }
-      ctx.stroke();
-    }
+// =====================================================
+//  MEMPHIS BACKGROUND
+// =====================================================
+(()=>{
+  const cv=document.getElementById('bg-canvas'),ctx=cv.getContext('2d');
+  const cols=['#F4DC26','#FF2D78','#00C2C7','#6B2FD9','#FF6B35'];
+  let shapes=[];
+  const r=(a,b)=>a+Math.random()*(b-a);
+  const resize=()=>{cv.width=innerWidth;cv.height=innerHeight;};
+  resize(); window.addEventListener('resize',resize);
+  for(let i=0;i<28;i++) shapes.push({t:['circle','rect','tri','ring','squig'][0|r(0,5)],x:r(0,innerWidth),y:r(0,innerHeight),s:r(16,70),col:cols[0|r(0,5)],dx:r(-.4,.4),dy:r(-.4,.4),rot:r(0,6.28),rs:r(-.012,.012)});
+  function ds(s){
+    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.rot);
+    ctx.fillStyle=s.col;ctx.strokeStyle=s.col;ctx.lineWidth=3;
+    if(s.t==='circle'){ctx.beginPath();ctx.arc(0,0,s.s/2,0,6.28);ctx.fill();}
+    else if(s.t==='rect'){ctx.fillRect(-s.s/2,-s.s/3,s.s,s.s*.55);}
+    else if(s.t==='tri'){ctx.beginPath();ctx.moveTo(0,-s.s/2);ctx.lineTo(s.s/2,s.s/2);ctx.lineTo(-s.s/2,s.s/2);ctx.closePath();ctx.fill();}
+    else if(s.t==='ring'){ctx.beginPath();ctx.arc(0,0,s.s/2,0,6.28);ctx.stroke();ctx.beginPath();ctx.arc(0,0,s.s/3,0,6.28);ctx.stroke();}
+    else{ctx.beginPath();ctx.moveTo(-s.s/2,0);for(let i=0;i<4;i++)ctx.quadraticCurveTo(-s.s/2+(i+.5)*(s.s/4),(i%2?s.s/4:-s.s/4),-s.s/2+(i+1)*(s.s/4),0);ctx.stroke();}
     ctx.restore();
   }
-
-  function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    shapes.forEach(s => {
-      s.x += s.dx; s.y += s.dy; s.rot += s.rotSpeed;
-      if(s.x < -100) s.x = canvas.width + 100;
-      if(s.x > canvas.width+100) s.x = -100;
-      if(s.y < -100) s.y = canvas.height + 100;
-      if(s.y > canvas.height+100) s.y = -100;
-      drawShape(s);
-    });
-    requestAnimationFrame(animate);
-  }
-  animate();
+  function loop(){ctx.clearRect(0,0,cv.width,cv.height);shapes.forEach(s=>{s.x+=s.dx;s.y+=s.dy;s.rot+=s.rs;if(s.x<-100)s.x=cv.width+100;if(s.x>cv.width+100)s.x=-100;if(s.y<-100)s.y=cv.height+100;if(s.y>cv.height+100)s.y=-100;ds(s);});requestAnimationFrame(loop);}
+  loop();
 })();
 
-// ================================
-// SOUND ENGINE
-// ================================
-let audioCtx = null;
-function getAudio() {
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  return audioCtx;
+// =====================================================
+//  AUDIO
+// =====================================================
+let _ac=null,musicOn=true,sfxOn=true,musicTimer=null,musicGainNode=null;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
+function tone(f,d,tp='sine',v=.26){
+  if(!sfxOn)return;
+  try{const c=ac(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type=tp;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}
 }
-
-function playTone(freq, duration, type='sine', vol=0.3) {
-  try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = type;
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-  } catch(e){}
-}
-
-const SFX = {
-  gain: ()=>{ playTone(523,0.15,'sine',0.3); setTimeout(()=>playTone(659,0.2,'sine',0.25),100); },
-  draw: ()=>{ playTone(800,0.05,'square',0.1); },
-  crisis: ()=>{ playTone(400,0.1); setTimeout(()=>playTone(350,0.1),120); setTimeout(()=>playTone(300,0.2),240); },
-  apply: ()=>{ [440,523,659].forEach((f,i)=>setTimeout(()=>playTone(f,0.15),i*80)); },
-  approve: ()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.25),i*100)); },
-  deny: ()=>{ playTone(200,0.4,'sawtooth',0.2); },
-  win: ()=>{ [523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2),i*80)); },
-  eliminated: ()=>{ [400,350,300,250,200].forEach((f,i)=>setTimeout(()=>playTone(f,0.25),i*150)); },
-  fundraising: ()=>{ playTone(1047,0.05,'square',0.15); setTimeout(()=>playTone(1319,0.1,'square',0.15),80); }
+const SFX={
+  gain:()=>{tone(523,.1);setTimeout(()=>tone(659,.16),80);},
+  draw:()=>{tone(800,.04,'square',.07);},
+  crisis:()=>{tone(370,.1);setTimeout(()=>tone(310,.1),110);setTimeout(()=>tone(250,.25),220);},
+  apply:()=>{[440,523,659].forEach((f,i)=>setTimeout(()=>tone(f,.11),i*65));},
+  approve:()=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2),i*85));},
+  deny:()=>{tone(175,.38,'sawtooth',.17);},
+  win:()=>{[523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>tone(f,.16),i*70));},
+  elim:()=>{[400,350,300,250,200].forEach((f,i)=>setTimeout(()=>tone(f,.2),i*130));},
+  fund:()=>{tone(1047,.04,'square',.1);setTimeout(()=>tone(1319,.08,'square',.1),65);},
+  maint:()=>{tone(295,.14,'sawtooth',.14);},
 };
-
-// ================================
-// GAME STATE
-// ================================
-const ALL_PROGRAMS = ['Health','Education','Housing','Environment & Climate','Human Rights','Housing & Homelessness'];
-const FA_PROGRAMS = ['Health','Education','Housing'];
-const FB_PROGRAMS = ['Environment & Climate','Human Rights','Housing & Homelessness'];
-
-function buildDeck() {
-  const deck = [];
-  // Action cards
-  for(let i=0;i<4;i++) deck.push({type:'action',name:'Submit Report',desc:'Required for grant applications'});
-  for(let i=0;i<4;i++) deck.push({type:'action',name:'Admin Costs',desc:'Required for grant applications'});
-  for(let i=0;i<4;i++) deck.push({type:'action',name:'Justify Costs',desc:'Required for grant applications'});
-  // Program cards
-  FA_PROGRAMS.forEach(p=>{ for(let i=0;i<3;i++) deck.push({type:'program',name:p,desc:'Foundation A program'}); });
-  FB_PROGRAMS.forEach(p=>{ for(let i=0;i<3;i++) deck.push({type:'program',name:p,desc:'Foundation B (Oak) program'}); });
-  // Crisis cards
-  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Overhead Cost',desc:'Auto-deduct 1 Budget'});
-  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Rent Due',desc:'Auto-deduct 1 Budget'});
-  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deduct 1 Budget'});
-  // Fundraising cards
-  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Donor Meal',desc:'Costs 1 Budget (cultivation expense)'});
-  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Donor Gift',desc:'Costs 1 Budget'});
-  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Event',desc:'Costs 3 Budget'});
-  // Wild
-  deck.push({type:'wild',name:'Job Switch',desc:'Pick ANY program card to add to hand'});
-  return deck;
-}
-
-function shuffle(arr) {
-  for(let i=arr.length-1;i>0;i--) {
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
+function startMusic(){
+  if(!musicOn||!_ac)return;
+  stopMusic();
+  const c=ac(),mg=c.createGain();mg.gain.value=.1;mg.connect(c.destination);musicGainNode=mg;
+  const bass=[130,130,164,146,130,146,164,174];let step=0;
+  function beat(){
+    if(!musicOn)return;
+    const n=bass[step%bass.length];
+    const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(mg);o.type='sawtooth';o.frequency.value=n;g.gain.setValueAtTime(.28,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.16);o.start();o.stop(c.currentTime+.16);
+    const buf=c.createBuffer(1,c.sampleRate*.05,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.35;
+    const src=c.createBufferSource(),hg=c.createGain();src.buffer=buf;hg.gain.setValueAtTime(.07,c.currentTime);hg.gain.exponentialRampToValueAtTime(.001,c.currentTime+.05);src.connect(hg);hg.connect(mg);src.start();
+    step++;
   }
-  return arr;
+  musicTimer=setInterval(beat,215);
+}
+function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null;}}
+function toggleSnd(w){
+  if(w==='music'){musicOn=!musicOn;document.getElementById('btn-music').classList.toggle('on',musicOn);if(musicOn){try{ac();startMusic();}catch(e){}}else stopMusic();}
+  else{sfxOn=!sfxOn;document.getElementById('btn-sfx').classList.toggle('on',sfxOn);}
 }
 
-let G = {};
+// =====================================================
+//  DATA
+// =====================================================
+const FA_P=['Health','Education','Housing'];
+const FB_P=['Environment & Climate','Human Rights','Housing & Homelessness','Housing'];
+const BOTH=['Housing'];
+const ALL_P=['Health','Education','Housing','Environment & Climate','Human Rights','Housing & Homelessness'];
+const CRISIS_ICO={'Overhead Cost':'💸','Rent Due':'🏢','Infrastructure Crisis':'🔧'};
 
-function initGame() {
-  G = {
-    turn: 1,
-    maxTurns: 30,
-    freeBudget: 3,
-    restrictedBudget: 0,
-    hand: [],
-    deck: shuffle(buildDeck()),
-    discardPile: [],
-    programs: [], // {name, source:'restricted'|'unrestricted', dropped:false}
-    log: [],
-    oakApprovals: 0,
-    phaseGained: false,
-    phaseDrawn: false,
-    selectedCards: [],
-    eliminated: false,
-    appliedThisTurn: false,
-  };
+function buildDeck(){
+  const d=[];
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Submit Report',desc:'Required for applications'});
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Admin Costs',desc:'Required for applications'});
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Justify Costs',desc:'Required for applications'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Health',desc:'Foundation A program'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Education',desc:'Foundation A program'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Housing',desc:'Accepted by BOTH foundations'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Environment & Climate',desc:'Foundation B (Oak) program'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Human Rights',desc:'Foundation B (Oak) program'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Housing & Homelessness',desc:'Foundation B (Oak) program'});
+  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Overhead Cost',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Rent Due',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Meal',desc:'Cultivation expense — costs 1 Budget',cost:1});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Gift',desc:'Costs 1 Budget',cost:1});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Event',desc:'Costs 3 Budget',cost:3});
+  d.push({type:'wild',name:'Job Switch',desc:'Pick any program card for your hand'});
+  return d;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+// =====================================================
+//  GAME STATE
+// =====================================================
+let G={};
+
+function initGame(){
+  G={turn:1,maxTurns:30,free:3,restricted:0,hand:[],deck:[],discard:[],programs:[],log:[],oakApprovals:0,gained:false,drawn:false,selected:[],multiyearPaid:false};
+  const full=shuffle(buildDeck());
+  const safe=full.filter(c=>c.type==='action'||c.type==='program'||c.type==='wild');
+  const rest=full.filter(c=>!safe.includes(c));
+  G.hand=safe.splice(0,5);
+  G.deck=shuffle([...safe,...rest]);
 }
 
-// ================================
-// FOUNDATION LOGIC
-// ================================
-function getOakApprovalRate() {
-  const base = 0.35;
-  const bonus = G.oakApprovals * 0.15;
-  return Math.min(0.80, base + bonus);
+function oakRate(){return Math.min(.80,.35+G.oakApprovals*.15);}
+function oakCost(){return{prog:1,action:Math.max(0,3-G.oakApprovals),budget:Math.max(0,3-G.oakApprovals)};}
+function faProgs(){const p=['Health'];if(G.turn>=7)p.push('Education');if(G.turn>=14)p.push('Housing');return p;}
+function fbProgs(){const p=['Environment & Climate'];if(G.turn>=7)p.push('Human Rights');if(G.turn>=14)p.push('Housing & Homelessness','Housing');return p;}
+
+// =====================================================
+//  NOTIFS
+// =====================================================
+function pushN(txt,cls,dur=2600){
+  const area=document.getElementById('notif-area');
+  const el=document.createElement('div');
+  el.className=`notif ${cls}`;el.textContent=txt;area.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .35s';setTimeout(()=>el.remove(),350);},dur);
 }
 
-function getOakCost() {
-  // Each prior Oak approval reduces prog, action, budget by 1 (min 1 prog, 0 action, 0 budget)
-  const reductions = G.oakApprovals;
-  return {
-    prog: 1, // always 1
-    action: Math.max(0, 3 - reductions),
-    budget: Math.max(0, 3 - reductions)
-  };
-}
-
-function getActiveFAPrograms() {
-  const progs = ['Health'];
-  if(G.turn >= 7) progs.push('Education');
-  if(G.turn >= 14) progs.push('Housing');
-  return progs;
-}
-
-function getActiveFBPrograms() {
-  const progs = ['Environment & Climate'];
-  if(G.turn >= 7) progs.push('Human Rights');
-  if(G.turn >= 14) progs.push('Housing & Homelessness');
-  return progs;
-}
-
-// ================================
-// TURN ACTIONS
-// ================================
-function gainBudget() {
-  if(G.phaseGained) { showToast('Already gained Budget this turn!','neutral'); return; }
-  G.freeBudget += 1;
-  G.phaseGained = true;
-  SFX.gain();
-  addLog(`Gained 1 Budget. Free: ${G.freeBudget}`,'good');
-  document.getElementById('btn-gain').disabled = true;
-  document.getElementById('btn-draw').disabled = false;
+// =====================================================
+//  TURN ACTIONS
+// =====================================================
+function doGain(){
+  if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
+  G.free++;G.gained=true;SFX.gain();
+  addLog(`+1 Budget (Free: ${G.free})`,'neutral');
+  pushN(`+1 Budget → Free: ${G.free}`,'n-budget');
+  document.getElementById('btn-gain').disabled=true;
+  document.getElementById('btn-draw').disabled=false;
+  document.getElementById('phase-hint').textContent='Now draw a card to end your turn.';
   updateUI();
-  showToast('+1 Budget gained','neutral');
 }
 
-function drawCard() {
-  if(!G.phaseGained) { showToast('Gain Budget first!','neutral'); return; }
-  if(G.phaseDrawn) { showToast('Already drew this turn!','neutral'); return; }
-  
-  // Reshuffle if needed
-  if(G.deck.length === 0) {
-    G.deck = shuffle([...G.discardPile]);
-    G.discardPile = [];
-    addLog('Deck reshuffled from discard pile.','neutral');
-  }
-  
-  if(G.deck.length === 0) {
-    addLog('No cards left — skipping draw.','neutral');
-    G.phaseDrawn = true;
-    endTurn();
-    return;
-  }
-
-  const card = G.deck.pop();
-  SFX.draw();
-  G.phaseDrawn = true;
-  document.getElementById('btn-draw').disabled = true;
-
-  // Auto-resolve crisis and fundraising
-  if(card.type === 'crisis') {
-    resolveCrisis(card);
-    return;
-  }
-  if(card.type === 'fundraising') {
-    resolveFundraising(card);
-    return;
-  }
-  if(card.type === 'wild') {
-    G.hand.push(card);
-    showWildPicker();
-    addLog(`Drew Wild Card: ${card.name}!`,'good');
-    updateUI();
-    endTurn();
-    return;
-  }
-
-  // Program or action — goes to hand
-  G.hand.push(card);
-  addLog(`Drew ${card.type}: ${card.name}`,'neutral');
-  updateUI();
-  endTurn();
+function doDraw(){
+  if(!G.gained){pushN('Gain Budget first!','n-budget',1400);return;}
+  if(G.drawn)return;
+  if(!G.deck.length){G.deck=shuffle([...G.discard]);G.discard=[];addLog('Deck reshuffled.','neutral');}
+  if(!G.deck.length){finishTurn();return;}
+  const card=G.deck.pop();
+  G.drawn=true;SFX.draw();
+  document.getElementById('btn-draw').disabled=true;
+  document.getElementById('phase-hint').textContent='';
+  if(card.type==='crisis'){resolveCrisis(card);return;}
+  if(card.type==='fundraising'){resolveFundraising(card);return;}
+  if(card.type==='wild'){G.hand.push(card);addLog(`Drew: ${card.name}!`,'good');updateUI();showWildPicker();finishTurn();return;}
+  G.hand.push(card);addLog(`Drew ${card.type}: ${card.name}`,'neutral');updateUI();finishTurn();
 }
 
-function resolveCrisis(card) {
+function resolveCrisis(card){
   SFX.crisis();
-  const cost = 1;
-  
-  // Check if can pay
-  const totalBudget = G.freeBudget + G.restrictedBudget;
-  if(totalBudget < cost) {
-    // Eliminated
-    addLog(`CRISIS: ${card.name} — Cannot pay! ELIMINATED.`,'bad');
-    G.eliminated = true;
-    SFX.eliminated();
-    setTimeout(()=>showEliminatedScreen(), 500);
-    return;
+  const ico=CRISIS_ICO[card.name]||'⚠️';
+  const total=G.free+G.restricted;
+  if(total<1){
+    addLog(`CRISIS ${card.name} — Cannot pay! ELIMINATED.`,'bad');
+    G.discard.push(card);
+    setTimeout(()=>showEliminated(),350);return;
   }
-
-  // Pay with restricted first
-  let remaining = cost;
-  if(G.restrictedBudget >= remaining) {
-    G.restrictedBudget -= remaining;
-    remaining = 0;
-  } else {
-    remaining -= G.restrictedBudget;
-    G.restrictedBudget = 0;
-    G.freeBudget -= remaining;
-  }
-
-  G.discardPile.push(card);
-  addLog(`CRISIS: ${card.name} — Paid 1 Budget. Free: ${G.freeBudget}, Restricted: ${G.restrictedBudget}`,'bad');
-  
-  showModal('💀', 'Crisis!', `<strong>${card.name}</strong><br><br>Your organization paid 1 Budget to manage this crisis. Crisis cards reflect the hidden costs nonprofits face constantly.`, 'modal-crisis', [
-    {label:'Continue', action:'closeModal()'}
-  ]);
-  
-  updateUI();
-  endTurn();
+  if(G.restricted>=1)G.restricted--;else G.free--;
+  G.discard.push(card);
+  addLog(`CRISIS ${ico} ${card.name} — paid 1 Budget. Free:${G.free} Restr:${G.restricted}`,'bad');
+  pushN(`${ico} Crisis: -1 Budget`,'n-maint');
+  showModal(ico,'Crisis!',
+    `<strong>${card.name}</strong><br><br>1 Budget deducted to absorb this organizational crisis.<br><br><em>Real nonprofits face constant unexpected costs — this is why cash reserves matter, and why restricted funding leaves organizations exposed.</em>`,
+    'crisis',[{lbl:'Absorb & Continue',fn:'closeModal()'}]);
+  updateUI();finishTurn();
 }
 
-function resolveFundraising(card) {
-  SFX.fundraising();
-  let cost = 1;
-  if(card.name === 'Event') cost = 3;
-  
-  const totalBudget = G.freeBudget + G.restrictedBudget;
-  if(totalBudget < cost) {
-    addLog(`FUNDRAISING: ${card.name} — Can't afford! Discarded.`,'bad');
-    G.discardPile.push(card);
-    showToast(`Can't afford ${card.name} (costs ${cost} Budget)`, 'bad');
-    updateUI();
-    endTurn();
-    return;
+function resolveFundraising(card){
+  SFX.fund();
+  const cost=card.cost||1;const total=G.free+G.restricted;const ico='💳';
+  if(total<cost){
+    addLog(`FUNDRAISING ${card.name} — Can't afford (${cost} Budget). Skipped.`,'bad');
+    G.discard.push(card);
+    showModal(ico,'Fundraising Event Missed',
+      `<strong>${card.name}</strong> requires ${cost} Budget to host.<br><br>You couldn't afford this cultivation expense — the opportunity was lost.<br><br><em>Donor cultivation costs money before it earns money. This is a core tension in nonprofit finance.</em>`,
+      'fund',[{lbl:'Noted',fn:'closeModal()'}]);
+    finishTurn();return;
   }
-
-  // Pay from free budget first, then restricted
-  let remaining = cost;
-  if(G.freeBudget >= remaining) {
-    G.freeBudget -= remaining;
-  } else {
-    remaining -= G.freeBudget;
-    G.freeBudget = 0;
-    G.restrictedBudget -= remaining;
-  }
-
-  G.discardPile.push(card);
-  addLog(`FUNDRAISING: ${card.name} — Spent ${cost} Budget on cultivation. Free: ${G.freeBudget}`,'neutral');
-  showToast(`${card.name}: spent ${cost} Budget (donor cultivation)`, 'neutral');
-  updateUI();
-  endTurn();
+  let rem=cost;if(G.free>=rem){G.free-=rem;}else{rem-=G.free;G.free=0;G.restricted-=rem;}
+  G.discard.push(card);
+  addLog(`FUNDRAISING ${card.name} — spent ${cost} Budget. Free:${G.free}`,'neutral');
+  pushN(`${ico} ${card.name}: -${cost} Budget`,'n-fund');
+  showModal(ico,'Fundraising Expense',
+    `<strong>${card.name}</strong><br><br>Spent <strong>${cost} Budget</strong> on donor cultivation.<br><br><em>Note: Restricted funding cannot cover fundraising expenses. Only unrestricted Budget paid this cost — another reason trust-based funders like Oak Foundation matter.</em>`,
+    'fund',[{lbl:'Worth It',fn:'closeModal()'}]);
+  updateUI();finishTurn();
 }
 
-function showWildPicker() {
-  const modal = document.getElementById('modal-wild');
-  const opts = document.getElementById('wild-options');
-  opts.innerHTML = '';
-  ALL_PROGRAMS.forEach(prog => {
-    const btn = document.createElement('button');
-    btn.className = 'wild-option';
-    btn.textContent = prog;
-    btn.onclick = ()=>{ pickWildProgram(prog); };
-    opts.appendChild(btn);
-  });
-  modal.classList.remove('hidden');
+function showWildPicker(){
+  const c=document.getElementById('wild-opts');c.innerHTML='';
+  ALL_P.forEach(p=>{const b=document.createElement('button');b.className='wild-opt';b.textContent=p+(BOTH.includes(p)?' ★':'');b.onclick=()=>pickWild(p);c.appendChild(b);});
+  document.getElementById('mod-wild').classList.remove('hide');
+}
+function pickWild(prog){
+  document.getElementById('mod-wild').classList.add('hide');
+  G.hand.push({type:'program',name:prog,desc:'Chosen via Job Switch'+(BOTH.includes(prog)?' — works for both foundations':'')});
+  addLog(`Job Switch: Added ${prog} to hand`,'good');updateUI();
 }
 
-function pickWildProgram(prog) {
-  document.getElementById('modal-wild').classList.add('hidden');
-  G.hand.push({type:'program',name:prog,desc:'Chosen via Job Switch'});
-  addLog(`Job Switch: Added ${prog} to hand`,'good');
+function finishTurn(){
+  if(G.turn%5===0)doMaintenance();
+  if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
+  G.turn++;G.gained=false;G.drawn=false;G.selected=[];
+  document.getElementById('btn-gain').disabled=false;
+  document.getElementById('btn-draw').disabled=true;
+  document.getElementById('phase-hint').textContent='Gain Budget first.';
   updateUI();
 }
 
-function endTurn() {
-  // Maintenance check every 5 turns
-  if(G.turn % 5 === 0) {
-    performMaintenance();
-  }
-  
-  if(G.turn >= G.maxTurns) {
-    setTimeout(()=>showEndScreen(), 300);
-    return;
-  }
-
-  G.turn++;
-  G.phaseGained = false;
-  G.phaseDrawn = false;
-  G.appliedThisTurn = false;
-  G.selectedCards = [];
-
-  document.getElementById('btn-gain').disabled = false;
-  document.getElementById('btn-draw').disabled = true;
-
-  updateUI();
-}
-
-function performMaintenance() {
-  const activeProgs = G.programs.filter(p=>!p.dropped);
-  if(activeProgs.length === 0) return;
-  
-  const cost = 3;
-  const total = activeProgs.length * cost;
-  addLog(`--- Maintenance due! ${activeProgs.length} program(s) × ${cost} Budget = ${total} total ---`,'neutral');
-  
-  activeProgs.forEach(prog => {
-    let paid = false;
-    // Pay restricted first
-    if(G.restrictedBudget >= cost) {
-      G.restrictedBudget -= cost;
-      paid = true;
-      addLog(`Maintained "${prog.name}" using Restricted Funding`,'neutral');
-    } else if(G.restrictedBudget + G.freeBudget >= cost) {
-      const fromRestricted = G.restrictedBudget;
-      G.restrictedBudget = 0;
-      G.freeBudget -= (cost - fromRestricted);
-      paid = true;
-      addLog(`Maintained "${prog.name}" using mixed funds`,'neutral');
-    }
-    
-    if(!paid) {
-      prog.dropped = true;
-      addLog(`DROPPED: "${prog.name}" — Could not pay maintenance!`,'bad');
-      showToast(`Program dropped: ${prog.name}`, 'bad');
-    }
+function doMaintenance(){
+  const active=G.programs.filter(p=>!p.dropped);if(!active.length)return;
+  addLog(`--- Maintenance: ${active.length} prog × 3 Budget ---`,'neutral');
+  active.forEach(prog=>{
+    const cost=3;
+    if(G.restricted>=cost){G.restricted-=cost;addLog(`Maintained "${prog.name}" from Restricted Funding.`,'neutral');pushN(`-3 Budget: ${prog.name} (restricted)`,'n-maint');SFX.maint();}
+    else if(G.restricted+G.free>=cost){const fr=G.restricted;G.restricted=0;G.free-=(cost-fr);addLog(`Maintained "${prog.name}" mixed funds.`,'neutral');pushN(`-3 Budget: ${prog.name}`,'n-maint');SFX.maint();}
+    else{prog.dropped=true;addLog(`DROPPED "${prog.name}" — can't pay maintenance.`,'bad');pushN(`Dropped: ${prog.name}!`,'n-maint',3200);}
   });
 }
 
-// ================================
-// APPLICATIONS
-// ================================
-function applyToFoundation(which) {
-  const sel = G.selectedCards;
-  if(sel.length === 0) { showToast('Select cards from your hand first!','neutral'); return; }
-  
-  const selCards = sel.map(i => G.hand[i]);
-  const progCards = selCards.filter(c=>c.type==='program');
-  const actionCards = selCards.filter(c=>c.type==='action');
-
-  if(which === 'A') {
-    applyFoundationA(selCards, progCards, actionCards);
-  } else {
-    applyFoundationB(selCards, progCards, actionCards);
+// =====================================================
+//  APPLICATIONS
+// =====================================================
+function applyTo(which){
+  const sel=G.selected.map(i=>G.hand[i]).filter(Boolean);
+  const progs=sel.filter(c=>c.type==='program');
+  const acts=sel.filter(c=>c.type==='action');
+  if(which==='A'){
+    const active=faProgs();
+    const mp=progs.find(c=>active.includes(c.name));
+    if(!mp){pushN('Need a Foundation A program card','n-deny',2000);return;}
+    if(acts.length<3){pushN('Need 3 action cards','n-deny',2000);return;}
+    if(G.free<3){pushN('Need 3 free Budget','n-deny',2000);return;}
+    submitApp('A',mp,acts.slice(0,3),3,0.20,'restricted',7);
+  }else{
+    const active=fbProgs();
+    const allFbAccepted=[...active,...BOTH];
+    const mp=progs.find(c=>allFbAccepted.includes(c.name));
+    if(!mp){pushN('Need an Oak Foundation program card','n-deny',2000);return;}
+    const oc=oakCost();
+    if(acts.length<oc.action){pushN(`Need ${oc.action} action card(s) for Oak`,'n-deny',2000);return;}
+    if(G.free<oc.budget){pushN(`Need ${oc.budget} free Budget for Oak`,'n-deny',2000);return;}
+    submitApp('B',mp,acts.slice(0,oc.action),oc.budget,oakRate(),'unrestricted',7);
   }
 }
 
-function applyFoundationA(selCards, progCards, actionCards) {
-  const activeProgs = getActiveFAPrograms();
-  const cost = { prog: 1, action: 3, budget: 3 };
-  
-  // Validate
-  const matchingProg = progCards.find(c => activeProgs.includes(c.name));
-  if(!matchingProg) {
-    showToast(`Foundation A only accepts: ${activeProgs.join(', ')}`, 'bad');
-    return;
-  }
-  if(actionCards.length < cost.action) {
-    showToast(`Need ${cost.action} action cards (have ${actionCards.length})`, 'bad');
-    return;
-  }
-  if(G.freeBudget < cost.budget) {
-    showToast(`Need ${cost.budget} free Budget (have ${G.freeBudget})`, 'bad');
-    return;
-  }
-
-  // Deduct
-  SFX.apply();
-  G.freeBudget -= cost.budget;
-  
-  // Remove used cards from hand
-  const usedIndices = new Set();
-  let progUsed = false, actionUsed = 0;
-  G.selectedCards.forEach(i => {
-    const c = G.hand[i];
-    if(c.type === 'program' && !progUsed && activeProgs.includes(c.name)) {
-      progUsed = true; usedIndices.add(i);
-    } else if(c.type === 'action' && actionUsed < cost.action) {
-      actionUsed++; usedIndices.add(i);
-    }
+function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
+  SFX.apply();G.free-=budgetCost;
+  const usedIdx=new Set();let pu=false,au=0;
+  G.selected.forEach(i=>{
+    const c=G.hand[i];if(!c)return;
+    if(!pu&&c===progCard){pu=true;usedIdx.add(i);}
+    else if(au<actionCards.length&&actionCards.includes(c)){au++;usedIdx.add(i);}
   });
-  
-  const toDiscard = [...usedIndices].map(i=>G.hand[i]);
-  G.hand = G.hand.filter((_,i)=>!usedIndices.has(i));
-  G.discardPile.push(...toDiscard);
-  G.selectedCards = [];
-
-  addLog(`Applied to Foundation A (${matchingProg.name}). Cost: 3 Budget + ${cost.action} actions`,'neutral');
-
-  // Roll
-  const roll = Math.random();
-  if(roll < 0.20) {
-    // Approved
+  G.discard.push(...[...usedIdx].map(i=>G.hand[i]));
+  G.hand=G.hand.filter((_,i)=>!usedIdx.has(i));
+  G.selected=[];updateUI();
+  addLog(`Applied to Foundation ${which} (${progCard.name}). Budget:${budgetCost} Actions:${actionCards.length} Rate:${Math.round(rate*100)}%`,'neutral');
+  const roll=Math.random();
+  if(roll<rate){
     SFX.approve();
-    const newProg = {name: matchingProg.name, source:'restricted', dropped:false};
-    G.programs.push(newProg);
-    G.restrictedBudget += 3;
-    addLog(`APPROVED by Foundation A! Gained ${matchingProg.name} program + 3 Restricted Budget`,'good');
-    showModal('🎉','Approved!',`<strong>Foundation A approved your application!</strong><br><br>Program added: ${matchingProg.name}<br>Restricted Funding: +3 Budget<br><br>Note: Restricted funds can only be used for program maintenance.`, '', [
-      {label:'Excellent!',action:'closeModal()'}
-    ]);
-  } else {
+    const isMultiyear=which==='B'&&G.oakApprovals>=2;
+    if(which==='B')G.oakApprovals++;
+    if(fundType==='unrestricted')G.free+=award;else G.restricted+=award;
+    G.programs.push({name:progCard.name,source:fundType,dropped:false,oakMultiyear:isMultiyear,fromB:which==='B'});
+    addLog(`APPROVED by Foundation ${which}! ${progCard.name} +${award} ${fundType} Budget.`+(isMultiyear?' [Multi-year]':''),'good');
+    pushN(`✓ Approved! +${award} Budget (${fundType})`,'n-approve',3200);
+    showModal('🎉',`Foundation ${which} Approved!`,
+      `<strong>${progCard.name}</strong> program added!<br><br>
+       +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} approval(s) → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>🌟 <strong>Multi-year funding unlocked!</strong> Survive to game end and receive an additional +7 Unrestricted Budget for this program.':''}`,
+      'win',[{lbl:'Great!',fn:'closeModal()'}]);
+  }else{
     SFX.deny();
-    addLog(`DENIED by Foundation A (20% rate).`,'bad');
-    showModal('❌','Denied',`Foundation A rejected your application. With only a 20% approval rate, this is the norm. Your cards and Budget were still spent. Consider building trust with Foundation B instead.`, 'modal-crisis', [
-      {label:'Try Again',action:'closeModal()'}
-    ]);
+    addLog(`DENIED by Foundation ${which} (${Math.round(rate*100)}% rate).`,'bad');
+    pushN(`✗ Denied by Foundation ${which}`,'n-deny',2200);
+    showModal('❌',`Foundation ${which} Denied`,
+      `Application rejected. Rate: <strong>${Math.round(rate*100)}%</strong><br><br>
+       ${which==='B'?'Each Oak approval raises your rate and lowers your costs. Trust-based philanthropy rewards persistence — your investment in the relationship isn\'t lost.':'Foundation A\'s flat 20% rate doesn\'t improve over time. Consider investing in Oak Foundation trust instead.'}`,
+      'crisis',[{lbl:'Keep Going',fn:'closeModal()'}]);
   }
   updateUI();
 }
 
-function applyFoundationB(selCards, progCards, actionCards) {
-  const activeProgs = getActiveFBPrograms();
-  const cost = getOakCost();
-  
-  const matchingProg = progCards.find(c => activeProgs.includes(c.name));
-  if(!matchingProg) {
-    showToast(`Foundation B only accepts: ${activeProgs.join(', ')}`, 'bad');
-    return;
-  }
-  if(actionCards.length < cost.action) {
-    showToast(`Need ${cost.action} action cards (have ${actionCards.length})`, 'bad');
-    return;
-  }
-  if(G.freeBudget < cost.budget) {
-    showToast(`Need ${cost.budget} free Budget (have ${G.freeBudget})`, 'bad');
-    return;
-  }
-
-  SFX.apply();
-  G.freeBudget -= cost.budget;
-  
-  const usedIndices = new Set();
-  let progUsed = false, actionUsed = 0;
-  G.selectedCards.forEach(i => {
-    const c = G.hand[i];
-    if(c.type === 'program' && !progUsed && activeProgs.includes(c.name)) {
-      progUsed = true; usedIndices.add(i);
-    } else if(c.type === 'action' && actionUsed < cost.action) {
-      actionUsed++; usedIndices.add(i);
-    }
-  });
-  
-  const toDiscard = [...usedIndices].map(i=>G.hand[i]);
-  G.hand = G.hand.filter((_,i)=>!usedIndices.has(i));
-  G.discardPile.push(...toDiscard);
-  G.selectedCards = [];
-
-  const rate = getOakApprovalRate();
-  addLog(`Applied to Foundation B (${matchingProg.name}). Cost: ${cost.budget} Budget + ${cost.action} actions. Rate: ${Math.round(rate*100)}%`,'neutral');
-
-  const roll = Math.random();
-  if(roll < rate) {
-    SFX.approve();
-    G.oakApprovals++;
-    const newProg = {name: matchingProg.name, source:'unrestricted', dropped:false};
-    G.programs.push(newProg);
-    G.freeBudget += 3;
-    const newRate = getOakApprovalRate();
-    addLog(`APPROVED by Foundation B! Oak approvals: ${G.oakApprovals}. New rate: ${Math.round(newRate*100)}%`,'good');
-    showModal('🏆','Oak Foundation Approved!',`<strong>Foundation B approved your application!</strong><br><br>Program added: ${matchingProg.name}<br>Unrestricted Funding: +3 Budget (spendable freely!)<br><br>Trust Level: ${G.oakApprovals} approval(s) → New rate: ${Math.round(newRate*100)}%<br>Next application costs: ${getOakCost().budget} Budget, ${getOakCost().action} actions`, '', [
-      {label:'Building Trust!',action:'closeModal()'}
-    ]);
-  } else {
-    SFX.deny();
-    addLog(`DENIED by Foundation B (${Math.round(rate*100)}% rate).`,'bad');
-    showModal('❌','Denied by Oak Foundation',`Foundation B denied your application. Current approval rate: ${Math.round(rate*100)}%<br><br>Keep applying — each approval builds your trust and reduces future costs. This is trust-based philanthropy in action.`, 'modal-crisis', [
-      {label:'Keep Building',action:'closeModal()'}
-    ]);
-  }
-  updateUI();
+// =====================================================
+//  CARD SELECTION
+// =====================================================
+function toggleSel(i){
+  const idx=G.selected.indexOf(i);
+  if(idx>=0)G.selected.splice(idx,1);else G.selected.push(i);
+  renderHand('apply');updateChips();
 }
 
-// ================================
-// CARD SELECTION
-// ================================
-function toggleCardSelect(index, context) {
-  const idx = G.selectedCards.indexOf(index);
-  if(idx >= 0) {
-    G.selectedCards.splice(idx, 1);
-  } else {
-    G.selectedCards.push(index);
-  }
-  renderHand(context);
-  updateCostChips();
+// =====================================================
+//  RENDER
+// =====================================================
+function updateUI(){
+  document.getElementById('turn-pill').textContent=`Turn ${G.turn}/30`;
+  const pct=Math.min(100,(G.free/50)*100);
+  const bar=document.getElementById('bbar');
+  bar.style.width=pct+'%';bar.className='bbar-fill'+(G.free<=5?' danger':G.free<=12?' warn':'');
+  document.getElementById('bbar-val').textContent=`${G.free}/50`;
+  document.getElementById('free-disp').textContent=G.free;
+  document.getElementById('restr-disp').textContent=G.restricted;
+  document.getElementById('deck-count').textContent=G.deck.length;
+  document.getElementById('hand-count').textContent=`(${G.hand.length} cards)`;
+  document.getElementById('fa-progs').textContent='Open: '+faProgs().join(', ');
+  document.getElementById('fb-progs').textContent='Open: '+fbProgs().join(', ');
+  document.getElementById('fb-rate').textContent=`Rate: ${Math.round(oakRate()*100)}%`;
+  const oc=oakCost();
+  document.getElementById('fb-cost-txt').innerHTML=`Cost: 1 prog + ${oc.action} action + ${oc.budget} Budget<br>Gives: <strong>7 Unrestricted Budget</strong>`;
+  renderTrust();renderHand('dossier');renderHand('apply');renderPrograms();renderLog();updateChips();
+  // maintenance warning
+  const active=G.programs.filter(p=>!p.dropped);
+  const nextM=Math.ceil(G.turn/5)*5;const away=nextM-G.turn;
+  const mw=document.getElementById('maint-due');
+  if(active.length>0&&away<=2&&away>0){mw.style.display='block';mw.textContent=`⚠ Maintenance in ${away} turn(s): ${active.length} × 3 = ${active.length*3} Budget needed`;}
+  else mw.style.display='none';
 }
 
-// ================================
-// UI RENDERING
-// ================================
-function updateUI() {
-  // Turn badge
-  document.getElementById('turn-badge').textContent = `Turn ${G.turn} / ${G.maxTurns}`;
-  
-  // Budget bar
-  const total = G.freeBudget + G.restrictedBudget;
-  const pct = Math.min(100, (G.freeBudget / 50) * 100);
-  const bar = document.getElementById('budget-bar');
-  bar.style.width = pct + '%';
-  bar.className = 'budget-bar';
-  if(G.freeBudget <= 5) bar.classList.add('danger');
-  else if(G.freeBudget <= 12) bar.classList.add('warning');
-  
-  document.getElementById('budget-val').textContent = `${G.freeBudget} / 50`;
-  document.getElementById('free-budget-disp').textContent = G.freeBudget;
-  document.getElementById('restricted-budget-disp').textContent = G.restrictedBudget;
-  
-  // Deck count
-  document.getElementById('deck-count').textContent = G.deck.length;
-  
-  // Foundation rates
-  document.getElementById('fa-rate').textContent = `Approval Rate: 20%`;
-  const oakRate = Math.round(getOakApprovalRate() * 100);
-  document.getElementById('fb-rate').textContent = `Approval Rate: ${oakRate}%`;
-  
-  // Foundation programs
-  document.getElementById('fa-programs').textContent = `Open Programs: ${getActiveFAPrograms().join(', ')}`;
-  document.getElementById('fb-programs').textContent = `Open Programs: ${getActiveFBPrograms().join(', ')}`;
-  
-  // Trust ladder
-  renderTrustLadder();
-  
-  // Hand
-  renderHand('dossier');
-  renderHand('apply');
-  
-  // Programs tab
-  renderPrograms();
-  
-  // Log
-  renderLog();
-  
-  // Cost chips
-  updateCostChips();
-  
-  // Maintenance warning
-  const nextMaint = Math.ceil(G.turn / 5) * 5;
-  const turnsUntil = nextMaint - G.turn;
-  const activeProgCount = G.programs.filter(p=>!p.dropped).length;
-  const maintWarn = document.getElementById('maintenance-warn');
-  if(activeProgCount > 0 && turnsUntil <= 2) {
-    maintWarn.style.display = 'block';
-    maintWarn.textContent = `⚠ Program maintenance due in ${turnsUntil} turn(s)! ${activeProgCount} program(s) × 3 Budget = ${activeProgCount*3} total needed`;
-  } else {
-    maintWarn.style.display = 'none';
-  }
-  
-  // Phase dots
-  updatePhaseDots();
+function renderTrust(){
+  document.getElementById('trust-pips').innerHTML=[...Array(5)].map((_,i)=>`<span class="t-pip${i<G.oakApprovals?' on':''}"></span>`).join('');
+  const oc=oakCost();
+  document.getElementById('trust-lbl').textContent=`Next: 1 prog + ${oc.action} action + ${oc.budget} Budget`;
 }
 
-function updatePhaseDots() {
-  const gainDot = document.getElementById('phase-gain-dot');
-  const drawDot = document.getElementById('phase-draw-dot');
-  
-  gainDot.style.background = G.phaseGained ? 'var(--teal)' : 'var(--yellow)';
-  drawDot.style.background = G.phaseDrawn ? 'var(--teal)' : (G.phaseGained ? 'var(--yellow)' : 'var(--gray)');
-}
-
-function renderTrustLadder() {
-  const pips = document.getElementById('trust-pips');
-  let html = '';
-  for(let i=0;i<5;i++) {
-    html += `<span class="trust-pip ${i < G.oakApprovals ? 'filled' : ''}"></span>`;
-  }
-  pips.innerHTML = html;
-  
-  const cost = getOakCost();
-  document.getElementById('trust-cost').textContent = 
-    `Cost: 1 prog + ${cost.action} action${cost.action!==1?'s':''} + ${cost.budget} Budget`;
-}
-
-function renderHand(context) {
-  const containerId = context === 'dossier' ? 'hand-display' : 'apply-hand';
-  const container = document.getElementById(containerId);
-  
-  if(G.hand.length === 0) {
-    container.innerHTML = '<div class="empty-state">Hand is empty — draw a card to continue</div>';
-    return;
-  }
-  
-  container.innerHTML = '';
-  G.hand.forEach((card, i) => {
-    const isSelected = G.selectedCards.includes(i);
-    const div = document.createElement('div');
-    div.className = `card card-${card.type}${isSelected?' selected':''}`;
-    div.innerHTML = `
-      <div class="card-label">${card.type}</div>
-      <div class="card-name">${card.name}</div>
-      <div class="card-desc">${card.desc}</div>
-      <div class="card-checkmark">✓</div>
-    `;
-    if(context === 'apply') {
-      div.onclick = ()=>toggleCardSelect(i, 'apply');
-    }
-    container.appendChild(div);
+function renderHand(ctx){
+  const el=document.getElementById(ctx==='dossier'?'hand-dossier':'hand-apply');
+  if(!G.hand.length){el.innerHTML='<div class="empty-hand">Hand empty — draw a card</div>';return;}
+  el.innerHTML='';
+  G.hand.forEach((c,i)=>{
+    const sel=G.selected.includes(i);
+    const div=document.createElement('div');
+    div.className=`card card-${c.type}${sel?' sel':''}`;
+    const bothNote=BOTH.includes(c.name)?'<div style="font-size:8px;margin-top:3px;color:var(--purple);font-weight:bold;">★ BOTH FOUNDATIONS</div>':'';
+    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${c.name}</div><div class="c-desc">${c.desc}</div>${bothNote}<div class="c-chk">✓</div>`;
+    if(ctx==='apply')div.onclick=()=>toggleSel(i);
+    el.appendChild(div);
   });
 }
 
-function renderPrograms() {
-  const container = document.getElementById('program-list');
-  const activeProgs = G.programs.filter(p=>!p.dropped);
-  const droppedProgs = G.programs.filter(p=>p.dropped);
-  
-  if(G.programs.length === 0) {
-    container.innerHTML = '<div class="empty-state">No programs yet — apply to foundations to win grants</div>';
-    document.getElementById('programs-ciu').textContent = 'Projected CIU from programs: 0';
-    return;
-  }
-  
-  container.innerHTML = '';
-  
-  [...activeProgs, ...droppedProgs].forEach(prog => {
-    const icons = {'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊','Housing & Homelessness':'🏘️'};
-    const div = document.createElement('div');
-    div.className = `program-item${prog.dropped?' dropped':''}`;
-    div.innerHTML = `
-      <div class="program-icon">${icons[prog.name]||'📋'}</div>
-      <div class="program-info">
-        <div class="program-info-name">${prog.name}</div>
-        <div class="program-info-meta">${prog.dropped ? 'DROPPED — could not pay maintenance' : 'Active — costs 3 Budget every 5 turns'}</div>
+function renderPrograms(){
+  const el=document.getElementById('prog-list');
+  if(!G.programs.length){el.innerHTML='<div class="empty-hand" style="width:100%;">No programs yet</div>';document.getElementById('prog-ciu').textContent='Projected CIU: 0';return;}
+  const icons={'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊','Housing & Homelessness':'🏘️'};
+  el.innerHTML='';
+  G.programs.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='prog-item'+(p.dropped?' dropped':'');
+    div.innerHTML=`
+      <div class="prog-icon">${icons[p.name]||'📋'}</div>
+      <div class="prog-info">
+        <div class="prog-name">${p.name}</div>
+        <div class="prog-meta">${p.dropped?'DROPPED — could not pay maintenance':'Active — costs 3 Budget every 5 turns'}</div>
+        ${p.oakMultiyear&&!p.dropped?'<div class="prog-multi">🌟 Multi-year Oak funding — bonus +7 unrestricted at game end</div>':''}
       </div>
-      <div class="program-badge badge-${prog.source}">${prog.source === 'unrestricted' ? 'Unrestricted' : 'Restricted'}</div>
+      <div class="prog-badge badge-${p.source==='unrestricted'?'u':'r'}">${p.source==='unrestricted'?'Unrestricted':'Restricted'}</div>
     `;
-    container.appendChild(div);
+    el.appendChild(div);
   });
-  
-  const ciu = activeProgs.length * 10;
-  document.getElementById('programs-ciu').textContent = `Projected CIU from programs: ${ciu} (${activeProgs.length} × 10)`;
+  const act=G.programs.filter(p=>!p.dropped).length;
+  document.getElementById('prog-ciu').textContent=`Projected CIU: ${act} programs × 10 = ${act*10}`;
 }
 
-function renderLog() {
-  const container = document.getElementById('log-list');
-  const entries = [...G.log].reverse();
-  container.innerHTML = entries.map(e=>`
-    <div class="log-entry">
-      <div class="log-turn">T${e.turn}</div>
-      <div class="log-text ${e.type}">${e.text}</div>
-    </div>
-  `).join('');
-}
-
-function updateCostChips() {
-  const sel = G.selectedCards.map(i=>G.hand[i]);
-  const progSel = sel.filter(c=>c&&c.type==='program');
-  const actionSel = sel.filter(c=>c&&c.type==='action');
-  
-  // Foundation A
-  const faActive = getActiveFAPrograms();
-  const aProgMet = progSel.some(c=>faActive.includes(c.name));
-  const aActionMet = actionSel.length >= 3;
-  const aBudgetMet = G.freeBudget >= 3;
-  
-  document.getElementById('fa-cost-chips').innerHTML = `
-    <div class="cost-chip ${aProgMet?'met':'unmet'}">1 Program ${aProgMet?'✓':'✗'}</div>
-    <div class="cost-chip ${aActionMet?'met':'unmet'}">3 Actions ${actionSel.length}/3 ${aActionMet?'✓':'✗'}</div>
-    <div class="cost-chip ${aBudgetMet?'met':'unmet'}">3 Budget (free: ${G.freeBudget}) ${aBudgetMet?'✓':'✗'}</div>
-  `;
-  
-  // Foundation B
-  const fbActive = getActiveFBPrograms();
-  const oakCost = getOakCost();
-  const bProgMet = progSel.some(c=>fbActive.includes(c.name));
-  const bActionMet = actionSel.length >= oakCost.action;
-  const bBudgetMet = G.freeBudget >= oakCost.budget;
-  
-  document.getElementById('fb-cost-chips').innerHTML = `
-    <div class="cost-chip ${bProgMet?'met':'unmet'}">1 Oak Program ${bProgMet?'✓':'✗'}</div>
-    ${oakCost.action>0?`<div class="cost-chip ${bActionMet?'met':'unmet'}">${oakCost.action} Action(s) ${actionSel.length}/${oakCost.action} ${bActionMet?'✓':'✗'}</div>`:'<div class="cost-chip met">No Actions Needed ✓</div>'}
-    ${oakCost.budget>0?`<div class="cost-chip ${bBudgetMet?'met':'unmet'}">${oakCost.budget} Budget (have: ${G.freeBudget}) ${bBudgetMet?'✓':'✗'}</div>`:'<div class="cost-chip met">No Budget Needed ✓</div>'}
-    <div class="cost-chip" style="border-color:var(--teal);color:var(--teal);">Rate: ${Math.round(getOakApprovalRate()*100)}%</div>
-  `;
-  
-  document.getElementById('btn-apply-a').disabled = !(aProgMet && aActionMet && aBudgetMet);
-  document.getElementById('btn-apply-b').disabled = !(bProgMet && bActionMet && bBudgetMet);
-}
-
-// ================================
-// MODAL & TOAST
-// ================================
-function showModal(icon, title, body, className, actions) {
-  document.getElementById('modal-icon').textContent = icon;
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = body;
-  
-  const box = document.getElementById('modal-box');
-  box.className = 'modal' + (className ? ' ' + className : '');
-  
-  const actDiv = document.getElementById('modal-actions');
-  actDiv.innerHTML = actions.map(a=>
-    `<button class="btn btn-primary" onclick="${a.action}">${a.label}</button>`
+function renderLog(){
+  document.getElementById('log-entries').innerHTML=[...G.log].reverse().map(e=>
+    `<div class="log-entry"><div class="l-t">T${e.turn}</div><div class="l-text l-${e.type}">${e.text}</div></div>`
   ).join('');
-  
-  document.getElementById('modal-overlay').classList.remove('hidden');
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.add('hidden');
+function updateChips(){
+  const sel=G.selected.map(i=>G.hand[i]).filter(Boolean);
+  const progs=sel.filter(c=>c.type==='program');const acts=sel.filter(c=>c.type==='action');
+  const faA=faProgs();
+  const aP=progs.some(c=>faA.includes(c.name));const aA=acts.length>=3;const aB=G.free>=3;
+  document.getElementById('fa-chips').innerHTML=
+    `<div class="chip ${aP?'met':'unmet'}">1 A-Program ${aP?'✓':'✗'}</div>
+     <div class="chip ${aA?'met':'unmet'}">3 Actions (${acts.length}) ${aA?'✓':'✗'}</div>
+     <div class="chip ${aB?'met':'unmet'}">3 Budget (have ${G.free}) ${aB?'✓':'✗'}</div>`;
+  document.getElementById('btn-app-a').disabled=!(aP&&aA&&aB);
+
+  const fbA=fbProgs();const allFbAcc=[...fbA,...BOTH];
+  const oc=oakCost();
+  const bP=progs.some(c=>allFbAcc.includes(c.name));const bA=acts.length>=oc.action;const bB=G.free>=oc.budget;
+  document.getElementById('fb-chips').innerHTML=
+    `<div class="chip ${bP?'met':'unmet'}">1 Oak Program ${bP?'✓':'✗'}</div>
+     ${oc.action>0?`<div class="chip ${bA?'met':'unmet'}">${oc.action} Action(s) (${acts.length}) ${bA?'✓':'✗'}</div>`:'<div class="chip met">No Actions Needed ✓</div>'}
+     ${oc.budget>0?`<div class="chip ${bB?'met':'unmet'}">${oc.budget} Budget (have ${G.free}) ${bB?'✓':'✗'}</div>`:'<div class="chip met">No Budget Needed ✓</div>'}
+     <div class="chip met">Rate: ${Math.round(oakRate()*100)}%</div>`;
+  document.getElementById('btn-app-b').disabled=!(bP&&bA&&bB);
 }
 
-let toastTimer = null;
-function showToast(msg, type='neutral') {
-  const toast = document.getElementById('toast');
-  const inner = document.getElementById('toast-inner');
-  inner.className = `toast-inner toast-${type}`;
-  inner.textContent = msg;
-  toast.classList.add('show');
-  if(toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>toast.classList.remove('show'), 2800);
+// =====================================================
+//  MODAL
+// =====================================================
+function showModal(ico,title,body,cls,actions){
+  document.getElementById('mod-ico').textContent=ico;
+  document.getElementById('mod-title').textContent=title;
+  document.getElementById('mod-body').innerHTML=body;
+  const box=document.getElementById('mod-box');
+  box.className='modal'+(cls?' '+cls:'');
+  document.getElementById('mod-acts').innerHTML=actions.map(a=>
+    `<button class="btn btn-pink" onclick="${a.fn}">${a.lbl}</button>`).join('');
+  document.getElementById('mod-bg').classList.remove('hide');
 }
+function closeModal(){document.getElementById('mod-bg').classList.add('hide');}
 
-function addLog(text, type='neutral') {
-  G.log.push({turn: G.turn, text, type});
-}
-
-// ================================
-// SCREENS
-// ================================
-function showScreen(id) {
+// =====================================================
+//  SCREENS
+// =====================================================
+function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
 }
-
-function switchTab(tab) {
+function showTab(name){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  
-  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-  
-  if(tab === 'apply') {
-    G.selectedCards = [];
-    renderHand('apply');
-    updateCostChips();
-  }
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="showTab('${name}')"]`).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='apply'){G.selected=[];renderHand('apply');updateChips();}
 }
+function viewLog(){showScreen('game');showTab('log');}
 
-function showEliminatedScreen() {
-  SFX.eliminated();
-  const activeProgs = G.programs.filter(p=>!p.dropped);
-  document.getElementById('elim-stats').innerHTML = `
-    <div style="font-family:Special Elite,serif;font-size:20px;margin-bottom:16px;color:var(--red);">Final Status</div>
-    <div style="font-size:13px;line-height:2;">
-      Survived: ${G.turn - 1} turns<br>
-      Programs at elimination: ${activeProgs.length}<br>
-      Free Budget: ${G.freeBudget}<br>
-      Oak Approvals: ${G.oakApprovals}
-    </div>
+function showEliminated(){
+  SFX.elim();stopMusic();
+  const active=G.programs.filter(p=>!p.dropped);
+  document.getElementById('elim-stats').innerHTML=`
+    <div style="font-family:'Special Elite',serif;font-size:17px;margin-bottom:12px;color:var(--red);">Organization's Final Status</div>
+    <div class="score-row"><span>Turns Survived</span><span class="s-val">${G.turn-1} / 30</span></div>
+    <div class="score-row"><span>Programs at Close</span><span class="s-val">${active.length}</span></div>
+    <div class="score-row"><span>Free Budget</span><span class="s-val">${G.free}</span></div>
+    <div class="score-row"><span>Restricted Budget</span><span class="s-val">${G.restricted}</span></div>
+    <div class="score-row"><span>Oak Trust Level</span><span class="s-val">${G.oakApprovals} approval(s)</span></div>
+    <div style="font-size:11px;color:var(--gray);margin-top:10px;font-style:italic;line-height:1.5;">${G.restricted>0?`You had ${G.restricted} Restricted Budget — but it couldn\'t be used for the crisis. This is the real-world consequence of funder restrictions.`:'Zero reserves meant one crisis was all it took.'}</div>
   `;
   showScreen('eliminated');
 }
 
-function showEndScreen() {
-  SFX.win();
-  const activeProgs = G.programs.filter(p=>!p.dropped);
-  const progCIU = activeProgs.length * 10;
-  const finalCIU = G.freeBudget + progCIU;
-  
-  const card = document.getElementById('score-card');
-  card.innerHTML = `
-    <div style="font-family:Special Elite,serif;font-size:18px;margin-bottom:16px;text-align:center;">Final Score Breakdown</div>
-    <div class="score-row"><span>Surviving Budget</span><span class="score-val">${G.freeBudget}</span></div>
-    <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restrictedBudget}</span></div>
-    <div class="score-row"><span>Active Programs × 10 CIU</span><span class="score-val">${activeProgs.length} × 10 = ${progCIU}</span></div>
-    ${activeProgs.map(p=>`<div class="score-row" style="font-size:12px;padding:4px 0;"><span style="color:var(--gray);">  • ${p.name}</span><span style="color:var(--purple);">+10</span></div>`).join('')}
-    <div class="score-row total"><span>FINAL CIU SCORE</span><span class="score-val">${finalCIU}</span></div>
+function showEndScreen(){
+  SFX.win();stopMusic();
+  const active=G.programs.filter(p=>!p.dropped);
+  let bonus=0;
+  if(!G.multiyearPaid){
+    G.multiyearPaid=true;
+    active.filter(p=>p.oakMultiyear&&p.fromB).forEach(p=>{G.free+=7;bonus+=7;addLog(`Multi-year Oak Funding: +7 Unrestricted for "${p.name}"!`,'good');});
+  }
+  const progCIU=active.length*10;const finalCIU=G.free+progCIU;
+  const ratings=[[80,'🏆 Outstanding. You mastered trust-based philanthropy.'],[50,'✨ Strong run. Relationships paid off.'],[30,'📊 Solid survival. Reflect on what constrained you.'],[0,'💪 You survived — and that alone is the lesson.']];
+  const msg=ratings.find(r=>finalCIU>=r[0]);
+  document.getElementById('survive-msg').textContent=(msg?msg[1]:'')+' Compare your score with classmates during debrief.';
+  const bonusRow=bonus>0?`<div class="score-row" style="color:var(--teal);"><span>🌟 Multi-Year Oak Bonus</span><span class="s-val" style="color:var(--teal);">+${bonus}</span></div>`:'';
+  document.getElementById('score-card').innerHTML=`
+    <div style="font-family:'Special Elite',serif;font-size:16px;margin-bottom:12px;text-align:center;">Final Score — <span class="ciu-badge">CIU</span> Breakdown</div>
+    <div style="font-size:10px;color:var(--gray);margin-bottom:9px;font-style:italic;">CIU = Collective Impact Units: financial health × programmatic reach</div>
+    <div class="score-row"><span>Surviving Free Budget</span><span class="s-val">${G.free}</span></div>
+    <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restricted}</span></div>
+    ${bonusRow}
+    <div class="score-row"><span>Programs × 10 CIU each</span><span class="s-val">${active.length} × 10 = ${progCIU}</span></div>
+    ${active.map(p=>`<div class="score-row" style="font-size:11px;padding:3px 0;"><span style="color:var(--gray);">  • ${p.name}${p.oakMultiyear?' 🌟':''}</span><span style="color:var(--purple);">+10</span></div>`).join('')}
+    <div class="score-row total"><span>FINAL CIU SCORE</span><span class="s-val">${finalCIU}</span></div>
   `;
-  
-  const ratingMsgs = [
-    [80, '🏆 Outstanding. You\'ve mastered trust-based philanthropy.'],
-    [50, '✨ Strong performance. The trust ladder paid off.'],
-    [30, '📊 Solid survival. Reflect on what restricted you.'],
-    [0, '💪 You survived. That alone is the lesson.']
-  ];
-  const msg = ratingMsgs.find(r=>finalCIU>=r[0]);
-  document.getElementById('end-msg').textContent = (msg?msg[1]:'') + ' Compare your score with classmates during debrief.';
-  
   showScreen('end');
 }
 
-function startGame() {
+function addLog(text,type){G.log.push({turn:G.turn,text,type});}
+
+// =====================================================
+//  START / RESET
+// =====================================================
+function startGame(){
   initGame();
-  showScreen('game');
-  addLog('Game started. Gain Budget, then draw a card each turn.','neutral');
+  showScreen('game');showTab('dossier');
+  document.getElementById('btn-gain').disabled=false;
+  document.getElementById('btn-draw').disabled=true;
+  document.getElementById('phase-hint').textContent='Gain Budget first.';
+  addLog('Game started! You have 5 cards. Gain Budget, then draw each turn.','neutral');
   updateUI();
+  try{ac();startMusic();}catch(e){}
 }
-
-function resetGame() {
-  showScreen('title');
-}
-
-// ================================
-// INIT
-// ================================
-updateUI();
+function resetGame(){stopMusic();_ac=null;showScreen('title');}
 </script>
 </body>
 </html>
