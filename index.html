@@ -207,10 +207,10 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
   <div class="t-card">
     <h3>How to Play</h3>
     <p>You lead a nonprofit. Each turn: <strong>gain 1 Budget</strong>, then <strong>draw a card</strong>. Apply to foundations to earn programs. Survive 30 turns.</p>
-    <p><strong>Win Condition:</strong> Your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> = Budget + (Programs × 10). <em>CIU = Collective Impact Units</em> — a composite score measuring your org's financial health and programmatic reach. Compare with classmates at debrief.</p>
-    <p><strong>Funding types matter:</strong> Foundation A gives 7 <em>Restricted Budget</em> (programs only). Foundation B (Oak) gives 7 <em>Unrestricted Budget</em> (spend freely). Unrestricted is rarer but far more flexible.</p>
-    <p><strong>Trust-Based Philanthropy:</strong> Each Oak approval raises your rate (max 80%) and lowers application costs — and opens multi-year funding after 2 approvals.</p>
-    <p><strong>Housing</strong> is accepted by both foundations — the only overlap card. Strategic to hold.</p>
+    <p><strong>Win Condition:</strong> Your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> = Budget + (Programs × 10). <em>CIU = Community Impact Units</em> — financial health + programmatic reach combined. Compare with classmates at debrief.</p>
+    <p><strong>Traditional Foundation</strong> accepts 🏥 Health, 📚 Education, 🏠 Housing → gives <em>7 Restricted Budget</em> (programs only).<br>
+    <strong>Oak Foundation</strong> accepts 🌿 Env &amp; Climate, ✊ Human Rights, 🏠 Housing → gives <em>7 Unrestricted Budget</em> + 🌟 multi-year bonus at game end. Trust builds with each approval.</p>
+    <p>🏠 <strong>Housing</strong> is the only program both foundations accept. You can apply to <em>both at once</em> — 1 Housing card, 3 actions, 3 Budget, two rolls.</p>
     <div class="t-cite">Approval rates based on GrantWatch (2025): foundations fund 15–30% of applicants. Established relationships improve success to 80%+ (Funding for Good, 2020).</div>
   </div>
   <button class="btn btn-pink" onclick="startGame()">Start Game</button>
@@ -273,18 +273,18 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
       <div class="sec-lbl" style="margin-top:12px;">🏦 Foundations</div>
       <div class="found-grid">
         <div class="found-panel found-a">
-          <div class="found-name">Foundation A</div>
-          <div style="font-size:10px;color:var(--gray);margin-bottom:3px;">Traditional Philanthropy</div>
+          <div class="found-name">Traditional Foundation</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:3px;">Restricted Funding</div>
           <div class="found-rate">Rate: 20% (flat)</div>
-          <div class="found-progs" id="fa-progs">Open: Health</div>
+          <div class="found-progs" id="fa-progs">🏥 Health, 📚 Education, 🏠 Housing</div>
           <div class="found-cost">Cost: 1 prog + 3 action + 3 Budget<br>Gives: <strong>7 Restricted Budget</strong></div>
         </div>
         <div class="found-panel found-b">
-          <div class="found-name">Foundation B — Oak</div>
+          <div class="found-name">Oak Foundation</div>
           <div style="font-size:10px;color:var(--gray);margin-bottom:3px;">Trust-Based Philanthropy</div>
           <div class="found-rate" id="fb-rate">Rate: 35%</div>
-          <div class="found-progs" id="fb-progs">Open: Environment &amp; Climate</div>
-          <div class="found-cost" id="fb-cost-txt">Cost: 1 prog + 3 action + 3 Budget<br>Gives: <strong>7 Unrestricted Budget</strong></div>
+          <div class="found-progs" id="fb-progs">🌿 Env &amp; Climate, ✊ Human Rights, 🏠 Housing</div>
+          <div class="found-cost" id="fb-cost-txt">Cost: 1 prog + 3 action + 3 Budget<br>Gives: <strong>7 Unrestricted + 🌟 multi-year</strong></div>
           <div class="trust-box">
             <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:3px;">TRUST LADDER</div>
             <div id="trust-pips"></div>
@@ -302,25 +302,46 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
     <!-- APPLY -->
     <div class="tab-panel" id="panel-apply">
       <div class="apply-info">
-        Tap cards to select, then apply to a foundation.<br>
-        <strong>Housing</strong> is accepted by <em>both</em> — the only dual-use program card.<br>
-        Foundation A → 7 Restricted &nbsp;|&nbsp; Foundation B → 7 Unrestricted
+        Select cards, then apply to a foundation — or use <strong>🏠 Apply Housing to Both</strong> with 1 Housing + 3 actions + 3 Budget for two simultaneous rolls at no extra cost.<br>
+        Traditional Foundation → 7 Restricted &nbsp;|&nbsp; Oak Foundation → 7 Unrestricted + 🌟 multi-year
       </div>
-      <div class="sec-lbl">✋ Select Cards to Apply</div>
+
+      <div style="background:rgba(232,38,26,.1);border:3px solid var(--red);padding:9px 12px;font-size:11px;margin-bottom:12px;display:none;" id="discard-notice">
+        ⚠ <strong>Hand limit reached (5 cards).</strong> Select cards below and click <strong>Discard Selected</strong> before your next turn.
+      </div>
+
+      <div class="sec-lbl">✋ Select Cards to Apply / Discard</div>
       <div class="hand-wrap" id="hand-apply"></div>
-      <div class="found-grid" style="margin-top:13px;">
+
+      <!-- Apply to Both (Housing only) -->
+      <div style="background:rgba(0,194,199,.08);border:3px solid var(--teal);padding:11px;margin-top:12px;margin-bottom:12px;">
+        <div style="font-family:'Special Elite',serif;font-size:13px;margin-bottom:5px;">🏠 Housing — Dual Application</div>
+        <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">1 Housing card + 3 action cards + 3 Budget → rolls against both foundations simultaneously. Same cost, two chances.</div>
+        <div class="cost-chips" id="both-chips"></div>
+        <button class="btn btn-teal btn-sm" id="btn-app-both" onclick="applyTo('BOTH')" style="margin-top:6px;">🏠 Apply Housing to Both</button>
+      </div>
+
+      <div class="found-grid">
         <div class="found-panel found-a" style="padding:11px;">
-          <div class="found-name" style="font-size:13px;">Foundation A</div>
-          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: Health, Education, Housing</div>
+          <div class="found-name" style="font-size:13px;">Traditional Foundation</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: 🏥 Health, 📚 Education, 🏠 Housing</div>
           <div class="cost-chips" id="fa-chips"></div>
-          <button class="btn btn-gray btn-sm" id="btn-app-a" onclick="applyTo('A')">Apply to A</button>
+          <button class="btn btn-gray btn-sm" id="btn-app-a" onclick="applyTo('A')">Apply to Traditional</button>
         </div>
         <div class="found-panel found-b" style="padding:11px;">
-          <div class="found-name" style="font-size:13px;">Foundation B (Oak)</div>
-          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: Env &amp; Climate, Human Rights, Housing &amp; Homelessness, Housing</div>
+          <div class="found-name" style="font-size:13px;">Oak Foundation</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:5px;">Accepts: 🌿 Env &amp; Climate, ✊ Human Rights, 🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
-          <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')">Apply to B</button>
+          <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')">Apply to Oak</button>
         </div>
+      </div>
+
+      <!-- Discard section -->
+      <div style="border-top:3px solid var(--red);margin-top:16px;padding-top:12px;">
+        <div style="font-family:'Special Elite',serif;font-size:12px;color:var(--red);letter-spacing:1px;margin-bottom:6px;">🗑 DISCARD SELECTED CARDS</div>
+        <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">Hand limit is 5 cards. Select any cards above and discard them. Apply first — discarded cards are gone.</div>
+        <button class="btn btn-sm" style="background:var(--red);color:var(--white);box-shadow:4px 4px 0 var(--navy);border:3px solid var(--navy);" id="btn-discard" onclick="doDiscard()">Discard Selected</button>
+        <span style="font-size:10px;color:var(--gray);margin-left:8px;" id="hand-limit-msg"></span>
       </div>
     </div>
 
@@ -330,7 +351,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
       <div style="font-size:11px;color:var(--gray);margin-bottom:12px;">
         Every 5 turns: each program costs 3 Budget (restricted first). Dropped if unpayable.<br>
         Each active program = <strong>10 <span class="ciu-badge">CIU</span></strong> at game end.<br>
-        <span style="color:var(--teal);font-size:10px;font-style:italic;">CIU (Collective Impact Units) = financial health + programmatic reach combined.</span>
+        <span style="color:var(--teal);font-size:10px;font-style:italic;">CIU (Community Impact Units) = financial health + programmatic reach combined.</span>
       </div>
       <div id="prog-list"></div>
       <div style="font-size:12px;color:var(--yellow);margin-top:10px;" id="prog-ciu">Projected CIU: 0</div>
@@ -351,7 +372,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
   <div class="elim-title">Eliminated</div>
   <div class="elim-context">
     <strong>Your organization ran out of budget and couldn't absorb the crisis.</strong><br><br>
-    This mirrors reality: thousands of nonprofits close each year because one unexpected expense — a crisis card — hits when reserves are at zero. Restricted funding from Foundation A couldn't help you here, because it can only be used for program maintenance, not operational emergencies.<br><br>
+    This mirrors reality: thousands of nonprofits close each year because one unexpected expense — a crisis card — hits when reserves are at zero. Restricted funding from the Traditional Foundation couldn't help you here, because it can only be used for program maintenance, not operational emergencies.<br><br>
     <strong>The lesson:</strong> Unrestricted funding from trust-based funders like Oak Foundation creates the buffer that keeps organizations alive. Restricted funding keeps programs running. You need both.
   </div>
   <div class="score-card" id="elim-stats"></div>
@@ -470,29 +491,34 @@ function toggleSnd(w){
 // =====================================================
 //  DATA
 // =====================================================
-const FA_P=['Health','Education','Housing'];
-const FB_P=['Environment & Climate','Human Rights','Housing & Homelessness','Housing'];
+// Traditional Foundation accepts: Health, Education, Housing
+// Oak Foundation accepts: Environment & Climate, Human Rights, Housing
+// Housing is the ONLY shared card — 3 copies in deck, same as all others
+const FA_ONLY=['Health','Education'];
+const FB_ONLY=['Environment & Climate','Human Rights'];
 const BOTH=['Housing'];
-const ALL_P=['Health','Education','Housing','Environment & Climate','Human Rights','Housing & Homelessness'];
+const FA_P=[...FA_ONLY,...BOTH];   // Health, Education, Housing
+const FB_P=[...FB_ONLY,...BOTH];   // Env & Climate, Human Rights, Housing
+const ALL_P=['Health','Education','Housing','Environment & Climate','Human Rights'];
 const CRISIS_ICO={'Overhead Cost':'💸','Rent Due':'🏢','Infrastructure Crisis':'🔧'};
+const PROG_EMOJI={'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊'};
 
 function buildDeck(){
   const d=[];
-  for(let i=0;i<4;i++)d.push({type:'action',name:'Submit Report',desc:'Required for applications'});
-  for(let i=0;i<4;i++)d.push({type:'action',name:'Admin Costs',desc:'Required for applications'});
-  for(let i=0;i<4;i++)d.push({type:'action',name:'Justify Costs',desc:'Required for applications'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Health',desc:'Foundation A program'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Education',desc:'Foundation A program'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Housing',desc:'Accepted by BOTH foundations'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Environment & Climate',desc:'Foundation B (Oak) program'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Human Rights',desc:'Foundation B (Oak) program'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Housing & Homelessness',desc:'Foundation B (Oak) program'});
-  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Overhead Cost',desc:'Auto-deduct 1 Budget'});
-  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Rent Due',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Submit Report',     desc:'Required for applications'});
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Admin Costs',        desc:'Required for applications'});
+  for(let i=0;i<4;i++)d.push({type:'action',name:'Justify Costs',      desc:'Required for applications'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Health',             desc:'🏥 Traditional Foundation only'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Education',          desc:'📚 Traditional Foundation only'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Housing',            desc:'🏠 Both foundations — apply to either or both!'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Environment & Climate', desc:'🌿 Oak Foundation only'});
+  for(let i=0;i<3;i++)d.push({type:'program',name:'Human Rights',          desc:'✊ Oak Foundation only'});
+  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Overhead Cost',      desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<2;i++)d.push({type:'crisis',name:'Rent Due',           desc:'Auto-deduct 1 Budget'});
   for(let i=0;i<2;i++)d.push({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deduct 1 Budget'});
-  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Meal',desc:'Cultivation expense — costs 1 Budget',cost:1});
-  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Gift',desc:'Costs 1 Budget',cost:1});
-  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Event',desc:'Costs 3 Budget',cost:3});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Meal',    desc:'Cultivation expense — costs 1 Budget',cost:1});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Donor Gift',    desc:'Costs 1 Budget',cost:1});
+  for(let i=0;i<3;i++)d.push({type:'fundraising',name:'Event',         desc:'Costs 3 Budget',cost:3});
   d.push({type:'wild',name:'Job Switch',desc:'Pick any program card for your hand'});
   return d;
 }
@@ -514,8 +540,9 @@ function initGame(){
 
 function oakRate(){return Math.min(.80,.35+G.oakApprovals*.15);}
 function oakCost(){return{prog:1,action:Math.max(0,3-G.oakApprovals),budget:Math.max(0,3-G.oakApprovals)};}
-function faProgs(){const p=['Health'];if(G.turn>=7)p.push('Education');if(G.turn>=14)p.push('Housing');return p;}
-function fbProgs(){const p=['Environment & Climate'];if(G.turn>=7)p.push('Human Rights');if(G.turn>=14)p.push('Housing & Homelessness','Housing');return p;}
+// All programs open from turn 1
+function faProgs(){return['Health','Education','Housing'];}
+function fbProgs(){return['Environment & Climate','Human Rights','Housing'];}
 
 // =====================================================
 //  NOTIFS
@@ -611,9 +638,54 @@ function finishTurn(){
   if(G.turn%5===0)doMaintenance();
   if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
   G.turn++;G.gained=false;G.drawn=false;G.selected=[];
+  // Check hand limit — if over 5, force discard before continuing
+  if(G.hand.length>5){
+    showDiscardModal();
+    return;
+  }
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first.';
+  updateUI();
+}
+
+function showDiscardModal(){
+  // Show the discard tab with instructions
+  showTab('apply');
+  G.discarding=true;
+  updateUI();
+  showModal('🗂️','Hand Limit: Discard Required',
+    `You have <strong>${G.hand.length} cards</strong> — the hand limit is 5.<br><br>
+     Go to the <strong>Apply tab</strong>, select cards you want to discard, then click <strong>Discard Selected</strong>.<br><br>
+     <em>Tip: Apply to foundations before discarding so you don't lose useful cards!</em>`,
+    '',[{lbl:'Go to Apply Tab',fn:'closeModalAndDiscard()'}]);
+}
+
+function closeModalAndDiscard(){
+  closeModal();
+  showTab('apply');
+  G.discarding=true;
+  G.selected=[];
+  renderHand('apply');
+  updateChips();
+}
+
+function doDiscard(){
+  if(!G.selected.length){pushN('Select cards to discard first','n-deny',2000);return;}
+  const toDiscard=G.selected.map(i=>G.hand[i]).filter(Boolean);
+  G.discard.push(...toDiscard);
+  G.hand=G.hand.filter((_,i)=>!G.selected.includes(i));
+  G.selected=[];
+  addLog(`Discarded ${toDiscard.length} card(s): ${toDiscard.map(c=>c.name).join(', ')}`,'neutral');
+  G.discarding=false;
+  if(G.hand.length>5){
+    pushN(`Still ${G.hand.length} cards — discard ${G.hand.length-5} more`,'n-maint',2500);
+    renderHand('apply');updateChips();return;
+  }
+  document.getElementById('btn-gain').disabled=false;
+  document.getElementById('btn-draw').disabled=true;
+  document.getElementById('phase-hint').textContent='Gain Budget first.';
+  showTab('dossier');
   updateUI();
 }
 
@@ -635,23 +707,80 @@ function applyTo(which){
   const sel=G.selected.map(i=>G.hand[i]).filter(Boolean);
   const progs=sel.filter(c=>c.type==='program');
   const acts=sel.filter(c=>c.type==='action');
+
+  if(which==='BOTH'){
+    // Apply Housing to both foundations in one action
+    // Costs: 1 Housing card + 3 action cards + 3 Budget (same cost, two rolls)
+    const mp=progs.find(c=>c.name==='Housing');
+    if(!mp){pushN('Need a 🏠 Housing card to apply to both','n-deny',2200);return;}
+    if(acts.length<3){pushN('Need 3 action cards','n-deny',2000);return;}
+    if(G.free<3){pushN('Need 3 free Budget','n-deny',2000);return;}
+    submitAppBoth(mp,acts.slice(0,3));
+    return;
+  }
+
   if(which==='A'){
-    const active=faProgs();
-    const mp=progs.find(c=>active.includes(c.name));
-    if(!mp){pushN('Need a Foundation A program card','n-deny',2000);return;}
+    const mp=progs.find(c=>faProgs().includes(c.name));
+    if(!mp){pushN('Need a Traditional Foundation program card','n-deny',2000);return;}
     if(acts.length<3){pushN('Need 3 action cards','n-deny',2000);return;}
     if(G.free<3){pushN('Need 3 free Budget','n-deny',2000);return;}
     submitApp('A',mp,acts.slice(0,3),3,0.20,'restricted',7);
   }else{
-    const active=fbProgs();
-    const allFbAccepted=[...active,...BOTH];
-    const mp=progs.find(c=>allFbAccepted.includes(c.name));
+    const mp=progs.find(c=>fbProgs().includes(c.name));
     if(!mp){pushN('Need an Oak Foundation program card','n-deny',2000);return;}
     const oc=oakCost();
     if(acts.length<oc.action){pushN(`Need ${oc.action} action card(s) for Oak`,'n-deny',2000);return;}
     if(G.free<oc.budget){pushN(`Need ${oc.budget} free Budget for Oak`,'n-deny',2000);return;}
     submitApp('B',mp,acts.slice(0,oc.action),oc.budget,oakRate(),'unrestricted',7);
   }
+}
+
+function submitAppBoth(progCard,actionCards){
+  // One Housing card, one set of 3 actions, 3 budget — rolls separately for each foundation
+  SFX.apply();
+  G.free-=3;
+  // Remove cards from hand
+  const usedIdx=new Set();let pu=false,au=0;
+  G.selected.forEach(i=>{
+    const c=G.hand[i];if(!c)return;
+    if(!pu&&c===progCard){pu=true;usedIdx.add(i);}
+    else if(au<actionCards.length&&actionCards.includes(c)){au++;usedIdx.add(i);}
+  });
+  G.discard.push(...[...usedIdx].map(i=>G.hand[i]));
+  G.hand=G.hand.filter((_,i)=>!usedIdx.has(i));
+  G.selected=[];updateUI();
+  addLog(`Applied 🏠 Housing to BOTH foundations. Cost: 3 Budget + 3 actions. Two separate rolls.`,'neutral');
+
+  const rollA=Math.random();const rollB=Math.random();
+  const rateB=oakRate();
+  const approvedA=rollA<0.20;const approvedB=rollB<rateB;
+
+  let resultHTML='<strong>🏠 Housing applied to both foundations</strong><br><br>';
+  if(approvedA){
+    G.restricted+=7;
+    G.programs.push({name:'Housing',source:'restricted',dropped:false,oakMultiyear:false,fromB:false});
+    resultHTML+=`<span style="color:var(--green);">✓ Traditional Foundation: APPROVED<br>+7 Restricted Budget</span><br>`;
+    addLog(`Traditional Foundation APPROVED Housing! +7 Restricted Budget.`,'good');
+  } else {
+    resultHTML+=`<span style="color:var(--red);">✗ Traditional Foundation: Denied (20% rate)</span><br>`;
+    addLog(`Traditional Foundation DENIED Housing.`,'bad');
+  }
+  resultHTML+='<br>';
+  if(approvedB){
+    G.oakApprovals++;
+    G.free+=7;
+    G.programs.push({name:'Housing',source:'unrestricted',dropped:false,oakMultiyear:true,fromB:true});
+    resultHTML+=`<span style="color:var(--teal);">✓ Oak Foundation: APPROVED<br>+7 Unrestricted Budget<br>🌟 Multi-year bonus at game end<br>New Oak rate: ${Math.round(oakRate()*100)}%</span>`;
+    addLog(`Oak Foundation APPROVED Housing! +7 Unrestricted Budget. Trust: ${G.oakApprovals}.`,'good');
+  } else {
+    resultHTML+=`<span style="color:var(--red);">✗ Oak Foundation: Denied (${Math.round(rateB*100)}% rate)</span>`;
+    addLog(`Oak Foundation DENIED Housing.`,'bad');
+  }
+
+  if(approvedA||approvedB) SFX.approve(); else SFX.deny();
+  const cls=approvedA||approvedB?'win':'crisis';
+  showModal('🏠','Dual Application Results',resultHTML,cls,[{lbl:'Continue',fn:'closeModal()'}]);
+  updateUI();
 }
 
 function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
@@ -665,27 +794,27 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
   G.discard.push(...[...usedIdx].map(i=>G.hand[i]));
   G.hand=G.hand.filter((_,i)=>!usedIdx.has(i));
   G.selected=[];updateUI();
-  addLog(`Applied to Foundation ${which} (${progCard.name}). Budget:${budgetCost} Actions:${actionCards.length} Rate:${Math.round(rate*100)}%`,'neutral');
+  addLog(`Applied to ${which==='A'?'Traditional':'Oak'} Foundation (${progCard.name}). Budget:${budgetCost} Actions:${actionCards.length} Rate:${Math.round(rate*100)}%`,'neutral');
   const roll=Math.random();
   if(roll<rate){
     SFX.approve();
-    const isMultiyear=which==='B'&&G.oakApprovals>=2;
+    const isMultiyear=which==='B';
     if(which==='B')G.oakApprovals++;
     if(fundType==='unrestricted')G.free+=award;else G.restricted+=award;
     G.programs.push({name:progCard.name,source:fundType,dropped:false,oakMultiyear:isMultiyear,fromB:which==='B'});
-    addLog(`APPROVED by Foundation ${which}! ${progCard.name} +${award} ${fundType} Budget.`+(isMultiyear?' [Multi-year]':''),'good');
+    addLog(`APPROVED by ${which==='A'?'Traditional':'Oak'} Foundation! ${progCard.name} +${award} ${fundType} Budget.`+(isMultiyear?' [Multi-year]':''),'good');
     pushN(`✓ Approved! +${award} Budget (${fundType})`,'n-approve',3200);
-    showModal('🎉',`Foundation ${which} Approved!`,
-      `<strong>${progCard.name}</strong> program added!<br><br>
-       +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} approval(s) → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>🌟 <strong>Multi-year funding unlocked!</strong> Survive to game end and receive an additional +7 Unrestricted Budget for this program.':''}`,
+    showModal('🎉',`${which==='A'?'Traditional':'Oak'} Foundation Approved!`,
+      `${PROG_EMOJI[progCard.name]||'📋'} <strong>${progCard.name}</strong> program added!<br><br>
+       +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} approval(s) → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>🌟 <strong>Multi-year funding!</strong> This program earns +7 Unrestricted at game end if it survives.':''}`,
       'win',[{lbl:'Great!',fn:'closeModal()'}]);
   }else{
     SFX.deny();
-    addLog(`DENIED by Foundation ${which} (${Math.round(rate*100)}% rate).`,'bad');
-    pushN(`✗ Denied by Foundation ${which}`,'n-deny',2200);
-    showModal('❌',`Foundation ${which} Denied`,
+    addLog(`DENIED by ${which==='A'?'Traditional':'Oak'} Foundation (${Math.round(rate*100)}% rate).`,'bad');
+    pushN(`✗ Denied by ${which==='A'?'Traditional':'Oak'} Foundation`,'n-deny',2200);
+    showModal('❌',`${which==='A'?'Traditional':'Oak'} Foundation Denied`,
       `Application rejected. Rate: <strong>${Math.round(rate*100)}%</strong><br><br>
-       ${which==='B'?'Each Oak approval raises your rate and lowers your costs. Trust-based philanthropy rewards persistence — your investment in the relationship isn\'t lost.':'Foundation A\'s flat 20% rate doesn\'t improve over time. Consider investing in Oak Foundation trust instead.'}`,
+       ${which==='B'?'Each Oak approval raises your rate and lowers your costs. Your investment in the relationship isn\'t lost.':'The Traditional Foundation\'s flat 20% rate doesn\'t improve. Consider building Oak Foundation trust instead.'}`,
       'crisis',[{lbl:'Keep Going',fn:'closeModal()'}]);
   }
   updateUI();
@@ -712,12 +841,16 @@ function updateUI(){
   document.getElementById('free-disp').textContent=G.free;
   document.getElementById('restr-disp').textContent=G.restricted;
   document.getElementById('deck-count').textContent=G.deck.length;
-  document.getElementById('hand-count').textContent=`(${G.hand.length} cards)`;
-  document.getElementById('fa-progs').textContent='Open: '+faProgs().join(', ');
-  document.getElementById('fb-progs').textContent='Open: '+fbProgs().join(', ');
+  const over=G.hand.length>5;
+  document.getElementById('hand-count').textContent=`(${G.hand.length}/5 cards${over?' — OVER LIMIT':''})`; 
   document.getElementById('fb-rate').textContent=`Rate: ${Math.round(oakRate()*100)}%`;
   const oc=oakCost();
-  document.getElementById('fb-cost-txt').innerHTML=`Cost: 1 prog + ${oc.action} action + ${oc.budget} Budget<br>Gives: <strong>7 Unrestricted Budget</strong>`;
+  document.getElementById('fb-cost-txt').innerHTML=`Cost: 1 prog + ${oc.action} action + ${oc.budget} Budget<br>Gives: <strong>7 Unrestricted + 🌟 multi-year</strong>`;
+  // discard notice
+  const dn=document.getElementById('discard-notice');
+  if(dn) dn.style.display=over?'block':'none';
+  const hlm=document.getElementById('hand-limit-msg');
+  if(hlm) hlm.textContent=over?`${G.hand.length}/5 — discard ${G.hand.length-5} card(s)`:`${G.hand.length}/5 cards`;
   renderTrust();renderHand('dossier');renderHand('apply');renderPrograms();renderLog();updateChips();
   // maintenance warning
   const active=G.programs.filter(p=>!p.dropped);
@@ -741,8 +874,10 @@ function renderHand(ctx){
     const sel=G.selected.includes(i);
     const div=document.createElement('div');
     div.className=`card card-${c.type}${sel?' sel':''}`;
-    const bothNote=BOTH.includes(c.name)?'<div style="font-size:8px;margin-top:3px;color:var(--purple);font-weight:bold;">★ BOTH FOUNDATIONS</div>':'';
-    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${c.name}</div><div class="c-desc">${c.desc}</div>${bothNote}<div class="c-chk">✓</div>`;
+    const emoji = c.type==='program' ? (PROG_EMOJI[c.name]||'📋') : '';
+    const displayName = emoji ? `${emoji} ${c.name}` : c.name;
+    const bothBadge = BOTH.includes(c.name) ? '<div style="font-size:8px;margin-top:3px;background:var(--purple);color:var(--white);padding:2px 4px;display:inline-block;">★ BOTH FOUNDATIONS</div>' : '';
+    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div><div class="c-desc">${c.desc}</div>${bothBadge}<div class="c-chk">✓</div>`;
     if(ctx==='apply')div.onclick=()=>toggleSel(i);
     el.appendChild(div);
   });
@@ -751,7 +886,7 @@ function renderHand(ctx){
 function renderPrograms(){
   const el=document.getElementById('prog-list');
   if(!G.programs.length){el.innerHTML='<div class="empty-hand" style="width:100%;">No programs yet</div>';document.getElementById('prog-ciu').textContent='Projected CIU: 0';return;}
-  const icons={'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊','Housing & Homelessness':'🏘️'};
+  const icons={'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊'};
   el.innerHTML='';
   G.programs.forEach(p=>{
     const div=document.createElement('div');
@@ -780,19 +915,30 @@ function renderLog(){
 function updateChips(){
   const sel=G.selected.map(i=>G.hand[i]).filter(Boolean);
   const progs=sel.filter(c=>c.type==='program');const acts=sel.filter(c=>c.type==='action');
-  const faA=faProgs();
-  const aP=progs.some(c=>faA.includes(c.name));const aA=acts.length>=3;const aB=G.free>=3;
+
+  // Apply to Both — requires Housing specifically
+  const bthP=progs.some(c=>c.name==='Housing');const bthA=acts.length>=3;const bthB=G.free>=3;
+  const bothChips=document.getElementById('both-chips');
+  if(bothChips) bothChips.innerHTML=
+    `<div class="chip ${bthP?'met':'unmet'}">🏠 Housing card ${bthP?'✓':'✗'}</div>
+     <div class="chip ${bthA?'met':'unmet'}">3 Actions (${acts.length}) ${bthA?'✓':'✗'}</div>
+     <div class="chip ${bthB?'met':'unmet'}">3 Budget (have ${G.free}) ${bthB?'✓':'✗'}</div>`;
+  const bab=document.getElementById('btn-app-both');
+  if(bab) bab.disabled=!(bthP&&bthA&&bthB);
+
+  // Traditional Foundation
+  const aP=progs.some(c=>faProgs().includes(c.name));const aA=acts.length>=3;const aB=G.free>=3;
   document.getElementById('fa-chips').innerHTML=
-    `<div class="chip ${aP?'met':'unmet'}">1 A-Program ${aP?'✓':'✗'}</div>
+    `<div class="chip ${aP?'met':'unmet'}">1 Program ${aP?'✓':'✗'}</div>
      <div class="chip ${aA?'met':'unmet'}">3 Actions (${acts.length}) ${aA?'✓':'✗'}</div>
      <div class="chip ${aB?'met':'unmet'}">3 Budget (have ${G.free}) ${aB?'✓':'✗'}</div>`;
   document.getElementById('btn-app-a').disabled=!(aP&&aA&&aB);
 
-  const fbA=fbProgs();const allFbAcc=[...fbA,...BOTH];
+  // Oak Foundation
   const oc=oakCost();
-  const bP=progs.some(c=>allFbAcc.includes(c.name));const bA=acts.length>=oc.action;const bB=G.free>=oc.budget;
+  const bP=progs.some(c=>fbProgs().includes(c.name));const bA=acts.length>=oc.action;const bB=G.free>=oc.budget;
   document.getElementById('fb-chips').innerHTML=
-    `<div class="chip ${bP?'met':'unmet'}">1 Oak Program ${bP?'✓':'✗'}</div>
+    `<div class="chip ${bP?'met':'unmet'}">1 Program ${bP?'✓':'✗'}</div>
      ${oc.action>0?`<div class="chip ${bA?'met':'unmet'}">${oc.action} Action(s) (${acts.length}) ${bA?'✓':'✗'}</div>`:'<div class="chip met">No Actions Needed ✓</div>'}
      ${oc.budget>0?`<div class="chip ${bB?'met':'unmet'}">${oc.budget} Budget (have ${G.free}) ${bB?'✓':'✗'}</div>`:'<div class="chip met">No Budget Needed ✓</div>'}
      <div class="chip met">Rate: ${Math.round(oakRate()*100)}%</div>`;
@@ -860,7 +1006,7 @@ function showEndScreen(){
   const bonusRow=bonus>0?`<div class="score-row" style="color:var(--teal);"><span>🌟 Multi-Year Oak Bonus</span><span class="s-val" style="color:var(--teal);">+${bonus}</span></div>`:'';
   document.getElementById('score-card').innerHTML=`
     <div style="font-family:'Special Elite',serif;font-size:16px;margin-bottom:12px;text-align:center;">Final Score — <span class="ciu-badge">CIU</span> Breakdown</div>
-    <div style="font-size:10px;color:var(--gray);margin-bottom:9px;font-style:italic;">CIU = Collective Impact Units: financial health × programmatic reach</div>
+    <div style="font-size:10px;color:var(--gray);margin-bottom:9px;font-style:italic;">CIU = Community Impact Units: financial health × programmatic reach</div>
     <div class="score-row"><span>Surviving Free Budget</span><span class="s-val">${G.free}</span></div>
     <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restricted}</span></div>
     ${bonusRow}
