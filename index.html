@@ -2,801 +2,2021 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Trust the Process</title>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trust the Process — A Grantmaking Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Mono:wght@400;500&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <style>
-:root{--y:#F4DC26;--b:#0a0a0a;--r:#990000;--w:#F5F0E8;--g:#2a2a2a;--m:#888;--gr:#00aa66;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Mono',monospace;background:var(--b);background-image:radial-gradient(rgba(244,220,38,.05) 1px,transparent 1px);background-size:22px 22px;color:var(--w);min-height:100vh;}
-.screen{display:none;min-height:100vh;padding:16px 14px 40px;flex-direction:column;align-items:center;}
-.screen.active{display:flex;}
-.gtitle{font-family:'Special Elite',serif;font-size:clamp(38px,11vw,68px);color:var(--y);text-align:center;line-height:.88;letter-spacing:3px;text-transform:uppercase;text-shadow:4px 4px 0 var(--r),7px 7px 0 rgba(0,0,0,.4);}
-.stitle{font-family:'Special Elite',serif;font-size:24px;color:var(--y);text-align:center;letter-spacing:2px;text-transform:uppercase;border-bottom:4px solid var(--r);padding-bottom:8px;width:100%;max-width:420px;margin-bottom:18px;}
-.lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--m);display:block;margin-bottom:5px;}
-.w420{width:100%;max-width:420px;}.w480{width:100%;max-width:480px;}
-.h8{height:8px}.h12{height:12px}.h16{height:16px}.spacer{flex:1}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{display:block;width:100%;padding:13px 16px;border:3px solid var(--w);font-family:'Special Elite',serif;font-size:14px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;background:var(--b);color:var(--w);box-shadow:5px 5px 0 rgba(255,255,255,.12);text-align:center;transition:transform .08s,box-shadow .08s;}
-.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 rgba(255,255,255,.08);}
-.btn-y{background:var(--y);color:var(--b);border-color:var(--b);box-shadow:5px 5px 0 #b3a200;}
-.btn-y:active{box-shadow:1px 1px 0 #b3a200;}
-.btn-r{background:var(--r);color:var(--w);border-color:#500;box-shadow:5px 5px 0 #500;}
-.btn-gr{background:transparent;color:var(--gr);border-color:var(--gr);box-shadow:4px 4px 0 #005533;}
-.btn-ghost{background:transparent;color:var(--m);border-color:var(--g);box-shadow:none;}
-.btn-ghost:active{transform:none;}
-.btn-sm{padding:9px 12px;font-size:11px;}
-.off{opacity:.25;pointer-events:none!important;}
-.inp-w{width:100%;max-width:420px;margin-bottom:11px;}
-.inp{width:100%;padding:13px;background:var(--b);border:3px solid var(--w);color:var(--w);font-family:'DM Mono',monospace;font-size:15px;outline:none;box-shadow:4px 4px 0 var(--g);}
-.inp:focus{border-color:var(--y);box-shadow:4px 4px 0 var(--y);}
-.inp::placeholder{color:var(--m);}
-.cbox{width:100%;max-width:420px;border:4px solid var(--y);background:var(--b);padding:18px;text-align:center;box-shadow:8px 8px 0 var(--y);margin-bottom:14px;}
-.clbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--m);margin-bottom:6px;}
-.cval{font-family:'Special Elite',serif;font-size:50px;color:var(--y);letter-spacing:10px;line-height:1;}
-.pi{display:flex;align-items:center;gap:11px;padding:10px 12px;border:2px solid var(--g);margin-bottom:5px;background:var(--b);border-left:5px solid var(--y);}
-.pnm{font-family:'Special Elite',serif;font-size:14px;}
-.ghdr{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:3px solid var(--y);margin-bottom:11px;}
-.ghn{font-family:'Special Elite',serif;font-size:17px;color:var(--y);letter-spacing:1px;}
-.ghr{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;}
-.ciu-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
-.ciu-box{border:3px solid var(--y);background:var(--b);padding:6px 12px;text-align:center;box-shadow:3px 3px 0 var(--y);}
-.ciu-n{font-family:'Special Elite',serif;font-size:26px;color:var(--y);line-height:1;}
-.ciu-l{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:2px;}
-.prog-wrap{width:110px;height:7px;background:var(--g);border:2px solid var(--m);overflow:hidden;}
-.prog-bar{height:100%;background:var(--y);transition:width .4s ease;}
-.prog-lbl{font-size:9px;color:var(--m);letter-spacing:1px;text-transform:uppercase;}
-.tbar{display:flex;width:100%;max-width:480px;border:3px solid var(--w);margin-bottom:11px;box-shadow:4px 4px 0 var(--g);}
-.tbtn{flex:1;padding:10px 3px;border:none;border-right:3px solid var(--w);font-family:'Special Elite',serif;font-size:10px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;background:var(--g);color:var(--m);}
-.tbtn:last-child{border-right:none;}
-.tbtn.active{background:var(--y);color:var(--b);}
-.tc{display:none;width:100%;max-width:480px;}
-.tc.active{display:block;}
-.sbar{width:100%;background:var(--g);border:2px solid var(--m);border-left:5px solid var(--y);padding:9px 11px;margin-bottom:10px;font-size:11px;color:var(--w);}
-.sbar.danger{border-left-color:var(--r);}
-.sbar.good{border-left-color:var(--gr);}
-.turnbox{width:100%;background:rgba(244,220,38,.07);border:2px solid var(--g);padding:8px 12px;margin-bottom:10px;font-size:11px;text-align:center;font-family:'Special Elite',serif;letter-spacing:1px;text-transform:uppercase;}
-.turnbox.myturn{border-color:var(--y);color:var(--y);}
-.fdns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.fdn{border:2px solid var(--g);padding:9px;background:var(--b);}
-.fdn.fa{border-left:4px solid var(--r);}
-.fdn.fb{border-left:4px solid var(--gr);}
-.fdnlbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--m);margin-bottom:3px;}
-.fdnprog{font-size:10px;font-weight:500;color:var(--w);line-height:1.4;}
-.fdnrate{font-size:9px;color:var(--m);margin-top:2px;}
-.tbox{border:2px solid var(--gr);background:rgba(0,170,102,.07);padding:9px 11px;margin-bottom:10px;font-size:11px;}
-.ttitle{font-family:'Special Elite',serif;font-size:11px;color:var(--gr);margin-bottom:3px;letter-spacing:1px;text-transform:uppercase;}
-.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:7px;width:100%;margin-bottom:11px;}
-.card{width:100%;min-height:98px;border:3px solid var(--w);padding:7px 5px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;box-shadow:4px 4px 0 var(--g);transition:all .1s;user-select:none;background:var(--b);}
-.card:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--g);}
-.card.sel{background:var(--y)!important;color:var(--b)!important;border-color:var(--b);box-shadow:2px 2px 0 var(--b);}
-.card.sel .cn,.card.sel .ct{color:var(--b);}
-.ca{background:var(--g);border-color:var(--m);}
-.cp{background:#111100;border-color:var(--y);}
-.cc{background:#330000;border-color:var(--r);}
-.cfr{background:#1a0000;border-color:var(--r);}
-.cfu{background:#001a0d;border-color:var(--gr);}
-.cs{background:#111100;border-color:var(--y);}
-.ci{font-size:18px;}
-.cn{font-family:'Special Elite',serif;font-size:8px;color:var(--w);line-height:1.2;text-transform:uppercase;}
-.ct{font-size:7px;text-transform:uppercase;letter-spacing:.5px;color:var(--m);margin-top:1px;}
-.selbox{border:2px solid var(--g);padding:9px;margin-bottom:10px;}
-.ri{display:flex;align-items:center;gap:10px;padding:9px 11px;border:2px solid var(--g);margin-bottom:5px;background:var(--b);}
-.ri.cur{border-color:var(--y);background:rgba(244,220,38,.07);box-shadow:3px 3px 0 var(--y);}
-.rn2{font-family:'Special Elite',serif;font-size:13px;}
-.rm{font-size:10px;color:var(--m);text-transform:uppercase;}
-.rcard{width:100%;max-width:420px;border:3px solid var(--w);padding:13px 15px;margin-bottom:7px;background:var(--b);box-shadow:4px 4px 0 var(--g);}
-.rcard.winner{border-color:var(--y);box-shadow:5px 5px 0 var(--y);}
-.rcard.elim{border-color:var(--r);opacity:.65;}
-.rsn{font-family:'Special Elite',serif;font-size:15px;}
-.rsv{font-family:'Special Elite',serif;font-size:24px;color:var(--y);}
-.wtag{background:var(--y);color:var(--b);padding:2px 6px;font-size:9px;font-family:'Special Elite',serif;text-transform:uppercase;}
-.etag{background:var(--r);color:var(--w);padding:2px 6px;font-size:9px;font-family:'Special Elite',serif;text-transform:uppercase;}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin:8px 0;}
-.dc{border:2px solid var(--g);padding:10px;background:var(--b);}
-.dn{font-family:'Special Elite',serif;font-size:13px;color:var(--y);}
-.drl{font-size:9px;color:var(--m);text-transform:uppercase;margin-bottom:4px;}
-.dst{font-size:11px;color:var(--m);margin-top:2px;}
-.dst span{color:var(--w);}
-.na{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;width:calc(100% - 18px);max-width:420px;}
-.notif{border:3px solid var(--y);background:var(--b);padding:10px 12px;margin-bottom:5px;font-size:12px;box-shadow:4px 4px 0 var(--y);animation:nIn .2s ease;}
-.notif.error{border-color:var(--r);box-shadow:4px 4px 0 var(--r);}
-.notif.success{border-color:var(--gr);box-shadow:4px 4px 0 var(--gr);}
-@keyframes nIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
-.mbox{background:var(--b);border:4px solid var(--y);border-bottom:none;padding:20px 15px 30px;width:100%;max-width:480px;box-shadow:0 -8px 0 var(--y);animation:sUp .22s ease;}
-@keyframes sUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.mt{font-family:'Special Elite',serif;font-size:20px;color:var(--y);margin-bottom:9px;text-transform:uppercase;letter-spacing:1px;}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;}
-.ovtitle{font-family:'Special Elite',serif;font-size:clamp(28px,8vw,52px);text-align:center;line-height:.95;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
-.divider{width:100%;height:3px;background:var(--g);margin:11px 0;}
+:root {
+  --yellow: #F4DC26;
+  --pink: #FF2D78;
+  --teal: #00C2C7;
+  --purple: #6B2FD9;
+  --navy: #0D1B3E;
+  --white: #FAFAF5;
+  --red: #E8261A;
+  --orange: #FF6B35;
+  --green: #2ECC40;
+  --gray: #8892A4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ---- MEMPHIS BACKGROUND ---- */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.18;
+}
+
+/* ---- SCREENS ---- */
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+.screen.active { display: block; }
+
+/* ---- TITLE SCREEN ---- */
+#screen-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  text-align: center;
+}
+
+.title-badge {
+  background: var(--yellow);
+  color: var(--navy);
+  font-family: 'Special Elite', serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 3px solid var(--navy);
+  box-shadow: 4px 4px 0 var(--navy);
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.game-title {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(42px, 10vw, 96px);
+  color: var(--white);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  text-shadow: 6px 6px 0 var(--pink), 12px 12px 0 var(--purple);
+  margin-bottom: 12px;
+}
+
+.game-subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--teal);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+
+.title-card {
+  background: var(--white);
+  color: var(--navy);
+  border: 4px solid var(--navy);
+  box-shadow: 8px 8px 0 var(--pink);
+  padding: 28px 32px;
+  max-width: 560px;
+  width: 100%;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.title-card h3 {
+  font-family: 'Special Elite', serif;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: var(--purple);
+}
+
+.title-card p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.citation {
+  font-size: 10px;
+  color: var(--gray);
+  font-style: italic;
+  border-top: 2px solid var(--navy);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.btn {
+  font-family: 'Special Elite', serif;
+  font-size: 18px;
+  letter-spacing: 1px;
+  padding: 14px 36px;
+  border: 4px solid var(--navy);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  display: inline-block;
+  text-decoration: none;
+  position: relative;
+}
+
+.btn:active { transform: translate(4px, 4px); box-shadow: none !important; }
+
+.btn-primary {
+  background: var(--pink);
+  color: var(--white);
+  box-shadow: 6px 6px 0 var(--navy);
+}
+.btn-primary:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
+
+.btn-teal {
+  background: var(--teal);
+  color: var(--navy);
+  box-shadow: 6px 6px 0 var(--navy);
+}
+.btn-teal:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
+
+.btn-yellow {
+  background: var(--yellow);
+  color: var(--navy);
+  box-shadow: 6px 6px 0 var(--navy);
+}
+.btn-yellow:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
+
+.btn-purple {
+  background: var(--purple);
+  color: var(--white);
+  box-shadow: 6px 6px 0 var(--navy);
+}
+.btn-purple:hover { box-shadow: 8px 8px 0 var(--navy); transform: translate(-2px,-2px); }
+
+.btn-sm {
+  font-size: 12px;
+  padding: 8px 16px;
+  border-width: 3px;
+  box-shadow: 4px 4px 0 var(--navy);
+}
+.btn-sm:hover { box-shadow: 6px 6px 0 var(--navy); transform: translate(-2px,-2px); }
+
+.btn-red {
+  background: var(--red);
+  color: var(--white);
+  box-shadow: 6px 6px 0 var(--navy);
+}
+
+/* ---- GAME LAYOUT ---- */
+#screen-game {
+  padding: 0;
+}
+
+.game-header {
+  background: var(--navy);
+  border-bottom: 4px solid var(--yellow);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-title {
+  font-family: 'Special Elite', serif;
+  font-size: 20px;
+  color: var(--yellow);
+  letter-spacing: 1px;
+}
+
+.turn-badge {
+  background: var(--pink);
+  color: var(--white);
+  border: 3px solid var(--white);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  box-shadow: 3px 3px 0 var(--pink);
+}
+
+.budget-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.budget-label {
+  font-size: 11px;
+  color: var(--teal);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.budget-bar-wrap {
+  flex: 1;
+  height: 16px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid var(--white);
+  position: relative;
+  min-width: 80px;
+}
+
+.budget-bar {
+  height: 100%;
+  background: var(--yellow);
+  transition: width 0.4s ease;
+  position: relative;
+}
+
+.budget-bar.warning { background: var(--orange); }
+.budget-bar.danger { background: var(--red); }
+
+.budget-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
+/* ---- TABS ---- */
+.tabs {
+  display: flex;
+  border-bottom: 4px solid var(--purple);
+  background: rgba(13,27,62,0.95);
+  position: sticky;
+  top: 68px;
+  z-index: 99;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  font-family: 'Special Elite', serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--gray);
+  border: none;
+  cursor: pointer;
+  border-bottom: 4px solid transparent;
+  margin-bottom: -4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab-btn:hover { color: var(--white); }
+.tab-btn.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+  background: rgba(244,220,38,0.08);
+}
+
+.tab-content { display: none; padding: 20px; }
+.tab-content.active { display: block; }
+
+/* ---- STATUS BAR ---- */
+.status-bar {
+  background: rgba(107,47,217,0.25);
+  border: 3px solid var(--purple);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--white);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--navy);
+  flex-shrink: 0;
+}
+
+/* ---- CARDS ---- */
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card {
+  border: 3px solid var(--navy);
+  padding: 12px 14px;
+  width: 150px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s, box-shadow 0.1s;
+  user-select: none;
+}
+
+.card:hover { transform: translate(-3px, -3px); }
+.card.selected { transform: translate(-3px, -3px) rotate(-2deg); }
+
+.card-action {
+  background: #C8D0DC;
+  color: var(--navy);
+  box-shadow: 5px 5px 0 var(--navy);
+}
+.card-action.selected { box-shadow: 7px 7px 0 var(--pink); border-color: var(--pink); }
+
+.card-program {
+  background: var(--teal);
+  color: var(--navy);
+  box-shadow: 5px 5px 0 var(--navy);
+}
+.card-program.selected { box-shadow: 7px 7px 0 var(--purple); border-color: var(--purple); }
+
+.card-crisis {
+  background: var(--red);
+  color: var(--white);
+  box-shadow: 5px 5px 0 var(--navy);
+}
+
+.card-fundraising {
+  background: var(--orange);
+  color: var(--white);
+  box-shadow: 5px 5px 0 var(--navy);
+}
+
+.card-wild {
+  background: var(--yellow);
+  color: var(--navy);
+  box-shadow: 5px 5px 0 var(--navy);
+}
+.card-wild.selected { box-shadow: 7px 7px 0 var(--pink); border-color: var(--pink); }
+
+.card-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+.card-name {
+  font-family: 'Special Elite', serif;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.card-desc {
+  font-size: 9px;
+  margin-top: 6px;
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+.card-checkmark {
+  position: absolute;
+  top: 6px; right: 8px;
+  font-size: 16px;
+  display: none;
+}
+.card.selected .card-checkmark { display: block; }
+
+/* ---- FOUNDATION PANELS ---- */
+.foundation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .foundation-grid { grid-template-columns: 1fr; }
+}
+
+.foundation-panel {
+  border: 4px solid var(--navy);
+  padding: 16px;
+  position: relative;
+}
+
+.foundation-a { background: rgba(200,208,220,0.12); box-shadow: 6px 6px 0 var(--gray); }
+.foundation-b { background: rgba(0,194,199,0.12); box-shadow: 6px 6px 0 var(--teal); }
+
+.foundation-name {
+  font-family: 'Special Elite', serif;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.foundation-rate {
+  font-size: 11px;
+  color: var(--yellow);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.foundation-programs {
+  font-size: 11px;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.trust-ladder {
+  background: rgba(244,220,38,0.1);
+  border: 2px solid var(--yellow);
+  padding: 8px 10px;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.trust-pip {
+  display: inline-block;
+  width: 12px; height: 12px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid var(--yellow);
+  margin-right: 3px;
+  vertical-align: middle;
+}
+.trust-pip.filled { background: var(--yellow); }
+
+/* ---- SECTION LABELS ---- */
+.section-label {
+  font-family: 'Special Elite', serif;
+  font-size: 14px;
+  color: var(--yellow);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--yellow);
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- BUDGET PANEL ---- */
+.budget-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.budget-box {
+  border: 3px solid var(--navy);
+  padding: 14px;
+}
+
+.budget-box-free {
+  background: rgba(244,220,38,0.1);
+  box-shadow: 4px 4px 0 var(--yellow);
+}
+
+.budget-box-restricted {
+  background: rgba(107,47,217,0.15);
+  box-shadow: 4px 4px 0 var(--purple);
+}
+
+.budget-box-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  color: var(--gray);
+}
+
+.budget-box-val {
+  font-family: 'Special Elite', serif;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.budget-box-free .budget-box-val { color: var(--yellow); }
+.budget-box-restricted .budget-box-val { color: var(--purple); }
+
+.budget-box-note {
+  font-size: 10px;
+  margin-top: 4px;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+/* ---- ACTION BUTTONS ---- */
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---- PROGRAMS TAB ---- */
+.program-list { margin-bottom: 20px; }
+
+.program-item {
+  border: 3px solid var(--navy);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0,194,199,0.1);
+}
+
+.program-item.dropped {
+  background: rgba(232,38,26,0.1);
+  opacity: 0.6;
+}
+
+.program-icon {
+  width: 36px; height: 36px;
+  background: var(--teal);
+  border: 3px solid var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.program-item.dropped .program-icon { background: var(--red); }
+
+.program-info { flex: 1; }
+.program-info-name { font-family: 'Special Elite', serif; font-size: 14px; }
+.program-info-meta { font-size: 10px; color: var(--gray); margin-top: 2px; }
+
+.program-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 2px solid var(--navy);
+  letter-spacing: 1px;
+}
+
+.badge-unrestricted { background: var(--green); color: var(--navy); }
+.badge-restricted { background: var(--purple); color: var(--white); }
+
+/* ---- LOG TAB ---- */
+.log-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.log-entry {
+  font-size: 11px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.log-turn { color: var(--yellow); font-weight: 500; flex-shrink: 0; width: 50px; }
+.log-text { color: var(--white); }
+.log-text.good { color: var(--teal); }
+.log-text.bad { color: var(--red); }
+.log-text.neutral { color: var(--gray); }
+
+/* ---- APPLY TAB ---- */
+.apply-instructions {
+  background: rgba(0,194,199,0.1);
+  border: 3px solid var(--teal);
+  padding: 14px;
+  font-size: 12px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.cost-display {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.cost-chip {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid var(--white);
+  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.cost-chip.met { border-color: var(--teal); color: var(--teal); background: rgba(0,194,199,0.1); }
+.cost-chip.unmet { border-color: var(--red); color: var(--red); background: rgba(232,38,26,0.1); }
+
+/* ---- MODAL ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,27,62,0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal {
+  background: var(--white);
+  color: var(--navy);
+  border: 6px solid var(--navy);
+  box-shadow: 12px 12px 0 var(--pink);
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.modal.modal-crisis { box-shadow: 12px 12px 0 var(--red); border-color: var(--red); }
+.modal.modal-win { box-shadow: 12px 12px 0 var(--teal); }
+
+.modal-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal h2 {
+  font-family: 'Special Elite', serif;
+  font-size: 26px;
+  margin-bottom: 8px;
+  color: var(--navy);
+}
+
+.modal p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---- END SCREEN ---- */
+#screen-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.end-title {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(36px, 8vw, 72px);
+  color: var(--yellow);
+  text-shadow: 5px 5px 0 var(--pink);
+  margin-bottom: 8px;
+}
+
+.score-card {
+  background: var(--white);
+  color: var(--navy);
+  border: 6px solid var(--navy);
+  box-shadow: 10px 10px 0 var(--teal);
+  padding: 32px;
+  max-width: 440px;
+  width: 100%;
+  margin: 24px 0;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 2px solid rgba(13,27,62,0.1);
+  font-size: 14px;
+}
+
+.score-row:last-child { border-bottom: none; }
+
+.score-row.total {
+  font-family: 'Special Elite', serif;
+  font-size: 22px;
+  border-top: 3px solid var(--navy);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.score-val { font-weight: 700; color: var(--purple); }
+.score-row.total .score-val { color: var(--pink); font-size: 26px; }
+
+.end-msg {
+  font-size: 13px;
+  color: var(--teal);
+  margin-bottom: 24px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* ---- WILD CARD PICKER ---- */
+.wild-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.wild-option {
+  background: var(--teal);
+  color: var(--navy);
+  border: 3px solid var(--navy);
+  box-shadow: 4px 4px 0 var(--navy);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: 'Special Elite', serif;
+  font-size: 13px;
+  transition: all 0.1s;
+}
+
+.wild-option:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--navy); }
+
+/* ---- NOTIFICATION TOAST ---- */
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 2000;
+  max-width: 300px;
+  transition: opacity 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+
+.toast-inner {
+  border: 3px solid var(--navy);
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 5px 5px 0 var(--navy);
+}
+
+.toast-good { background: var(--teal); color: var(--navy); }
+.toast-bad { background: var(--red); color: var(--white); }
+.toast-neutral { background: var(--yellow); color: var(--navy); }
+
+/* ---- CRISIS INCOMING INDICATOR ---- */
+.maintenance-warning {
+  background: rgba(232,38,26,0.15);
+  border: 2px solid var(--red);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--red);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+/* ---- DRAW PILE ---- */
+.deck-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.deck-icon {
+  width: 44px; height: 60px;
+  background: var(--purple);
+  border: 3px solid var(--navy);
+  box-shadow: 4px 4px 0 var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  position: relative;
+}
+
+.deck-icon::before, .deck-icon::after {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  background: var(--purple);
+  border: 3px solid var(--navy);
+}
+.deck-icon::before { top: -6px; left: -6px; z-index: -1; }
+.deck-icon::after { top: -12px; left: -12px; z-index: -2; }
+
+.deck-info { font-size: 12px; color: var(--gray); }
+.deck-count { font-family: 'Special Elite', serif; font-size: 24px; color: var(--white); }
+
+/* ---- PHASE INDICATOR ---- */
+.phase-indicator {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.phase-step {
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 2px solid var(--gray);
+  color: var(--gray);
+  letter-spacing: 1px;
+}
+
+.phase-step.done { border-color: var(--teal); color: var(--teal); background: rgba(0,194,199,0.1); }
+.phase-step.active { border-color: var(--yellow); color: var(--navy); background: var(--yellow); }
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+::-webkit-scrollbar-thumb { background: var(--purple); }
+
+/* ---- ELIMINATED ---- */
+#screen-eliminated {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.elim-title {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(36px, 8vw, 72px);
+  color: var(--red);
+  text-shadow: 5px 5px 0 var(--navy);
+  margin-bottom: 16px;
+}
+
+/* ---- HAND EMPTY MSG ---- */
+.empty-state {
+  border: 3px dashed var(--gray);
+  padding: 24px;
+  text-align: center;
+  color: var(--gray);
+  font-size: 12px;
+  margin: 16px 0;
+}
 </style>
 </head>
 <body>
-<div class="na" id="NA"></div>
-<div id="app">
 
-<div class="screen active" id="sHome">
-  <div style="height:28px"></div>
-  <div class="gtitle">TRUST<br>THE<br>PROCESS</div>
-  <div style="height:6px"></div>
-  <div style="font-size:9px;letter-spacing:4px;color:var(--m);text-transform:uppercase;text-align:center;">Trust-Based Philanthropy Simulation</div>
-  <div style="height:24px"></div>
-  <div class="w420">
-    <div class="inp-w"><span class="lbl">Your Name</span><input class="inp" id="homeName" placeholder="Enter your name" maxlength="20"></div>
-    <button class="btn btn-y" onclick="goCreate()">Create New Game</button>
-    <div class="h12"></div>
-    <button class="btn" onclick="goJoin()">Join Game</button>
-    <div class="h12"></div>
-    <button class="btn btn-ghost" onclick="showS('sFacil')">Facilitator Dashboard</button>
+<!-- Memphis Background Canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- TITLE SCREEN -->
+<div id="screen-title" class="screen active">
+  <div class="title-badge">A Grantmaking Simulation</div>
+  <h1 class="game-title">Trust<br>the<br>Process</h1>
+  <div class="game-subtitle">Oak Foundation Case Study</div>
+  
+  <div class="title-card">
+    <h3>How to Play</h3>
+    <p>You are a nonprofit director navigating the grant economy. Each turn, gain 1 Budget and draw a card. Apply to foundations for funding. Survive 30 turns. Collect programs. Highest combined score wins.</p>
+    <p><strong>Win Condition:</strong> After 30 turns, your <span style="color:var(--pink)">Final CIU Score</span> = Budget + (Programs × 10). Compare with classmates during debrief.</p>
+    <p><strong>Trust-Based Philanthropy:</strong> Foundation B (Oak Foundation) rewards established relationships — each approval reduces application costs and raises your approval rate up to 80%.</p>
+    <div class="citation">
+      Approval rates based on GrantWatch (2025): foundations fund 15–30% of applicants. Established relationships improve success to 80%+ (Funding for Good, 2020).
+    </div>
   </div>
-  <div class="spacer"></div>
-  <div style="font-size:9px;color:var(--m);text-align:center;padding-top:16px;letter-spacing:1px;line-height:1.8;">
-    Approval stats: Foundations fund 15-30% of applicants (GrantWatch 2025).<br>
-    Established relationships reach 80%+ success (Funding for Good, 2020).
-  </div>
+  
+  <button class="btn btn-primary" onclick="startGame()">Start Game</button>
 </div>
 
-<div class="screen" id="sCreate">
-  <div style="height:12px"></div>
-  <div class="stitle">New Game</div>
-  <div class="w420">
-    <p style="font-size:11px;color:var(--m);text-align:center;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;">Everyone plays as a Nonprofit.<br>Foundations are automated.</p>
-    <button class="btn btn-y" onclick="createGame()">Create Room</button>
-    <div class="h12"></div>
-    <button class="btn btn-ghost" onclick="showS('sHome')">Back</button>
-  </div>
-  <div class="spacer"></div>
-</div>
-
-<div class="screen" id="sJoin">
-  <div style="height:12px"></div>
-  <div class="stitle">Join Game</div>
-  <div class="w420">
-    <div class="inp-w"><span class="lbl">Room Code</span><input class="inp" id="joinCode" placeholder="0000" maxlength="4" inputmode="numeric" style="font-size:30px;letter-spacing:12px;text-align:center;"></div>
-    <button class="btn btn-y" onclick="joinGame()">Join Room</button>
-    <div class="h12"></div>
-    <button class="btn btn-ghost" onclick="showS('sHome')">Back</button>
-  </div>
-  <div class="spacer"></div>
-</div>
-
-<div class="screen" id="sWait">
-  <div style="height:12px"></div>
-  <div class="stitle">Waiting Room</div>
-  <div class="cbox"><div class="clbl">Room Code — Share This</div><div class="cval" id="dispCode">----</div></div>
-  <div class="w420">
-    <span class="lbl">Players <span id="pCount">(0)</span></span>
-    <div id="pList" style="margin-bottom:12px;"></div>
-    <div id="startArea" style="display:none;"><button class="btn btn-y" onclick="startGame()">Deal Cards &amp; Start</button><div class="h8"></div></div>
-    <div id="waitMsg" style="font-size:11px;color:var(--m);text-align:center;padding:8px 0;letter-spacing:2px;text-transform:uppercase;">Waiting for host...</div>
-  </div>
-  <div class="spacer"></div>
-</div>
-
-<div class="screen" id="sGame">
-  <div class="ghdr">
-    <div><div class="ghn" id="gName">Player</div><div class="ghr">Nonprofit</div></div>
-    <div class="ciu-wrap">
-      <div class="ciu-top" style="display:flex;align-items:center;gap:8px;">
-        <div class="ciu-box"><div class="ciu-n" id="gCIU">3</div><div class="ciu-l">CIU</div></div>
+<!-- GAME SCREEN -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="header-title">Trust the Process</div>
+    <div class="turn-badge" id="turn-badge">Turn 1 / 30</div>
+    <div class="budget-display">
+      <div class="budget-label">BUDGET</div>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar" id="budget-bar" style="width:6%"></div>
       </div>
-      <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:15%"></div></div>
-      <div class="prog-lbl"><span id="progLbl">3/20 CIU</span></div>
+      <div class="budget-val" id="budget-val">3 / 50</div>
     </div>
   </div>
-  <div class="w480" style="padding-bottom:28px;">
-    <div class="turnbox" id="turnBox">Turn 1 of 30</div>
-    <div class="tbar">
-      <div class="tbtn active" onclick="swTab('hand')" id="tHand">Dossier</div>
-      <div class="tbtn" onclick="swTab('apply')" id="tApply">Apply</div>
-      <div class="tbtn" onclick="swTab('roster')" id="tRoster">Roster</div>
-      <div class="tbtn" onclick="swTab('log')" id="tLog">Log</div>
-    </div>
-    <div class="tc active" id="tcHand">
-      <div class="sbar" id="gStatus">Step 1: Gain CIU. Step 2: Draw card.</div>
-      <div class="fdns">
-        <div class="fdn fa"><div class="fdnlbl">Foundation A — Traditional</div><div class="fdnprog" id="fAP">Loading...</div><div class="fdnrate" id="fAR">~20% approval</div></div>
-        <div class="fdn fb"><div class="fdnlbl">Foundation B — Oak</div><div class="fdnprog" id="fBP">Loading...</div><div class="fdnrate" id="fBR">~35% approval</div></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dossier')">📋 Dossier</button>
+    <button class="tab-btn" onclick="switchTab('apply')">📨 Apply</button>
+    <button class="tab-btn" onclick="switchTab('programs')">🏛️ Programs</button>
+    <button class="tab-btn" onclick="switchTab('log')">📜 Log</button>
+  </div>
+
+  <!-- DOSSIER TAB -->
+  <div id="tab-dossier" class="tab-content active">
+    
+    <div class="status-bar" id="status-bar">
+      <div class="status-item">
+        <div class="status-dot" style="background:var(--yellow)" id="phase-gain-dot"></div>
+        <span id="phase-gain-label">Gain Budget</span>
       </div>
-      <div id="trustBox" class="tbox" style="display:none;"><div class="ttitle">Trust Established — Oak Foundation</div><div id="trustText" style="color:var(--w);"></div></div>
-      <span class="lbl">Your Hand <span id="hCount"></span></span>
-      <div class="cgrid" id="gHand"></div>
-      <div class="row2">
-        <button class="btn btn-y btn-sm" onclick="gainCIU()" id="btnGain">+ Gain CIU</button>
-        <button class="btn btn-sm" onclick="drawCard()" id="btnDraw">Draw Card</button>
+      <div class="status-item">
+        <div class="status-dot" style="background:var(--teal)" id="phase-draw-dot"></div>
+        <span id="phase-draw-label">Draw Card</span>
       </div>
-      <div class="h8"></div>
-      <button class="btn btn-ghost btn-sm" onclick="showSwitch()">Job Switch</button>
-    </div>
-    <div class="tc" id="tcApply">
-      <div class="fdns">
-        <div class="fdn fa"><div class="fdnlbl">Foundation A</div><div class="fdnprog" id="fAP2">Loading...</div><div style="font-size:9px;color:var(--m);margin-top:2px;">1 prog + 3 action + 3 CIU</div></div>
-        <div class="fdn fb"><div class="fdnlbl">Foundation B (Oak)</div><div class="fdnprog" id="fBP2">Loading...</div><div style="font-size:9px;color:var(--gr);margin-top:2px;" id="oakReq">1 prog + 3 action + 3 CIU</div></div>
+      <div class="status-item">
+        <div class="status-dot" style="background:var(--purple)" id="phase-apply-label-dot"></div>
+        <span>Apply (optional)</span>
       </div>
-      <span class="lbl">Select cards</span>
-      <div class="cgrid" id="gApply"></div>
-      <div class="selbox"><span class="lbl" style="margin-bottom:3px;">Selected</span><div id="selCards" style="font-size:11px;color:var(--m);">None</div></div>
-      <div class="row2">
-        <button class="btn btn-r btn-sm" onclick="applyTo('A')">Apply Fdn A</button>
-        <button class="btn btn-gr btn-sm" onclick="applyTo('B')">Apply Fdn B (Oak)</button>
+    </div>
+
+    <!-- Phase actions -->
+    <div class="action-row">
+      <button class="btn btn-yellow btn-sm" id="btn-gain" onclick="gainBudget()">+ Gain 1 Budget</button>
+      <button class="btn btn-teal btn-sm" id="btn-draw" onclick="drawCard()" disabled>Draw Card →</button>
+    </div>
+
+    <!-- Budget boxes -->
+    <div class="section-label">💰 Treasury</div>
+    <div class="budget-panel">
+      <div class="budget-box budget-box-free">
+        <div class="budget-box-label">Free Budget</div>
+        <div class="budget-box-val" id="free-budget-disp">3</div>
+        <div class="budget-box-note">Spend on anything: applications, costs</div>
       </div>
-      <div class="h8"></div>
-      <button class="btn btn-ghost btn-sm" onclick="clearSel()">Clear</button>
+      <div class="budget-box budget-box-restricted">
+        <div class="budget-box-label">Restricted Funding</div>
+        <div class="budget-box-val" id="restricted-budget-disp">0</div>
+        <div class="budget-box-note">Programs costs ONLY — cannot apply with this</div>
+      </div>
     </div>
-    <div class="tc" id="tcRoster">
-      <span class="lbl">Turn Order</span>
-      <div id="rosterList"></div>
+
+    <!-- Deck -->
+    <div class="section-label">🃏 Draw Pile</div>
+    <div class="deck-indicator">
+      <div class="deck-icon">🂠</div>
+      <div>
+        <div class="deck-count" id="deck-count">45</div>
+        <div class="deck-info">cards remaining</div>
+      </div>
     </div>
-    <div class="tc" id="tcLog">
-      <div id="gLog" style="font-size:11px;color:var(--m);line-height:1.9;"></div>
+
+    <!-- Hand -->
+    <div class="section-label">✋ Your Hand</div>
+    <div id="hand-display" class="card-grid">
+      <div class="empty-state">No cards yet — gain Budget then draw to begin your turn</div>
+    </div>
+
+    <!-- Foundations -->
+    <div class="section-label">🏦 Foundations</div>
+    <div class="foundation-grid">
+      <div class="foundation-panel foundation-a">
+        <div class="foundation-name">Foundation A</div>
+        <div style="font-size:11px;color:var(--gray);margin-bottom:6px;">Traditional Philanthropy</div>
+        <div class="foundation-rate" id="fa-rate">Approval Rate: 20%</div>
+        <div class="foundation-programs" id="fa-programs">Programs: Health</div>
+        <div style="font-size:10px;color:var(--gray);">Gives: Restricted Funding (+3 Budget restricted)</div>
+        <div style="font-size:10px;margin-top:6px;color:var(--orange);">Cost: 1 program + 3 action + 3 Budget</div>
+      </div>
+      <div class="foundation-panel foundation-b">
+        <div class="foundation-name">Foundation B</div>
+        <div style="font-size:11px;color:var(--gray);margin-bottom:6px;">Oak Foundation</div>
+        <div class="foundation-rate" id="fb-rate">Approval Rate: 35%</div>
+        <div class="foundation-programs" id="fb-programs">Programs: Environment & Climate</div>
+        <div style="font-size:10px;color:var(--gray);">Gives: Unrestricted Funding (+3 Budget free)</div>
+        <div class="trust-ladder" id="trust-ladder">
+          <div style="font-size:10px;color:var(--yellow);margin-bottom:4px;">TRUST LADDER</div>
+          <div id="trust-pips"></div>
+          <div style="font-size:10px;margin-top:4px;" id="trust-cost">Current cost: 1 prog + 3 action + 3 Budget</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance warning -->
+    <div id="maintenance-warn" class="maintenance-warning" style="display:none"></div>
+  </div>
+
+  <!-- APPLY TAB -->
+  <div id="tab-apply" class="tab-content">
+    <div class="apply-instructions">
+      Select cards from your hand below, then choose a foundation to apply to. You can apply at any point before drawing (or not at all — it's optional).<br><br>
+      <strong>Foundation A:</strong> 1 matching program card + 3 action cards + 3 free Budget<br>
+      <strong>Foundation B (Oak):</strong> Trust-based costs (see Dossier for current rates)
+    </div>
+
+    <div class="section-label">✋ Select Cards to Apply</div>
+    <div id="apply-hand" class="card-grid">
+      <div class="empty-state">No cards in hand yet</div>
+    </div>
+
+    <div class="section-label" style="margin-top:16px;">🎯 Application Targets</div>
+    
+    <div class="foundation-grid">
+      <div class="foundation-panel foundation-a" style="padding:14px;">
+        <div class="foundation-name" style="font-size:14px;">Foundation A</div>
+        <div id="fa-cost-chips" class="cost-display"></div>
+        <button class="btn btn-sm" style="background:var(--gray);color:var(--white);box-shadow:4px 4px 0 var(--navy);border:3px solid var(--navy);" id="btn-apply-a" onclick="applyToFoundation('A')">Apply to A</button>
+      </div>
+      <div class="foundation-panel foundation-b" style="padding:14px;">
+        <div class="foundation-name" style="font-size:14px;">Foundation B (Oak)</div>
+        <div id="fb-cost-chips" class="cost-display"></div>
+        <button class="btn btn-teal btn-sm" id="btn-apply-b" onclick="applyToFoundation('B')">Apply to B</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRAMS TAB -->
+  <div id="tab-programs" class="tab-content">
+    <div class="section-label">🏛️ Active Programs</div>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:14px;">Each program costs 3 Budget every 5 turns. Restricted funds used first. Programs dropped if unpayable. Each surviving program = 10 CIU at game end.</div>
+    <div id="program-list" class="program-list">
+      <div class="empty-state">No programs yet — apply to foundations to win grants</div>
+    </div>
+    <div style="font-size:12px;color:var(--yellow);margin-top:12px;" id="programs-ciu">Projected CIU from programs: 0</div>
+  </div>
+
+  <!-- LOG TAB -->
+  <div id="tab-log" class="tab-content">
+    <div class="section-label">📜 Game Log</div>
+    <div id="log-list" class="log-list"></div>
+  </div>
+</div>
+
+<!-- ELIMINATED SCREEN -->
+<div id="screen-eliminated" class="screen">
+  <span style="font-size:80px;margin-bottom:16px;">💀</span>
+  <div class="elim-title">Eliminated</div>
+  <p style="max-width:400px;color:var(--gray);font-size:13px;line-height:1.7;margin-bottom:32px;">
+    Your organization ran out of budget and couldn't survive the crisis. This is the reality for many nonprofits navigating a restrictive grant economy.
+  </p>
+  <div style="background:var(--white);color:var(--navy);border:4px solid var(--navy);box-shadow:8px 8px 0 var(--red);padding:24px;max-width:360px;width:100%;margin-bottom:32px;" id="elim-stats"></div>
+  <button class="btn btn-primary" onclick="resetGame()">Try Again</button>
+</div>
+
+<!-- END SCREEN -->
+<div id="screen-end" class="screen">
+  <span style="font-size:64px;margin-bottom:8px;">🏆</span>
+  <div class="end-title">You Survived!</div>
+  <div class="end-msg" id="end-msg">Compare your score with classmates during debrief to see how different philanthropic strategies played out.</div>
+  
+  <div class="score-card" id="score-card"></div>
+  
+  <div style="background:rgba(0,194,199,0.1);border:3px solid var(--teal);padding:16px;max-width:440px;width:100%;font-size:12px;line-height:1.7;margin-bottom:24px;">
+    <strong style="color:var(--teal);">Debrief Questions:</strong><br>
+    • How did restricted vs unrestricted funding affect your strategy?<br>
+    • Did the trust ladder change how you approached Foundation B?<br>
+    • What does this reveal about real nonprofit funding dynamics?
+  </div>
+  
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-primary" onclick="resetGame()">Play Again</button>
+    <button class="btn btn-teal" onclick="switchTab('log'); showScreen('game')">View Full Log</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal" id="modal-box">
+    <span class="modal-icon" id="modal-icon">🃏</span>
+    <h2 id="modal-title">Card Drawn</h2>
+    <p id="modal-body">Something happened.</p>
+    <div class="modal-actions" id="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal()">OK</button>
     </div>
   </div>
 </div>
 
-<div class="screen" id="sFacil">
-  <div style="height:12px"></div>
-  <div class="stitle">Facilitator</div>
-  <div class="w420">
-    <div class="inp-w"><span class="lbl">Room Code</span><input class="inp" id="fCode" placeholder="0000" maxlength="4" inputmode="numeric" style="font-size:26px;letter-spacing:8px;text-align:center;"></div>
-    <button class="btn btn-y" onclick="loadFacil()">Load Game</button>
-    <div class="h12"></div>
-    <button class="btn btn-ghost" onclick="showS('sHome')">Back</button>
-    <div id="fDash" style="display:none;">
-      <div class="h16"></div>
-      <span class="lbl">Turn <span id="fTurn">0</span> / 30</span>
-      <div class="dgrid" id="fGrid"></div>
-      <div class="h12"></div>
-      <span class="lbl">Foundation Status</span>
-      <div id="fFdns" style="font-size:11px;color:var(--m);margin-bottom:12px;"></div>
-      <span class="lbl">Log</span>
-      <div id="fLog" style="font-size:11px;color:var(--m);line-height:1.9;max-height:260px;overflow-y:auto;"></div>
-      <div class="h12"></div>
-      <button class="btn btn-r btn-sm" onclick="endFacil()">End Game</button>
-    </div>
-  </div>
-  <div class="spacer"></div>
-</div>
-
-<div class="screen" id="sResults">
-  <div style="height:20px"></div>
-  <div class="gtitle" style="font-size:40px;">RESULTS</div>
-  <div style="height:16px"></div>
-  <div id="resultsList" style="width:100%;max-width:420px;"></div>
-  <div class="h16"></div>
-  <button class="btn btn-ghost" onclick="showS('sHome')" style="max-width:420px;width:100%;">New Game</button>
-  <div class="spacer"></div>
-</div>
-</div>
-
-<div class="mo" id="moSwitch" style="display:none;" onclick="closeMo('moSwitch',event)">
-  <div class="mbox" onclick="event.stopPropagation()">
-    <div class="mt">Job Switch</div>
-    <p style="font-size:11px;color:var(--m);margin-bottom:12px;text-transform:uppercase;">Swap your hand and CIU with another player. Uses your Job Switch card.</p>
-    <div id="switchList"></div>
-    <div class="h12"></div>
-    <button class="btn btn-ghost" onclick="closeMo('moSwitch')">Cancel</button>
+<!-- Wild Card Picker -->
+<div id="modal-wild" class="modal-overlay hidden">
+  <div class="modal">
+    <span class="modal-icon">🃏</span>
+    <h2>Job Switch!</h2>
+    <p>Choose any program card to add to your hand. Strategic tip: Oak Foundation only accepts their 3 programs.</p>
+    <div class="wild-picker" id="wild-options"></div>
   </div>
 </div>
 
-<div id="ovAnnounce" class="overlay" style="display:none;">
-  <div class="ovtitle" id="ovTitle">YOU WIN!</div>
-  <div style="font-size:13px;color:var(--m);text-align:center;margin-bottom:20px;max-width:300px;" id="ovMsg"></div>
-  <button class="btn btn-y" style="max-width:280px;" onclick="dismissOv()">Continue</button>
+<!-- Toast -->
+<div id="toast" class="toast">
+  <div class="toast-inner" id="toast-inner"></div>
 </div>
 
 <script>
-var AC;
-try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { AC = null; }
+// ================================
+// MEMPHIS BACKGROUND ANIMATION
+// ================================
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  const shapes = [];
+  const colors = ['#F4DC26','#FF2D78','#00C2C7','#6B2FD9','#FF6B35'];
 
-function playSound(type) {
-  if(!AC) return;
-  try {
-    var sounds = {
-      gain:    [[440,550],.18,.15,'sine'],
-      draw:    [[300],.12,.1,'square'],
-      crisis:  [[200,100],.4,.2,'sawtooth'],
-      apply:   [[500,600,700],.3,.12,'sine'],
-      approve: [[523,659,784],.5,.18,'sine'],
-      deny:    [[220,180],.35,.15,'square'],
-      win:     [[523,659,784,1047],.8,.2,'sine'],
-      elim:    [[300,200,150],.6,.2,'sawtooth'],
-      sw:      [[440,330,440],.3,.12,'sine']
-    };
-    var s = sounds[type] || sounds.draw;
-    var freqs=s[0], dur=s[1], vol=s[2], wtype=s[3];
-    var t = AC.currentTime;
-    freqs.forEach(function(f,i) {
-      var o=AC.createOscillator(), g=AC.createGain();
-      o.connect(g); g.connect(AC.destination);
-      o.type=wtype;
-      o.frequency.setValueAtTime(f, t+i*(dur/freqs.length));
-      g.gain.setValueAtTime(vol, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-      o.start(t+i*(dur/freqs.length));
-      o.stop(t+dur+.05);
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rnd(a,b) { return a + Math.random()*(b-a); }
+
+  // Init shapes
+  for(let i=0;i<25;i++) {
+    shapes.push({
+      type: ['circle','rect','triangle','ring','squiggle'][Math.floor(Math.random()*5)],
+      x: rnd(0, window.innerWidth),
+      y: rnd(0, window.innerHeight),
+      size: rnd(20, 80),
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speed: rnd(0.2, 0.8),
+      dx: rnd(-0.5,0.5),
+      dy: rnd(-0.5,0.5),
+      rot: rnd(0, Math.PI*2),
+      rotSpeed: rnd(-0.01,0.01)
     });
-  } catch(e) {}
+  }
+
+  function drawShape(s) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(s.rot);
+    ctx.fillStyle = s.color;
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 3;
+
+    if(s.type==='circle') {
+      ctx.beginPath(); ctx.arc(0,0,s.size/2,0,Math.PI*2); ctx.fill();
+    } else if(s.type==='rect') {
+      ctx.fillRect(-s.size/2,-s.size/3,s.size,s.size*0.6);
+    } else if(s.type==='triangle') {
+      ctx.beginPath();
+      ctx.moveTo(0,-s.size/2);
+      ctx.lineTo(s.size/2,s.size/2);
+      ctx.lineTo(-s.size/2,s.size/2);
+      ctx.closePath(); ctx.fill();
+    } else if(s.type==='ring') {
+      ctx.beginPath(); ctx.arc(0,0,s.size/2,0,Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,s.size/3,0,Math.PI*2);
+      ctx.stroke();
+    } else if(s.type==='squiggle') {
+      ctx.beginPath();
+      ctx.moveTo(-s.size/2,0);
+      for(let i=0;i<=4;i++) {
+        ctx.quadraticCurveTo(
+          -s.size/2+i*(s.size/4), (i%2===0?-s.size/4:s.size/4),
+          -s.size/2+(i+1)*(s.size/4), 0
+        );
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes.forEach(s => {
+      s.x += s.dx; s.y += s.dy; s.rot += s.rotSpeed;
+      if(s.x < -100) s.x = canvas.width + 100;
+      if(s.x > canvas.width+100) s.x = -100;
+      if(s.y < -100) s.y = canvas.height + 100;
+      if(s.y > canvas.height+100) s.y = -100;
+      drawShape(s);
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ================================
+// SOUND ENGINE
+// ================================
+let audioCtx = null;
+function getAudio() {
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
 }
 
-var CD = {
-  submit_report:{name:'Submit Report',type:'action',icon:'📋',cls:'ca'},
-  admin_costs:{name:'Admin Costs',type:'action',icon:'🧾',cls:'ca'},
-  justify_costs:{name:'Justify Costs',type:'action',icon:'📊',cls:'ca'},
-  health:{name:'Health',type:'program',icon:'🏥',cls:'cp'},
-  education:{name:'Education',type:'program',icon:'📚',cls:'cp'},
-  housing:{name:'Housing',type:'program',icon:'🏠',cls:'cp'},
-  environment:{name:'Env & Climate',type:'program',icon:'🌍',cls:'cp'},
-  human_rights:{name:'Human Rights',type:'program',icon:'✊',cls:'cp'},
-  housing_homelessness:{name:'Housing & Homeless',type:'program',icon:'🏘️',cls:'cp'},
-  overhead_cost:{name:'Overhead Cost',type:'crisis',icon:'⚠️',cls:'cc'},
-  rent:{name:'Rent Due',type:'crisis',icon:'🏚️',cls:'cc'},
-  infra_crisis:{name:'Infra Crisis',type:'crisis',icon:'🔧',cls:'cc'},
-  restricted:{name:'Restricted Grant',type:'funding_r',icon:'🔒',cls:'cfr'},
-  unrestricted:{name:'Unrestricted Grant',type:'funding_u',icon:'🔓',cls:'cfu'},
-  job_switch:{name:'Job Switch',type:'switch',icon:'🔄',cls:'cs'}
+function playTone(freq, duration, type='sine', vol=0.3) {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = type;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e){}
+}
+
+const SFX = {
+  gain: ()=>{ playTone(523,0.15,'sine',0.3); setTimeout(()=>playTone(659,0.2,'sine',0.25),100); },
+  draw: ()=>{ playTone(800,0.05,'square',0.1); },
+  crisis: ()=>{ playTone(400,0.1); setTimeout(()=>playTone(350,0.1),120); setTimeout(()=>playTone(300,0.2),240); },
+  apply: ()=>{ [440,523,659].forEach((f,i)=>setTimeout(()=>playTone(f,0.15),i*80)); },
+  approve: ()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.25),i*100)); },
+  deny: ()=>{ playTone(200,0.4,'sawtooth',0.2); },
+  win: ()=>{ [523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2),i*80)); },
+  eliminated: ()=>{ [400,350,300,250,200].forEach((f,i)=>setTimeout(()=>playTone(f,0.25),i*150)); },
+  fundraising: ()=>{ playTone(1047,0.05,'square',0.15); setTimeout(()=>playTone(1319,0.1,'square',0.15),80); }
 };
 
-var FDNS = {
-  A:{allP:['health','education','housing'], base:.20, bonus:0},
-  B:{allP:['environment','human_rights','housing_homelessness'], base:.35, bonus:.15}
-};
+// ================================
+// GAME STATE
+// ================================
+const ALL_PROGRAMS = ['Health','Education','Housing','Environment & Climate','Human Rights','Housing & Homelessness'];
+const FA_PROGRAMS = ['Health','Education','Housing'];
+const FB_PROGRAMS = ['Environment & Climate','Human Rights','Housing & Homelessness'];
 
-function fdnProgs(f,turn) {
-  var all=FDNS[f].allP;
-  if(turn<7) return [all[0]];
-  if(turn<14) return [all[0],all[1]];
-  return all;
-}
-
-function approvalRate(f,oak) {
-  if(f==='A') return FDNS.A.base;
-  return Math.min(.80, FDNS.B.base + oak*FDNS.B.bonus);
-}
-
-function trustReq(n) {
-  return {actions:Math.max(0,3-n), ciu:Math.max(0,3-n)};
-}
-
-function buildPile() {
-  var p=[];
-  for(var i=0;i<4;i++) p.push('submit_report','admin_costs','justify_costs');
-  for(var i=0;i<3;i++) p.push('health','education','housing');
-  for(var i=0;i<3;i++) p.push('environment','human_rights','housing_homelessness');
-  for(var i=0;i<2;i++) p.push('overhead_cost','rent','infra_crisis');
-  p.push('job_switch');
-  return shuffle(p);
+function buildDeck() {
+  const deck = [];
+  // Action cards
+  for(let i=0;i<4;i++) deck.push({type:'action',name:'Submit Report',desc:'Required for grant applications'});
+  for(let i=0;i<4;i++) deck.push({type:'action',name:'Admin Costs',desc:'Required for grant applications'});
+  for(let i=0;i<4;i++) deck.push({type:'action',name:'Justify Costs',desc:'Required for grant applications'});
+  // Program cards
+  FA_PROGRAMS.forEach(p=>{ for(let i=0;i<3;i++) deck.push({type:'program',name:p,desc:'Foundation A program'}); });
+  FB_PROGRAMS.forEach(p=>{ for(let i=0;i<3;i++) deck.push({type:'program',name:p,desc:'Foundation B (Oak) program'}); });
+  // Crisis cards
+  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Overhead Cost',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Rent Due',desc:'Auto-deduct 1 Budget'});
+  for(let i=0;i<2;i++) deck.push({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deduct 1 Budget'});
+  // Fundraising cards
+  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Donor Meal',desc:'Costs 1 Budget (cultivation expense)'});
+  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Donor Gift',desc:'Costs 1 Budget'});
+  for(let i=0;i<3;i++) deck.push({type:'fundraising',name:'Event',desc:'Costs 3 Budget'});
+  // Wild
+  deck.push({type:'wild',name:'Job Switch',desc:'Pick ANY program card to add to hand'});
+  return deck;
 }
 
 function shuffle(arr) {
-  var a=arr.slice();
-  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
-  return a;
+  for(let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
 }
 
-function getRoom(c){var r=localStorage.getItem('ttp_'+c);return r?JSON.parse(r):null;}
-function saveRoom(c,r){localStorage.setItem('ttp_'+c,JSON.stringify(r));}
-function saveMe(d){localStorage.setItem('ttp_me',JSON.stringify(d));}
+let G = {};
 
-var myCode=null, myName=null, isHost=false, selApply=[], poll=null;
-var MAX_TURNS=30, WIN_CIU=20;
-
-function showS(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
+function initGame() {
+  G = {
+    turn: 1,
+    maxTurns: 30,
+    freeBudget: 3,
+    restrictedBudget: 0,
+    hand: [],
+    deck: shuffle(buildDeck()),
+    discardPile: [],
+    programs: [], // {name, source:'restricted'|'unrestricted', dropped:false}
+    log: [],
+    oakApprovals: 0,
+    phaseGained: false,
+    phaseDrawn: false,
+    selectedCards: [],
+    eliminated: false,
+    appliedThisTurn: false,
+  };
 }
 
-function goCreate(){
-  var n=document.getElementById('homeName').value.trim();
-  if(!n){notify('Enter your name','error');return;}
-  myName=n; showS('sCreate');
-}
-function goJoin(){
-  var n=document.getElementById('homeName').value.trim();
-  if(!n){notify('Enter your name','error');return;}
-  myName=n; showS('sJoin');
+// ================================
+// FOUNDATION LOGIC
+// ================================
+function getOakApprovalRate() {
+  const base = 0.35;
+  const bonus = G.oakApprovals * 0.15;
+  return Math.min(0.80, base + bonus);
 }
 
-function createGame(){
-  var code=String(Math.floor(1000+Math.random()*9000));
-  myCode=code; isHost=true;
-  var room={code:code,status:'waiting',host:myName,players:{},pile:buildPile(),log:[],turn:1,applications:[],currentTurn:0,turnOrder:[]};
-  addPlayer(room,myName);
-  saveRoom(code,room); saveMe({name:myName,code:code});
-  showWaiting(code,true);
+function getOakCost() {
+  // Each prior Oak approval reduces prog, action, budget by 1 (min 1 prog, 0 action, 0 budget)
+  const reductions = G.oakApprovals;
+  return {
+    prog: 1, // always 1
+    action: Math.max(0, 3 - reductions),
+    budget: Math.max(0, 3 - reductions)
+  };
 }
 
-function joinGame(){
-  var code=document.getElementById('joinCode').value.trim();
-  if(!code||code.length!==4){notify('Enter a valid 4-digit code','error');return;}
-  var room=getRoom(code);
-  if(!room){notify('Room not found','error');return;}
-  if(room.status==='ended'){notify('Game has ended','error');return;}
-  myCode=code; isHost=false;
-  addPlayer(room,myName);
-  saveRoom(code,room); saveMe({name:myName,code:code});
-  if(room.status==='playing') enterGame();
-  else showWaiting(code,false);
+function getActiveFAPrograms() {
+  const progs = ['Health'];
+  if(G.turn >= 7) progs.push('Education');
+  if(G.turn >= 14) progs.push('Housing');
+  return progs;
 }
 
-function addPlayer(room,name){
-  room.players[name]={name:name,hand:[],ciu:3,gainedCIU:false,drewCard:false,fundingCards:[],oakApprovals:0,eliminated:false,won:false,joinedAt:Date.now()};
+function getActiveFBPrograms() {
+  const progs = ['Environment & Climate'];
+  if(G.turn >= 7) progs.push('Human Rights');
+  if(G.turn >= 14) progs.push('Housing & Homelessness');
+  return progs;
 }
 
-function showWaiting(code,host){
-  document.getElementById('dispCode').textContent=code;
-  document.getElementById('startArea').style.display=host?'block':'none';
-  document.getElementById('waitMsg').style.display=host?'none':'block';
-  showS('sWait');
-  startPoll(function(){pollWait(code,host);});
+// ================================
+// TURN ACTIONS
+// ================================
+function gainBudget() {
+  if(G.phaseGained) { showToast('Already gained Budget this turn!','neutral'); return; }
+  G.freeBudget += 1;
+  G.phaseGained = true;
+  SFX.gain();
+  addLog(`Gained 1 Budget. Free: ${G.freeBudget}`,'good');
+  document.getElementById('btn-gain').disabled = true;
+  document.getElementById('btn-draw').disabled = false;
+  updateUI();
+  showToast('+1 Budget gained','neutral');
 }
 
-function pollWait(code,host){
-  var room=getRoom(code); if(!room) return;
-  if(room.status==='playing'){stopPoll();enterGame();return;}
-  var pl=Object.values(room.players);
-  document.getElementById('pCount').textContent='('+pl.length+')';
-  document.getElementById('pList').innerHTML=pl.map(function(p){
-    return '<div class="pi"><div class="pnm">'+p.name+'</div></div>';
-  }).join('');
+function drawCard() {
+  if(!G.phaseGained) { showToast('Gain Budget first!','neutral'); return; }
+  if(G.phaseDrawn) { showToast('Already drew this turn!','neutral'); return; }
+  
+  // Reshuffle if needed
+  if(G.deck.length === 0) {
+    G.deck = shuffle([...G.discardPile]);
+    G.discardPile = [];
+    addLog('Deck reshuffled from discard pile.','neutral');
+  }
+  
+  if(G.deck.length === 0) {
+    addLog('No cards left — skipping draw.','neutral');
+    G.phaseDrawn = true;
+    endTurn();
+    return;
+  }
+
+  const card = G.deck.pop();
+  SFX.draw();
+  G.phaseDrawn = true;
+  document.getElementById('btn-draw').disabled = true;
+
+  // Auto-resolve crisis and fundraising
+  if(card.type === 'crisis') {
+    resolveCrisis(card);
+    return;
+  }
+  if(card.type === 'fundraising') {
+    resolveFundraising(card);
+    return;
+  }
+  if(card.type === 'wild') {
+    G.hand.push(card);
+    showWildPicker();
+    addLog(`Drew Wild Card: ${card.name}!`,'good');
+    updateUI();
+    endTurn();
+    return;
+  }
+
+  // Program or action — goes to hand
+  G.hand.push(card);
+  addLog(`Drew ${card.type}: ${card.name}`,'neutral');
+  updateUI();
+  endTurn();
 }
 
-function startGame(){
-  var room=getRoom(myCode); if(!room) return;
-  room.status='playing'; room.turn=1; room.currentTurn=0;
-  room.turnOrder=Object.values(room.players).sort(function(a,b){return a.joinedAt-b.joinedAt;}).map(function(p){return p.name;});
-  Object.values(room.players).forEach(function(p){
-    p.hand=room.pile.splice(0,5);
-    room.players[p.name]=p;
+function resolveCrisis(card) {
+  SFX.crisis();
+  const cost = 1;
+  
+  // Check if can pay
+  const totalBudget = G.freeBudget + G.restrictedBudget;
+  if(totalBudget < cost) {
+    // Eliminated
+    addLog(`CRISIS: ${card.name} — Cannot pay! ELIMINATED.`,'bad');
+    G.eliminated = true;
+    SFX.eliminated();
+    setTimeout(()=>showEliminatedScreen(), 500);
+    return;
+  }
+
+  // Pay with restricted first
+  let remaining = cost;
+  if(G.restrictedBudget >= remaining) {
+    G.restrictedBudget -= remaining;
+    remaining = 0;
+  } else {
+    remaining -= G.restrictedBudget;
+    G.restrictedBudget = 0;
+    G.freeBudget -= remaining;
+  }
+
+  G.discardPile.push(card);
+  addLog(`CRISIS: ${card.name} — Paid 1 Budget. Free: ${G.freeBudget}, Restricted: ${G.restrictedBudget}`,'bad');
+  
+  showModal('💀', 'Crisis!', `<strong>${card.name}</strong><br><br>Your organization paid 1 Budget to manage this crisis. Crisis cards reflect the hidden costs nonprofits face constantly.`, 'modal-crisis', [
+    {label:'Continue', action:'closeModal()'}
+  ]);
+  
+  updateUI();
+  endTurn();
+}
+
+function resolveFundraising(card) {
+  SFX.fundraising();
+  let cost = 1;
+  if(card.name === 'Event') cost = 3;
+  
+  const totalBudget = G.freeBudget + G.restrictedBudget;
+  if(totalBudget < cost) {
+    addLog(`FUNDRAISING: ${card.name} — Can't afford! Discarded.`,'bad');
+    G.discardPile.push(card);
+    showToast(`Can't afford ${card.name} (costs ${cost} Budget)`, 'bad');
+    updateUI();
+    endTurn();
+    return;
+  }
+
+  // Pay from free budget first, then restricted
+  let remaining = cost;
+  if(G.freeBudget >= remaining) {
+    G.freeBudget -= remaining;
+  } else {
+    remaining -= G.freeBudget;
+    G.freeBudget = 0;
+    G.restrictedBudget -= remaining;
+  }
+
+  G.discardPile.push(card);
+  addLog(`FUNDRAISING: ${card.name} — Spent ${cost} Budget on cultivation. Free: ${G.freeBudget}`,'neutral');
+  showToast(`${card.name}: spent ${cost} Budget (donor cultivation)`, 'neutral');
+  updateUI();
+  endTurn();
+}
+
+function showWildPicker() {
+  const modal = document.getElementById('modal-wild');
+  const opts = document.getElementById('wild-options');
+  opts.innerHTML = '';
+  ALL_PROGRAMS.forEach(prog => {
+    const btn = document.createElement('button');
+    btn.className = 'wild-option';
+    btn.textContent = prog;
+    btn.onclick = ()=>{ pickWildProgram(prog); };
+    opts.appendChild(btn);
   });
-  addLog(room,'Game started. Turn 1 of 30.');
-  saveRoom(myCode,room); enterGame();
+  modal.classList.remove('hidden');
 }
 
-function enterGame(){
-  stopPoll(); showS('sGame');
-  document.getElementById('gName').textContent=myName;
-  renderGame(); startPoll(renderGame);
+function pickWildProgram(prog) {
+  document.getElementById('modal-wild').classList.add('hidden');
+  G.hand.push({type:'program',name:prog,desc:'Chosen via Job Switch'});
+  addLog(`Job Switch: Added ${prog} to hand`,'good');
+  updateUI();
 }
 
-function renderGame(){
-  var room=getRoom(myCode); if(!room) return;
-  var me=room.players[myName]; if(!me) return;
-  if(room.status==='ended'){showResults(room);return;}
-
-  if(me.eliminated&&!me._shown){
-    me._shown=true; room.players[myName]=me; saveRoom(myCode,room);
-    showOv('ELIMINATED','You ran out of CIU and could not pay the crisis.','var(--r)');
-    playSound('elim'); return;
+function endTurn() {
+  // Maintenance check every 5 turns
+  if(G.turn % 5 === 0) {
+    performMaintenance();
   }
-  if(me.won&&!me._wshown){
-    me._wshown=true; room.players[myName]=me; saveRoom(myCode,room);
-    showOv('YOU WIN!','You reached '+WIN_CIU+' CIU. Outstanding.','var(--y)');
-    playSound('win'); return;
+  
+  if(G.turn >= G.maxTurns) {
+    setTimeout(()=>showEndScreen(), 300);
+    return;
   }
 
-  var turn=room.turn||1;
-  var ord=room.turnOrder||[];
-  var cur=room.currentTurn||0;
-  var isMyTurn=ord.length>0&&ord[cur%ord.length]===myName;
+  G.turn++;
+  G.phaseGained = false;
+  G.phaseDrawn = false;
+  G.appliedThisTurn = false;
+  G.selectedCards = [];
 
-  document.getElementById('gCIU').textContent=me.ciu;
-  var pct=Math.min(100,(me.ciu/WIN_CIU)*100);
-  document.getElementById('progBar').style.width=pct+'%';
-  document.getElementById('progLbl').textContent=me.ciu+'/'+WIN_CIU+' CIU';
+  document.getElementById('btn-gain').disabled = false;
+  document.getElementById('btn-draw').disabled = true;
 
-  var tb=document.getElementById('turnBox');
-  tb.textContent='Turn '+turn+' of '+MAX_TURNS+(isMyTurn?' — YOUR TURN':'');
-  tb.className='turnbox'+(isMyTurn?' myturn':'');
-
-  var apA=fdnProgs('A',turn); var apB=fdnProgs('B',turn);
-  var atxt=apA.map(function(p){return CD[p].icon+' '+CD[p].name;}).join(', ');
-  var btxt=apB.map(function(p){return CD[p].icon+' '+CD[p].name;}).join(', ');
-  var aRate=Math.round(approvalRate('A',0)*100);
-  var bRate=Math.round(approvalRate('B',me.oakApprovals)*100);
-  ['fAP','fAP2'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=atxt;});
-  ['fBP','fBP2'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=btxt;});
-  var rA=document.getElementById('fAR'); if(rA) rA.textContent='~'+aRate+'% approval';
-  var rB=document.getElementById('fBR'); if(rB) rB.textContent='~'+bRate+'% approval';
-
-  var apps=me.oakApprovals||0;
-  var req=trustReq(apps);
-  var tbox=document.getElementById('trustBox'); var tt=document.getElementById('trustText');
-  if(apps>0&&tbox&&tt){
-    tbox.style.display='block';
-    tt.textContent=(req.actions===0&&req.ciu===0)?'Full trust unlocked. Apply with 1 program card only.':'Next Oak app: 1 prog + '+req.actions+' action + '+req.ciu+' CIU';
-  }
-  var oakEl=document.getElementById('oakReq');
-  if(oakEl){
-    if(apps===0) oakEl.textContent='1 prog + 3 action + 3 CIU';
-    else if(req.actions===0&&req.ciu===0) oakEl.textContent='Full trust — 1 program only';
-    else oakEl.textContent='Discount: 1 prog + '+req.actions+' action + '+req.ciu+' CIU';
-  }
-
-  var sb=document.getElementById('gStatus');
-  if(sb){
-    if(me.eliminated) sb.textContent='You have been eliminated.';
-    else if(!isMyTurn) sb.textContent='Waiting for '+(ord[cur%ord.length]||'...')+'\'s turn...';
-    else if(!me.gainedCIU) sb.textContent='Your turn — Step 1: Gain CIU. Step 2: Draw card.';
-    else sb.textContent='CIU gained — now draw a card to end your turn.';
-    sb.className='sbar'+(me.eliminated?' danger':isMyTurn&&!me.gainedCIU?' good':'');
-  }
-
-  var gb=document.getElementById('btnGain'); var db=document.getElementById('btnDraw');
-  if(gb) gb.className='btn btn-y btn-sm'+(me.gainedCIU||!isMyTurn||me.eliminated?' off':'');
-  if(db) db.className='btn btn-sm'+(!me.gainedCIU||!isMyTurn||me.eliminated?' off':'');
-
-  renderCards('gHand',me.hand,'hand');
-  renderCards('gApply',me.hand,'apply');
-  renderSel();
-
-  var rl=document.getElementById('rosterList');
-  if(rl){
-    rl.innerHTML=ord.map(function(name,i){
-      var p=room.players[name]; var isCur=i===cur%ord.length; var isMe=name===myName;
-      return '<div class="ri'+(isCur?' cur':'')+'"><div style="font-size:15px;">'+(isCur?'▶':'—')+'</div><div><div class="rn2" style="color:'+(p&&p.eliminated?'var(--r)':p&&p.won?'var(--y)':isCur?'var(--y)':'var(--w)')+';">'+name+(isMe?' (You)':'')+(p&&p.eliminated?' ✗':'')+(p&&p.won?' ★':'')+'</div><div class="rm">'+(p?p.ciu:0)+' CIU · Oak: '+(p?p.oakApprovals:0)+'x'+(p&&p.eliminated?' ELIMINATED':'')+'</div></div></div>';
-    }).join('');
-  }
-  renderLog('gLog',room.log);
+  updateUI();
 }
 
-function renderCards(id,hand,mode){
-  var c=document.getElementById(id); if(!c) return;
-  if(!hand.length){c.innerHTML='<div style="font-size:11px;color:var(--m);padding:12px;text-transform:uppercase;letter-spacing:2px;grid-column:span 3;">Empty</div>';return;}
-  c.innerHTML=hand.map(function(cid,idx){
-    var d=CD[cid]; if(!d) return '';
-    var sel=mode==='apply'&&selApply.indexOf(idx)>-1;
-    var fn=mode==='apply'?'tapApply('+idx+')':'tapHand('+idx+')';
-    return '<div class="card '+d.cls+(sel?' sel':'')+'" onclick="'+fn+'"><div class="ci">'+d.icon+'</div><div><div class="cn">'+d.name+'</div><div class="ct">'+d.type.replace('_',' ')+'</div></div></div>';
-  }).join('');
-}
-
-function tapHand(idx){
-  var room=getRoom(myCode); var me=room.players[myName];
-  var d=CD[me.hand[idx]];
-  if(d&&d.type==='switch') showSwitch();
-  else notify((d?d.name:'Card')+' — use Apply tab','');
-}
-
-function gainCIU(){
-  var room=getRoom(myCode); var me=room.players[myName];
-  if(me.eliminated){notify('You are eliminated.','error');return;}
-  if(me.gainedCIU){notify('Already gained CIU this turn.','error');return;}
-  var ord=room.turnOrder||[]; var cur=room.currentTurn||0;
-  if(ord.length>0&&ord[cur%ord.length]!==myName){notify('Not your turn!','error');return;}
-  me.ciu+=1; me.gainedCIU=true;
-  room.players[myName]=me;
-  addLog(room,'+ '+myName+' gained 1 CIU. ('+me.ciu+' total)');
-  saveRoom(myCode,room); playSound('gain'); notify('+1 CIU','success');
-  checkWin(room,me); renderGame();
-}
-
-function drawCard(){
-  var room=getRoom(myCode);
-  if(!room.pile||room.pile.length===0){notify('Draw pile empty!','error');return;}
-  var me=room.players[myName];
-  if(me.eliminated){notify('You are eliminated.','error');return;}
-  if(!me.gainedCIU){notify('Gain your CIU first.','error');return;}
-  var ord=room.turnOrder||[]; var cur=room.currentTurn||0;
-  if(ord.length>0&&ord[cur%ord.length]!==myName){notify('Not your turn!','error');return;}
-
-  var card=room.pile.shift(); var d=CD[card];
-  me.gainedCIU=false;
-  room.currentTurn=(cur+1)%ord.length;
-  if(room.currentTurn===0) room.turn=(room.turn||1)+1;
-  var next=ord[room.currentTurn%ord.length];
-  addLog(room,'Turn '+room.turn+'/'+MAX_TURNS+'. Now: '+next);
-
-  if(room.turn>MAX_TURNS){
-    room.players[myName]=me; endGame(room,'turns'); return;
-  }
-
-  if(d&&d.type==='crisis'){
-    if(me.ciu>=1){
-      me.ciu=Math.max(0,me.ciu-1);
-      addLog(room,'⚠ '+myName+' drew '+d.name+' — paid 1 CIU. ('+me.ciu+' left)');
-      playSound('crisis'); notify('Crisis: '+d.name+' — 1 CIU deducted.','error');
-    } else {
-      me.eliminated=true;
-      addLog(room,'✗ '+myName+' drew '+d.name+' with 0 CIU — ELIMINATED.');
-      playSound('elim'); notify('ELIMINATED — no CIU to pay crisis.','error');
+function performMaintenance() {
+  const activeProgs = G.programs.filter(p=>!p.dropped);
+  if(activeProgs.length === 0) return;
+  
+  const cost = 3;
+  const total = activeProgs.length * cost;
+  addLog(`--- Maintenance due! ${activeProgs.length} program(s) × ${cost} Budget = ${total} total ---`,'neutral');
+  
+  activeProgs.forEach(prog => {
+    let paid = false;
+    // Pay restricted first
+    if(G.restrictedBudget >= cost) {
+      G.restrictedBudget -= cost;
+      paid = true;
+      addLog(`Maintained "${prog.name}" using Restricted Funding`,'neutral');
+    } else if(G.restrictedBudget + G.freeBudget >= cost) {
+      const fromRestricted = G.restrictedBudget;
+      G.restrictedBudget = 0;
+      G.freeBudget -= (cost - fromRestricted);
+      paid = true;
+      addLog(`Maintained "${prog.name}" using mixed funds`,'neutral');
     }
-  } else {
-    me.hand.push(card);
-    addLog(room,'🃏 '+myName+' drew: '+(d?d.name:card));
-    playSound('draw'); notify('Drew: '+(d?d.name:card),'success');
-  }
-
-  room.players[myName]=me; saveRoom(myCode,room);
-  if(!me.eliminated) checkWin(room,me);
-  renderGame();
-}
-
-function checkWin(room,me){
-  if(me.ciu>=WIN_CIU&&!me.won){
-    me.won=true; room.players[myName]=me;
-    addLog(room,'★ '+myName+' reached '+WIN_CIU+' CIU — WINNER!');
-    saveRoom(myCode,room);
-  }
-  var active=Object.values(room.players).filter(function(p){return !p.eliminated;});
-  if(active.length===0){endGame(room,'all_elim');}
-}
-
-function tapApply(idx){
-  var pos=selApply.indexOf(idx);
-  if(pos>-1) selApply.splice(pos,1); else selApply.push(idx);
-  renderSel();
-  var room=getRoom(myCode);
-  renderCards('gApply',room.players[myName].hand,'apply');
-}
-
-function renderSel(){
-  var room=getRoom(myCode); if(!room) return;
-  var me=room.players[myName]; if(!me) return;
-  var el=document.getElementById('selCards'); if(!el) return;
-  if(!selApply.length){el.textContent='None';return;}
-  el.innerHTML=selApply.map(function(i){
-    var d=CD[me.hand[i]];
-    return '<span style="display:inline-block;border:2px solid var(--g);padding:2px 6px;margin:2px;font-size:10px;text-transform:uppercase;">'+(d?d.icon+' '+d.name:'?')+'</span>';
-  }).join('');
-}
-
-function clearSel(){
-  selApply=[];renderSel();
-  var room=getRoom(myCode);
-  renderCards('gApply',room.players[myName].hand,'apply');
-}
-
-function applyTo(fdn){
-  var room=getRoom(myCode); var me=room.players[myName];
-  if(me.eliminated){notify('You are eliminated.','error');return;}
-  if(!selApply.length){notify('Select cards first','error');return;}
-  var ids=selApply.map(function(i){return me.hand[i];});
-  var progs=ids.filter(function(c){return CD[c]&&CD[c].type==='program';});
-  var acts=ids.filter(function(c){return CD[c]&&CD[c].type==='action';});
-  if(progs.length!==1){notify('Need exactly 1 program card','error');return;}
-  var turn=room.turn||1;
-  var activeP=fdnProgs(fdn,turn);
-  if(activeP.indexOf(progs[0])===-1){
-    notify('Foundation '+fdn+' does not fund '+CD[progs[0]].name+' yet.','error'); return;
-  }
-  var reqA=3,reqC=3;
-  if(fdn==='B'){var r=trustReq(me.oakApprovals||0);reqA=r.actions;reqC=r.ciu;}
-  if(acts.length<reqA){notify('Need '+reqA+' action card(s)','error');return;}
-  if(me.ciu<reqC){notify('Need '+reqC+' CIU to apply','error');return;}
-  me.ciu-=reqC;
-  selApply.slice().sort(function(a,b){return b-a;}).forEach(function(i){me.hand.splice(i,1);});
-  var rate=approvalRate(fdn,fdn==='B'?me.oakApprovals:0);
-  var approved=Math.random()<rate;
-  room.applications=room.applications||[];
-  room.applications.push({player:myName,fdn:fdn,program:progs[0],approved:approved,turn:turn});
-  if(approved){
-    me.fundingCards.push(fdn==='B'?'unrestricted':'restricted');
-    me.ciu+=3;
-    if(fdn==='B') me.oakApprovals=(me.oakApprovals||0)+1;
-    addLog(room,'✓ '+myName+' APPROVED by Fdn '+fdn+'. +3 CIU. '+(fdn==='B'?'Oak trust: '+me.oakApprovals+'x':''));
-    playSound('approve'); notify('APPROVED — '+(fdn==='B'?'Unrestricted':'Restricted')+' Grant. +3 CIU!','success');
-  } else {
-    addLog(room,'✗ '+myName+' DENIED by Fdn '+fdn+'. CIU and cards lost.');
-    playSound('deny'); notify('DENIED by Foundation '+fdn+'.','error');
-  }
-  room.players[myName]=me; selApply=[];
-  saveRoom(myCode,room); renderGame();
-  if(!me.eliminated) checkWin(room,me);
-}
-
-function showSwitch(){
-  var room=getRoom(myCode); var me=room.players[myName];
-  if(me.hand.indexOf('job_switch')===-1){notify('No Job Switch card in hand','error');return;}
-  var others=Object.values(room.players).filter(function(p){return p.name!==myName&&!p.eliminated;});
-  document.getElementById('switchList').innerHTML=others.map(function(p){
-    return '<button class="btn btn-sm" style="margin-bottom:8px;" onclick="doSwitch(\''+p.name+'\')">Switch with '+p.name+' ('+p.ciu+' CIU)</button>';
-  }).join('');
-  document.getElementById('moSwitch').style.display='flex';
-}
-
-function doSwitch(tName){
-  var room=getRoom(myCode); var me=room.players[myName]; var tgt=room.players[tName];
-  var si=me.hand.indexOf('job_switch'); if(si>-1) me.hand.splice(si,1);
-  var tmpH=me.hand.slice(); var tmpC=me.ciu;
-  me.hand=tgt.hand.slice(); me.ciu=tgt.ciu;
-  tgt.hand=tmpH; tgt.ciu=tmpC;
-  room.players[myName]=me; room.players[tName]=tgt;
-  addLog(room,'🔄 '+myName+' switched hand and CIU with '+tName+'.');
-  saveRoom(myCode,room); closeMo('moSwitch');
-  playSound('sw'); notify('Switched with '+tName,'success'); renderGame();
-}
-
-function endGame(room,reason){
-  room.status='ended';
-  addLog(room,'Game ended: '+reason);
-  saveRoom(myCode,room);
-}
-
-function showResults(room){
-  stopPoll();
-  var players=Object.values(room.players).sort(function(a,b){return b.ciu-a.ciu;});
-  var winner=players.find(function(p){return !p.eliminated&&p.ciu>=WIN_CIU;})||players[0];
-  document.getElementById('resultsList').innerHTML=players.map(function(p){
-    var isW=winner&&p.name===winner.name&&!p.eliminated;
-    var isE=p.eliminated;
-    return '<div class="rcard'+(isW?' winner':'')+(isE?' elim':'')+'"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="rsn">'+p.name+(isW?' <span class="wtag">WINNER</span>':'')+(isE?' <span class="etag">ELIMINATED</span>':'')+'</div><div style="font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-top:3px;">'+p.fundingCards.length+' grants · Oak trust: '+p.oakApprovals+'x</div></div><div class="rsv">'+p.ciu+'</div></div></div>';
-  }).join('');
-  showS('sResults');
-}
-
-function showOv(title,msg,color){
-  document.getElementById('ovTitle').textContent=title;
-  document.getElementById('ovTitle').style.color=color;
-  document.getElementById('ovMsg').textContent=msg;
-  document.getElementById('ovAnnounce').style.display='flex';
-}
-function dismissOv(){
-  document.getElementById('ovAnnounce').style.display='none';
-  var room=getRoom(myCode); var me=room&&room.players[myName];
-  if(me&&me.eliminated) showResults(room);
-}
-
-function loadFacil(){
-  var code=document.getElementById('fCode').value.trim();
-  if(!code){notify('Enter room code','error');return;}
-  var room=getRoom(code); if(!room){notify('Room not found','error');return;}
-  myCode=code;
-  document.getElementById('fDash').style.display='block';
-  updateFacil(); startPoll(updateFacil);
-}
-function updateFacil(){
-  var room=getRoom(myCode); if(!room) return;
-  var turn=room.turn||0;
-  document.getElementById('fTurn').textContent=turn;
-  document.getElementById('fGrid').innerHTML=Object.values(room.players).map(function(p){
-    return '<div class="dc"><div class="dn">'+p.name+'</div><div class="drl">'+(p.eliminated?'ELIMINATED':p.won?'WINNER':'Active')+'</div><div class="dst">CIU: <span>'+p.ciu+'</span></div><div class="dst">Grants: <span>'+p.fundingCards.length+'</span></div><div class="dst">Oak: <span>'+p.oakApprovals+'x</span></div></div>';
-  }).join('');
-  var apA=fdnProgs('A',turn).map(function(p){return CD[p].name;}).join(', ');
-  var apB=fdnProgs('B',turn).map(function(p){return CD[p].name;}).join(', ');
-  var apps=room.applications||[];
-  document.getElementById('fFdns').innerHTML='Fdn A: '+apA+'<br>Fdn B (Oak): '+apB+'<br>Applications: '+apps.length+' | Approvals: '+apps.filter(function(a){return a.approved;}).length;
-  renderLog('fLog',room.log);
-}
-function endFacil(){
-  var room=getRoom(myCode); if(!room) return;
-  endGame(room,'facilitator'); showResults(room);
-}
-
-function addLog(room,msg){
-  var t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  room.log.unshift('['+t+'] '+msg);
-  if(room.log.length>80) room.log=room.log.slice(0,80);
-}
-function renderLog(id,log){
-  var el=document.getElementById(id); if(!el) return;
-  if(!log||!log.length){el.textContent='No activity yet.';return;}
-  el.innerHTML=log.map(function(l){return '<div style="border-bottom:1px solid var(--g);padding:3px 0;">'+l+'</div>';}).join('');
-}
-function notify(msg,type){
-  type=type||'';
-  var a=document.getElementById('NA'); var d=document.createElement('div');
-  d.className='notif '+type; d.textContent=msg;
-  a.appendChild(d); setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},3200);
-}
-function swTab(tab){
-  var tabs=['hand','apply','roster','log'];
-  tabs.forEach(function(t){
-    var C=t.charAt(0).toUpperCase()+t.slice(1);
-    var btn=document.getElementById('t'+C); var content=document.getElementById('tc'+C);
-    if(btn) btn.classList.toggle('active',t===tab);
-    if(content) content.classList.toggle('active',t===tab);
+    
+    if(!paid) {
+      prog.dropped = true;
+      addLog(`DROPPED: "${prog.name}" — Could not pay maintenance!`,'bad');
+      showToast(`Program dropped: ${prog.name}`, 'bad');
+    }
   });
-  if(tab==='apply'){var room=getRoom(myCode);if(room&&room.players[myName])renderCards('gApply',room.players[myName].hand,'apply');}
 }
-function closeMo(id,e){if(!e||e.target===document.getElementById(id))document.getElementById(id).style.display='none';}
-function startPoll(fn){stopPoll();fn();poll=setInterval(fn,1500);}
-function stopPoll(){if(poll){clearInterval(poll);poll=null;}}
 
-try{
-  var saved=JSON.parse(localStorage.getItem('ttp_me')||'{}');
-  if(saved.name&&saved.code){document.getElementById('homeName').value=saved.name;}
-}catch(e){}
+// ================================
+// APPLICATIONS
+// ================================
+function applyToFoundation(which) {
+  const sel = G.selectedCards;
+  if(sel.length === 0) { showToast('Select cards from your hand first!','neutral'); return; }
+  
+  const selCards = sel.map(i => G.hand[i]);
+  const progCards = selCards.filter(c=>c.type==='program');
+  const actionCards = selCards.filter(c=>c.type==='action');
+
+  if(which === 'A') {
+    applyFoundationA(selCards, progCards, actionCards);
+  } else {
+    applyFoundationB(selCards, progCards, actionCards);
+  }
+}
+
+function applyFoundationA(selCards, progCards, actionCards) {
+  const activeProgs = getActiveFAPrograms();
+  const cost = { prog: 1, action: 3, budget: 3 };
+  
+  // Validate
+  const matchingProg = progCards.find(c => activeProgs.includes(c.name));
+  if(!matchingProg) {
+    showToast(`Foundation A only accepts: ${activeProgs.join(', ')}`, 'bad');
+    return;
+  }
+  if(actionCards.length < cost.action) {
+    showToast(`Need ${cost.action} action cards (have ${actionCards.length})`, 'bad');
+    return;
+  }
+  if(G.freeBudget < cost.budget) {
+    showToast(`Need ${cost.budget} free Budget (have ${G.freeBudget})`, 'bad');
+    return;
+  }
+
+  // Deduct
+  SFX.apply();
+  G.freeBudget -= cost.budget;
+  
+  // Remove used cards from hand
+  const usedIndices = new Set();
+  let progUsed = false, actionUsed = 0;
+  G.selectedCards.forEach(i => {
+    const c = G.hand[i];
+    if(c.type === 'program' && !progUsed && activeProgs.includes(c.name)) {
+      progUsed = true; usedIndices.add(i);
+    } else if(c.type === 'action' && actionUsed < cost.action) {
+      actionUsed++; usedIndices.add(i);
+    }
+  });
+  
+  const toDiscard = [...usedIndices].map(i=>G.hand[i]);
+  G.hand = G.hand.filter((_,i)=>!usedIndices.has(i));
+  G.discardPile.push(...toDiscard);
+  G.selectedCards = [];
+
+  addLog(`Applied to Foundation A (${matchingProg.name}). Cost: 3 Budget + ${cost.action} actions`,'neutral');
+
+  // Roll
+  const roll = Math.random();
+  if(roll < 0.20) {
+    // Approved
+    SFX.approve();
+    const newProg = {name: matchingProg.name, source:'restricted', dropped:false};
+    G.programs.push(newProg);
+    G.restrictedBudget += 3;
+    addLog(`APPROVED by Foundation A! Gained ${matchingProg.name} program + 3 Restricted Budget`,'good');
+    showModal('🎉','Approved!',`<strong>Foundation A approved your application!</strong><br><br>Program added: ${matchingProg.name}<br>Restricted Funding: +3 Budget<br><br>Note: Restricted funds can only be used for program maintenance.`, '', [
+      {label:'Excellent!',action:'closeModal()'}
+    ]);
+  } else {
+    SFX.deny();
+    addLog(`DENIED by Foundation A (20% rate).`,'bad');
+    showModal('❌','Denied',`Foundation A rejected your application. With only a 20% approval rate, this is the norm. Your cards and Budget were still spent. Consider building trust with Foundation B instead.`, 'modal-crisis', [
+      {label:'Try Again',action:'closeModal()'}
+    ]);
+  }
+  updateUI();
+}
+
+function applyFoundationB(selCards, progCards, actionCards) {
+  const activeProgs = getActiveFBPrograms();
+  const cost = getOakCost();
+  
+  const matchingProg = progCards.find(c => activeProgs.includes(c.name));
+  if(!matchingProg) {
+    showToast(`Foundation B only accepts: ${activeProgs.join(', ')}`, 'bad');
+    return;
+  }
+  if(actionCards.length < cost.action) {
+    showToast(`Need ${cost.action} action cards (have ${actionCards.length})`, 'bad');
+    return;
+  }
+  if(G.freeBudget < cost.budget) {
+    showToast(`Need ${cost.budget} free Budget (have ${G.freeBudget})`, 'bad');
+    return;
+  }
+
+  SFX.apply();
+  G.freeBudget -= cost.budget;
+  
+  const usedIndices = new Set();
+  let progUsed = false, actionUsed = 0;
+  G.selectedCards.forEach(i => {
+    const c = G.hand[i];
+    if(c.type === 'program' && !progUsed && activeProgs.includes(c.name)) {
+      progUsed = true; usedIndices.add(i);
+    } else if(c.type === 'action' && actionUsed < cost.action) {
+      actionUsed++; usedIndices.add(i);
+    }
+  });
+  
+  const toDiscard = [...usedIndices].map(i=>G.hand[i]);
+  G.hand = G.hand.filter((_,i)=>!usedIndices.has(i));
+  G.discardPile.push(...toDiscard);
+  G.selectedCards = [];
+
+  const rate = getOakApprovalRate();
+  addLog(`Applied to Foundation B (${matchingProg.name}). Cost: ${cost.budget} Budget + ${cost.action} actions. Rate: ${Math.round(rate*100)}%`,'neutral');
+
+  const roll = Math.random();
+  if(roll < rate) {
+    SFX.approve();
+    G.oakApprovals++;
+    const newProg = {name: matchingProg.name, source:'unrestricted', dropped:false};
+    G.programs.push(newProg);
+    G.freeBudget += 3;
+    const newRate = getOakApprovalRate();
+    addLog(`APPROVED by Foundation B! Oak approvals: ${G.oakApprovals}. New rate: ${Math.round(newRate*100)}%`,'good');
+    showModal('🏆','Oak Foundation Approved!',`<strong>Foundation B approved your application!</strong><br><br>Program added: ${matchingProg.name}<br>Unrestricted Funding: +3 Budget (spendable freely!)<br><br>Trust Level: ${G.oakApprovals} approval(s) → New rate: ${Math.round(newRate*100)}%<br>Next application costs: ${getOakCost().budget} Budget, ${getOakCost().action} actions`, '', [
+      {label:'Building Trust!',action:'closeModal()'}
+    ]);
+  } else {
+    SFX.deny();
+    addLog(`DENIED by Foundation B (${Math.round(rate*100)}% rate).`,'bad');
+    showModal('❌','Denied by Oak Foundation',`Foundation B denied your application. Current approval rate: ${Math.round(rate*100)}%<br><br>Keep applying — each approval builds your trust and reduces future costs. This is trust-based philanthropy in action.`, 'modal-crisis', [
+      {label:'Keep Building',action:'closeModal()'}
+    ]);
+  }
+  updateUI();
+}
+
+// ================================
+// CARD SELECTION
+// ================================
+function toggleCardSelect(index, context) {
+  const idx = G.selectedCards.indexOf(index);
+  if(idx >= 0) {
+    G.selectedCards.splice(idx, 1);
+  } else {
+    G.selectedCards.push(index);
+  }
+  renderHand(context);
+  updateCostChips();
+}
+
+// ================================
+// UI RENDERING
+// ================================
+function updateUI() {
+  // Turn badge
+  document.getElementById('turn-badge').textContent = `Turn ${G.turn} / ${G.maxTurns}`;
+  
+  // Budget bar
+  const total = G.freeBudget + G.restrictedBudget;
+  const pct = Math.min(100, (G.freeBudget / 50) * 100);
+  const bar = document.getElementById('budget-bar');
+  bar.style.width = pct + '%';
+  bar.className = 'budget-bar';
+  if(G.freeBudget <= 5) bar.classList.add('danger');
+  else if(G.freeBudget <= 12) bar.classList.add('warning');
+  
+  document.getElementById('budget-val').textContent = `${G.freeBudget} / 50`;
+  document.getElementById('free-budget-disp').textContent = G.freeBudget;
+  document.getElementById('restricted-budget-disp').textContent = G.restrictedBudget;
+  
+  // Deck count
+  document.getElementById('deck-count').textContent = G.deck.length;
+  
+  // Foundation rates
+  document.getElementById('fa-rate').textContent = `Approval Rate: 20%`;
+  const oakRate = Math.round(getOakApprovalRate() * 100);
+  document.getElementById('fb-rate').textContent = `Approval Rate: ${oakRate}%`;
+  
+  // Foundation programs
+  document.getElementById('fa-programs').textContent = `Open Programs: ${getActiveFAPrograms().join(', ')}`;
+  document.getElementById('fb-programs').textContent = `Open Programs: ${getActiveFBPrograms().join(', ')}`;
+  
+  // Trust ladder
+  renderTrustLadder();
+  
+  // Hand
+  renderHand('dossier');
+  renderHand('apply');
+  
+  // Programs tab
+  renderPrograms();
+  
+  // Log
+  renderLog();
+  
+  // Cost chips
+  updateCostChips();
+  
+  // Maintenance warning
+  const nextMaint = Math.ceil(G.turn / 5) * 5;
+  const turnsUntil = nextMaint - G.turn;
+  const activeProgCount = G.programs.filter(p=>!p.dropped).length;
+  const maintWarn = document.getElementById('maintenance-warn');
+  if(activeProgCount > 0 && turnsUntil <= 2) {
+    maintWarn.style.display = 'block';
+    maintWarn.textContent = `⚠ Program maintenance due in ${turnsUntil} turn(s)! ${activeProgCount} program(s) × 3 Budget = ${activeProgCount*3} total needed`;
+  } else {
+    maintWarn.style.display = 'none';
+  }
+  
+  // Phase dots
+  updatePhaseDots();
+}
+
+function updatePhaseDots() {
+  const gainDot = document.getElementById('phase-gain-dot');
+  const drawDot = document.getElementById('phase-draw-dot');
+  
+  gainDot.style.background = G.phaseGained ? 'var(--teal)' : 'var(--yellow)';
+  drawDot.style.background = G.phaseDrawn ? 'var(--teal)' : (G.phaseGained ? 'var(--yellow)' : 'var(--gray)');
+}
+
+function renderTrustLadder() {
+  const pips = document.getElementById('trust-pips');
+  let html = '';
+  for(let i=0;i<5;i++) {
+    html += `<span class="trust-pip ${i < G.oakApprovals ? 'filled' : ''}"></span>`;
+  }
+  pips.innerHTML = html;
+  
+  const cost = getOakCost();
+  document.getElementById('trust-cost').textContent = 
+    `Cost: 1 prog + ${cost.action} action${cost.action!==1?'s':''} + ${cost.budget} Budget`;
+}
+
+function renderHand(context) {
+  const containerId = context === 'dossier' ? 'hand-display' : 'apply-hand';
+  const container = document.getElementById(containerId);
+  
+  if(G.hand.length === 0) {
+    container.innerHTML = '<div class="empty-state">Hand is empty — draw a card to continue</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  G.hand.forEach((card, i) => {
+    const isSelected = G.selectedCards.includes(i);
+    const div = document.createElement('div');
+    div.className = `card card-${card.type}${isSelected?' selected':''}`;
+    div.innerHTML = `
+      <div class="card-label">${card.type}</div>
+      <div class="card-name">${card.name}</div>
+      <div class="card-desc">${card.desc}</div>
+      <div class="card-checkmark">✓</div>
+    `;
+    if(context === 'apply') {
+      div.onclick = ()=>toggleCardSelect(i, 'apply');
+    }
+    container.appendChild(div);
+  });
+}
+
+function renderPrograms() {
+  const container = document.getElementById('program-list');
+  const activeProgs = G.programs.filter(p=>!p.dropped);
+  const droppedProgs = G.programs.filter(p=>p.dropped);
+  
+  if(G.programs.length === 0) {
+    container.innerHTML = '<div class="empty-state">No programs yet — apply to foundations to win grants</div>';
+    document.getElementById('programs-ciu').textContent = 'Projected CIU from programs: 0';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  [...activeProgs, ...droppedProgs].forEach(prog => {
+    const icons = {'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊','Housing & Homelessness':'🏘️'};
+    const div = document.createElement('div');
+    div.className = `program-item${prog.dropped?' dropped':''}`;
+    div.innerHTML = `
+      <div class="program-icon">${icons[prog.name]||'📋'}</div>
+      <div class="program-info">
+        <div class="program-info-name">${prog.name}</div>
+        <div class="program-info-meta">${prog.dropped ? 'DROPPED — could not pay maintenance' : 'Active — costs 3 Budget every 5 turns'}</div>
+      </div>
+      <div class="program-badge badge-${prog.source}">${prog.source === 'unrestricted' ? 'Unrestricted' : 'Restricted'}</div>
+    `;
+    container.appendChild(div);
+  });
+  
+  const ciu = activeProgs.length * 10;
+  document.getElementById('programs-ciu').textContent = `Projected CIU from programs: ${ciu} (${activeProgs.length} × 10)`;
+}
+
+function renderLog() {
+  const container = document.getElementById('log-list');
+  const entries = [...G.log].reverse();
+  container.innerHTML = entries.map(e=>`
+    <div class="log-entry">
+      <div class="log-turn">T${e.turn}</div>
+      <div class="log-text ${e.type}">${e.text}</div>
+    </div>
+  `).join('');
+}
+
+function updateCostChips() {
+  const sel = G.selectedCards.map(i=>G.hand[i]);
+  const progSel = sel.filter(c=>c&&c.type==='program');
+  const actionSel = sel.filter(c=>c&&c.type==='action');
+  
+  // Foundation A
+  const faActive = getActiveFAPrograms();
+  const aProgMet = progSel.some(c=>faActive.includes(c.name));
+  const aActionMet = actionSel.length >= 3;
+  const aBudgetMet = G.freeBudget >= 3;
+  
+  document.getElementById('fa-cost-chips').innerHTML = `
+    <div class="cost-chip ${aProgMet?'met':'unmet'}">1 Program ${aProgMet?'✓':'✗'}</div>
+    <div class="cost-chip ${aActionMet?'met':'unmet'}">3 Actions ${actionSel.length}/3 ${aActionMet?'✓':'✗'}</div>
+    <div class="cost-chip ${aBudgetMet?'met':'unmet'}">3 Budget (free: ${G.freeBudget}) ${aBudgetMet?'✓':'✗'}</div>
+  `;
+  
+  // Foundation B
+  const fbActive = getActiveFBPrograms();
+  const oakCost = getOakCost();
+  const bProgMet = progSel.some(c=>fbActive.includes(c.name));
+  const bActionMet = actionSel.length >= oakCost.action;
+  const bBudgetMet = G.freeBudget >= oakCost.budget;
+  
+  document.getElementById('fb-cost-chips').innerHTML = `
+    <div class="cost-chip ${bProgMet?'met':'unmet'}">1 Oak Program ${bProgMet?'✓':'✗'}</div>
+    ${oakCost.action>0?`<div class="cost-chip ${bActionMet?'met':'unmet'}">${oakCost.action} Action(s) ${actionSel.length}/${oakCost.action} ${bActionMet?'✓':'✗'}</div>`:'<div class="cost-chip met">No Actions Needed ✓</div>'}
+    ${oakCost.budget>0?`<div class="cost-chip ${bBudgetMet?'met':'unmet'}">${oakCost.budget} Budget (have: ${G.freeBudget}) ${bBudgetMet?'✓':'✗'}</div>`:'<div class="cost-chip met">No Budget Needed ✓</div>'}
+    <div class="cost-chip" style="border-color:var(--teal);color:var(--teal);">Rate: ${Math.round(getOakApprovalRate()*100)}%</div>
+  `;
+  
+  document.getElementById('btn-apply-a').disabled = !(aProgMet && aActionMet && aBudgetMet);
+  document.getElementById('btn-apply-b').disabled = !(bProgMet && bActionMet && bBudgetMet);
+}
+
+// ================================
+// MODAL & TOAST
+// ================================
+function showModal(icon, title, body, className, actions) {
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  
+  const box = document.getElementById('modal-box');
+  box.className = 'modal' + (className ? ' ' + className : '');
+  
+  const actDiv = document.getElementById('modal-actions');
+  actDiv.innerHTML = actions.map(a=>
+    `<button class="btn btn-primary" onclick="${a.action}">${a.label}</button>`
+  ).join('');
+  
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+let toastTimer = null;
+function showToast(msg, type='neutral') {
+  const toast = document.getElementById('toast');
+  const inner = document.getElementById('toast-inner');
+  inner.className = `toast-inner toast-${type}`;
+  inner.textContent = msg;
+  toast.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove('show'), 2800);
+}
+
+function addLog(text, type='neutral') {
+  G.log.push({turn: G.turn, text, type});
+}
+
+// ================================
+// SCREENS
+// ================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  
+  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  
+  if(tab === 'apply') {
+    G.selectedCards = [];
+    renderHand('apply');
+    updateCostChips();
+  }
+}
+
+function showEliminatedScreen() {
+  SFX.eliminated();
+  const activeProgs = G.programs.filter(p=>!p.dropped);
+  document.getElementById('elim-stats').innerHTML = `
+    <div style="font-family:Special Elite,serif;font-size:20px;margin-bottom:16px;color:var(--red);">Final Status</div>
+    <div style="font-size:13px;line-height:2;">
+      Survived: ${G.turn - 1} turns<br>
+      Programs at elimination: ${activeProgs.length}<br>
+      Free Budget: ${G.freeBudget}<br>
+      Oak Approvals: ${G.oakApprovals}
+    </div>
+  `;
+  showScreen('eliminated');
+}
+
+function showEndScreen() {
+  SFX.win();
+  const activeProgs = G.programs.filter(p=>!p.dropped);
+  const progCIU = activeProgs.length * 10;
+  const finalCIU = G.freeBudget + progCIU;
+  
+  const card = document.getElementById('score-card');
+  card.innerHTML = `
+    <div style="font-family:Special Elite,serif;font-size:18px;margin-bottom:16px;text-align:center;">Final Score Breakdown</div>
+    <div class="score-row"><span>Surviving Budget</span><span class="score-val">${G.freeBudget}</span></div>
+    <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restrictedBudget}</span></div>
+    <div class="score-row"><span>Active Programs × 10 CIU</span><span class="score-val">${activeProgs.length} × 10 = ${progCIU}</span></div>
+    ${activeProgs.map(p=>`<div class="score-row" style="font-size:12px;padding:4px 0;"><span style="color:var(--gray);">  • ${p.name}</span><span style="color:var(--purple);">+10</span></div>`).join('')}
+    <div class="score-row total"><span>FINAL CIU SCORE</span><span class="score-val">${finalCIU}</span></div>
+  `;
+  
+  const ratingMsgs = [
+    [80, '🏆 Outstanding. You\'ve mastered trust-based philanthropy.'],
+    [50, '✨ Strong performance. The trust ladder paid off.'],
+    [30, '📊 Solid survival. Reflect on what restricted you.'],
+    [0, '💪 You survived. That alone is the lesson.']
+  ];
+  const msg = ratingMsgs.find(r=>finalCIU>=r[0]);
+  document.getElementById('end-msg').textContent = (msg?msg[1]:'') + ' Compare your score with classmates during debrief.';
+  
+  showScreen('end');
+}
+
+function startGame() {
+  initGame();
+  showScreen('game');
+  addLog('Game started. Gain Budget, then draw a card each turn.','neutral');
+  updateUI();
+}
+
+function resetGame() {
+  showScreen('title');
+}
+
+// ================================
+// INIT
+// ================================
+updateUI();
 </script>
 </body>
 </html>
