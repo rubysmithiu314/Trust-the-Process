@@ -313,8 +313,14 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
       <div class="sec-lbl">✋ Select Cards to Apply / Discard</div>
       <div class="hand-wrap" id="hand-apply"></div>
 
+      <!-- DISCARD ROW — always visible, right below hand -->
+      <div style="display:flex;align-items:center;gap:10px;margin:10px 0 14px 0;flex-wrap:wrap;">
+        <button class="btn btn-sm" style="background:var(--red);color:var(--white);box-shadow:4px 4px 0 var(--navy);border:3px solid var(--navy);" onclick="doDiscard()">🗑 Discard Selected</button>
+        <span style="font-size:10px;color:var(--gray);" id="hand-limit-msg"></span>
+      </div>
+
       <!-- Apply to Both (Housing only) -->
-      <div style="background:rgba(0,194,199,.08);border:3px solid var(--teal);padding:11px;margin-top:12px;margin-bottom:12px;">
+      <div style="background:rgba(0,194,199,.08);border:3px solid var(--teal);padding:11px;margin-bottom:12px;">
         <div style="font-family:'Special Elite',serif;font-size:13px;margin-bottom:5px;">🏠 Housing — Dual Application</div>
         <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">1 Housing card + 3 action cards + 3 Budget → rolls against both foundations simultaneously. Same cost, two chances.</div>
         <div class="cost-chips" id="both-chips"></div>
@@ -334,14 +340,6 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
           <div class="cost-chips" id="fb-chips"></div>
           <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')">Apply to Oak</button>
         </div>
-      </div>
-
-      <!-- Discard section -->
-      <div style="border-top:3px solid var(--red);margin-top:16px;padding-top:12px;">
-        <div style="font-family:'Special Elite',serif;font-size:12px;color:var(--red);letter-spacing:1px;margin-bottom:6px;">🗑 DISCARD SELECTED CARDS</div>
-        <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">Hand limit is 5 cards. Select any cards above and discard them. Apply first — discarded cards are gone.</div>
-        <button class="btn btn-sm" style="background:var(--red);color:var(--white);box-shadow:4px 4px 0 var(--navy);border:3px solid var(--navy);" id="btn-discard" onclick="doDiscard()">Discard Selected</button>
-        <span style="font-size:10px;color:var(--gray);margin-left:8px;" id="hand-limit-msg"></span>
       </div>
     </div>
 
@@ -508,11 +506,11 @@ function buildDeck(){
   for(let i=0;i<4;i++)d.push({type:'action',name:'Submit Report',     desc:'Required for applications'});
   for(let i=0;i<4;i++)d.push({type:'action',name:'Admin Costs',        desc:'Required for applications'});
   for(let i=0;i<4;i++)d.push({type:'action',name:'Justify Costs',      desc:'Required for applications'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Health',             desc:'🏥 Traditional Foundation only'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Education',          desc:'📚 Traditional Foundation only'});
+  for(let i=0;i<2;i++)d.push({type:'program',name:'Health',             desc:'🏥 Traditional Foundation only'});
+  for(let i=0;i<2;i++)d.push({type:'program',name:'Education',          desc:'📚 Traditional Foundation only'});
   for(let i=0;i<3;i++)d.push({type:'program',name:'Housing',            desc:'🏠 Both foundations — apply to either or both!'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Environment & Climate', desc:'🌿 Oak Foundation only'});
-  for(let i=0;i<3;i++)d.push({type:'program',name:'Human Rights',          desc:'✊ Oak Foundation only'});
+  for(let i=0;i<2;i++)d.push({type:'program',name:'Environment & Climate', desc:'🌿 Oak Foundation only'});
+  for(let i=0;i<2;i++)d.push({type:'program',name:'Human Rights',          desc:'✊ Oak Foundation only'});
   for(let i=0;i<2;i++)d.push({type:'crisis',name:'Overhead Cost',      desc:'Auto-deduct 1 Budget'});
   for(let i=0;i<2;i++)d.push({type:'crisis',name:'Rent Due',           desc:'Auto-deduct 1 Budget'});
   for(let i=0;i<2;i++)d.push({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deduct 1 Budget'});
