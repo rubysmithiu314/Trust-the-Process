@@ -666,15 +666,14 @@ function refillHand(){
 //  TURN ACTIONS
 // =====================================================
 function doGain(){
-  if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
   // If we already drew last turn, this gain starts a new turn — advance turn counter first
   if(G.drawn){
     if(G.hand.length>5){pushN('Discard 1 card before starting next turn','n-maint',2000);return;}
-    // Run maintenance check on the turn that just ended
     if(G.turn%5===0)doMaintenance();
     if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
-    G.turn++;G.drawn=false;G.selected=[];G.discarding=false;
+    G.turn++;G.drawn=false;G.gained=false;G.selected=[];G.discarding=false;
   }
+  if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
   G.free++;G.gained=true;SFX.gain();
   addLog(`+1 Budget (Unrestricted: ${G.free})`,'neutral');
   pushN(`+1 Budget`,'n-budget');
