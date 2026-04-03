@@ -199,7 +199,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 .wild-opt:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--navy);}
 
 /* END/ELIM SCREENS */
-#screen-end,#screen-eliminated{align-items:center;justify-content:center;padding:30px 16px;text-align:center;gap:12px;}
+#screen-end,#screen-eliminated{align-items:center;justify-content:flex-start;padding:24px 16px 40px;text-align:center;gap:12px;}
 .end-title{font-family:'Special Elite',serif;font-size:clamp(32px,8vw,66px);color:var(--yellow);text-shadow:5px 5px 0 var(--pink);}
 .elim-title{font-family:'Special Elite',serif;font-size:clamp(32px,8vw,66px);color:var(--red);text-shadow:5px 5px 0 var(--navy);}
 .score-card{background:var(--white);color:var(--navy);border:5px solid var(--navy);box-shadow:8px 8px 0 var(--teal);padding:20px;max-width:420px;width:100%;}
@@ -460,7 +460,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 <!-- ===== END ===== -->
 <div id="screen-end" class="screen">
   <span style="font-size:56px;">🏆</span>
-  <div class="end-title">You Survived!</div>
+  <div class="end-title">You Survived the Sector</div>
   <div class="survive-msg" id="survive-msg"></div>
   <div class="score-card" id="score-card"></div>
   <div class="history-card" id="history-card" style="display:none;">
@@ -693,7 +693,12 @@ function doDraw(){
   document.getElementById('btn-draw').disabled=true;
   if(card.type==='crisis'){resolveCrisis(card);return;}
   if(card.type==='fundraising'){resolveFundraising(card);return;}
-  if(card.type==='wild'){G.hand.push(card);addLog(`Drew: ${card.name}!`,'good');updateUI();showWildPicker();finishTurn();return;}
+  if(card.type==='wild'){
+    // Wild card is consumed from the game — not added to hand or discard pile
+    addLog(`Drew: ${card.name}! Choose a program.`,'good');
+    updateUI();showWildPicker();
+    return;
+  }
   G.hand.push(card);
   addLog(`Drew ${card.type}: ${card.name}`,'neutral');
   if(G.hand.length>5){
@@ -757,8 +762,14 @@ function showWildPicker(){
 }
 function pickWild(prog){
   document.getElementById('mod-wild').classList.add('hide');
-  G.hand.push({type:'program',name:prog,desc:PROG_EMOJI[prog]+(prog==='Housing'?' Both foundations':'prog==="Health"||prog==="Education"'?'Traditional Foundation only':'Oak Foundation only')});
-  addLog(`Job Switch: Added ${prog} to hand`,'good');updateUI();
+  // Wild card itself is removed from the game — not recycled back into discard
+  // (it was already popped from deck in doDraw and never added to hand or discard)
+  const desc = prog==='Housing' ? '🏠 Both foundations — apply to either or both!' :
+               (prog==='Health'||prog==='Education') ? PROG_EMOJI[prog]+' Traditional Foundation only' :
+               PROG_EMOJI[prog]+' Oak Foundation only';
+  G.hand.push({type:'program', name:prog, desc});
+  addLog(`Job Switch: Chose ${prog}. Wild card removed from game.`,'good');
+  updateUI();
 }
 
 // =====================================================
@@ -777,14 +788,143 @@ function finishTurn(){
 }
 
 function doMaintenance(){
-  const active=G.programs.filter(p=>!p.dropped);if(!active.length)return;
-  addLog(`— Maintenance: ${active.length} program(s) × 3 Budget —`,'neutral');
-  active.forEach(prog=>{
-    const cost=3;
-    if(G.restricted>=cost){G.restricted-=cost;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');pushN(`−3 Restricted: ${prog.name}`,'n-maint');SFX.maint();}
-    else if(G.restricted+G.free>=cost){const fr=G.restricted;G.restricted=0;G.free-=(cost-fr);addLog(`Maintained "${prog.name}" (mixed).`,'neutral');pushN(`−3 Budget: ${prog.name}`,'n-maint');SFX.maint();}
-    else{prog.dropped=true;addLog(`DROPPED "${prog.name}" — couldn't pay maintenance.`,'bad');pushN(`Dropped: ${prog.name}!`,'n-maint',3200);}
+  const active=G.programs.filter(p=>!p.dropped);
+  if(!active.length)return;
+  const cost=3;
+  const totalNeeded=active.length*cost;
+  const totalAvailable=G.free+G.restricted;
+  addLog(`— Maintenance due: ${active.length} program(s) × ${cost} Budget = ${totalNeeded} needed —`,'neutral');
+
+  // Can afford all programs — pay automatically using smart logic
+  if(totalAvailable>=totalNeeded){
+    active.forEach(prog=>{
+      // For each program: use restricted first if available, then unrestricted
+      if(G.restricted>=cost){
+        G.restricted-=cost;
+        addLog(`Maintained "${prog.name}" using Restricted funding.`,'neutral');
+        pushN(`−3 Restricted: ${prog.name}`,'n-maint');
+      } else if(G.restricted>0){
+        // Partial restricted, rest from unrestricted
+        const fromRestr=G.restricted;
+        G.restricted=0;
+        G.free-=(cost-fromRestr);
+        addLog(`Maintained "${prog.name}" (${fromRestr} Restricted + ${cost-fromRestr} Unrestricted).`,'neutral');
+        pushN(`−3 Budget: ${prog.name}`,'n-maint');
+      } else {
+        // No restricted left — pay fully from unrestricted
+        G.free-=cost;
+        addLog(`Maintained "${prog.name}" using Unrestricted funding.`,'neutral');
+        pushN(`−3 Unrestricted: ${prog.name}`,'n-maint');
+      }
+      SFX.maint();
+    });
+    updateUI();
+    return;
+  }
+
+  // Can't afford all — figure out how many they can keep
+  const canKeep=Math.floor(totalAvailable/cost);
+
+  if(canKeep===0){
+    // Can't keep any — drop all
+    active.forEach(prog=>{
+      prog.dropped=true;
+      addLog(`DROPPED "${prog.name}" — no budget for maintenance.`,'bad');
+    });
+    G.free=0;G.restricted=0;
+    pushN(`All programs dropped — no budget!`,'n-maint',4000);
+    updateUI();
+    return;
+  }
+
+  // Player must choose which programs to keep — show a modal
+  showMaintenanceChoice(active, canKeep, cost);
+}
+
+function showMaintenanceChoice(activeProgs, canKeep, costEach){
+  // Build the modal with checkboxes for each program
+  G._maintProgs=activeProgs;
+  G._maintCanKeep=canKeep;
+  G._maintCost=costEach;
+  G._maintChosen=[];
+
+  let html=`You can only afford to maintain <strong>${canKeep}</strong> of your ${activeProgs.length} programs (${costEach} Budget each). Choose which to keep — the rest will be dropped.<br><br>`;
+  html+=`<div id="maint-choices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">`;
+  activeProgs.forEach((prog,i)=>{
+    const emoji=PROG_EMOJI[prog.name]||'📋';
+    const funding=prog.source==='restricted'?'Restricted':'Unrestricted';
+    html+=`<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;border:2px solid #ccc;background:#f9f9f9;">
+      <input type="checkbox" data-idx="${i}" onchange="maintToggle(this)" style="width:18px;height:18px;">
+      <span>${emoji} <strong>${prog.name}</strong> <span style="font-size:10px;color:#666;">(${funding} funding)</span></span>
+    </label>`;
   });
+  html+=`</div><div id="maint-confirm-wrap"></div>`;
+
+  showModal('⚠️','Maintenance — Choose Wisely',html,'crisis',[]);
+  // Override modal body to include interactive HTML properly
+  document.getElementById('mod-body').innerHTML=html;
+  updateMaintConfirm();
+}
+
+function maintToggle(checkbox){
+  const idx=parseInt(checkbox.dataset.idx);
+  if(checkbox.checked){
+    G._maintChosen.push(idx);
+  } else {
+    G._maintChosen=G._maintChosen.filter(i=>i!==idx);
+  }
+  // Enforce max selections
+  if(G._maintChosen.length>G._maintCanKeep){
+    checkbox.checked=false;
+    G._maintChosen=G._maintChosen.filter(i=>i!==idx);
+    pushN(`You can only keep ${G._maintCanKeep} program(s)`,'n-deny',1800);
+    return;
+  }
+  updateMaintConfirm();
+}
+
+function updateMaintConfirm(){
+  const wrap=document.getElementById('maint-confirm-wrap');
+  if(!wrap)return;
+  const chosen=G._maintChosen.length;
+  const needed=G._maintCanKeep;
+  if(chosen===needed){
+    wrap.innerHTML=`<button class="btn btn-pink" onclick="confirmMaintenance()" style="font-size:13px;padding:9px 20px;border:3px solid #0D1B3E;box-shadow:4px 4px 0 #0D1B3E;">Keep These ${chosen} Program(s)</button>`;
+  } else {
+    wrap.innerHTML=`<div style="font-size:12px;color:#888;">Select ${needed-chosen} more program(s) to keep</div>`;
+  }
+}
+
+function confirmMaintenance(){
+  closeModal();
+  const active=G._maintProgs;
+  const chosen=new Set(G._maintChosen);
+  const cost=G._maintCost;
+
+  active.forEach((prog,i)=>{
+    if(chosen.has(i)){
+      // Pay for this program — restricted first, then unrestricted
+      if(G.restricted>=cost){
+        G.restricted-=cost;
+        addLog(`Maintained "${prog.name}" using Restricted funding.`,'neutral');
+      } else if(G.restricted>0){
+        const fromRestr=G.restricted;G.restricted=0;G.free-=(cost-fromRestr);
+        addLog(`Maintained "${prog.name}" (${fromRestr} Restricted + ${cost-fromRestr} Unrestricted).`,'neutral');
+      } else {
+        G.free-=cost;
+        addLog(`Maintained "${prog.name}" using Unrestricted funding.`,'neutral');
+      }
+      pushN(`Kept: ${prog.name}`,'n-approve',2500);
+      SFX.maint();
+    } else {
+      prog.dropped=true;
+      addLog(`DROPPED "${prog.name}" by player choice.`,'bad');
+      pushN(`Dropped: ${prog.name}`,'n-maint',2500);
+    }
+  });
+
+  delete G._maintProgs;delete G._maintCanKeep;delete G._maintCost;delete G._maintChosen;
+  updateUI();
 }
 
 function doDiscard(){
