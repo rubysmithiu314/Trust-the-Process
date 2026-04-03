@@ -243,9 +243,9 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 
     <p><strong>Each turn:</strong><br>
     1. Hit <strong>Gain 1 Budget</strong> — collect your income for the turn.<br>
-    2. Optionally <strong>apply to a foundation</strong> or <strong>discard a card</strong> from your hand.<br>
-    3. Hit <strong>Draw Card</strong> to finish your turn and draw the next card.<br>
-    If you have more than 5 cards after drawing, you must discard one before your next turn.</p>
+    2. Hit <strong>Draw Card</strong> — draw your next card.<br>
+    3. Optionally <strong>apply to a foundation</strong> for funding.<br>
+    4. If you now have 6 cards, discard one to get back to 5.</p>
 
     <div class="found-cols">
       <div class="fcol fcol-a">
@@ -307,10 +307,10 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
       <div class="sec-lbl">📖 How to Play</div>
       <div style="font-size:11px;line-height:1.8;color:var(--white);margin-bottom:10px;">
         <strong>Each turn:</strong><br>
-        1. Hit <strong style="color:var(--yellow);">Gain 1 Budget</strong> to collect your income.<br>
-        2. Optionally go to <strong style="color:var(--teal);">Apply</strong> — apply for a grant or discard a card.<br>
-        3. Hit <strong style="color:var(--teal);">Draw Card</strong> to finish your turn.<br>
-        If your hand exceeds 5 cards, discard one before continuing.
+        1. Hit <strong style="color:var(--yellow);">Gain 1 Budget</strong> — collect your income.<br>
+        2. Hit <strong style="color:var(--teal);">Draw Card</strong> — draw your next card.<br>
+        3. Optionally <strong style="color:var(--teal);">apply to a foundation</strong> for funding.<br>
+        4. If you now have 6 cards, select 1 and hit <strong style="color:var(--red);">Discard</strong> to get back to 5.
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -667,12 +667,20 @@ function refillHand(){
 // =====================================================
 function doGain(){
   if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
+  // If we already drew last turn, this gain starts a new turn — advance turn counter first
+  if(G.drawn){
+    if(G.hand.length>5){pushN('Discard 1 card before starting next turn','n-maint',2000);return;}
+    // Run maintenance check on the turn that just ended
+    if(G.turn%5===0)doMaintenance();
+    if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
+    G.turn++;G.drawn=false;G.selected=[];G.discarding=false;
+  }
   G.free++;G.gained=true;SFX.gain();
   addLog(`+1 Budget (Unrestricted: ${G.free})`,'neutral');
-  pushN(`+1 Budget (Unrestricted: ${G.free})`,'n-budget');
+  pushN(`+1 Budget`,'n-budget');
   document.getElementById('btn-gain').disabled=true;
   document.getElementById('btn-draw').disabled=false;
-  document.getElementById('phase-hint').textContent='Now draw a card to end your turn.';
+  document.getElementById('phase-hint').textContent='Now draw a card.';
   updateUI();
 }
 
@@ -684,11 +692,19 @@ function doDraw(){
   const card=G.deck.pop();
   G.drawn=true;SFX.draw();
   document.getElementById('btn-draw').disabled=true;
-  document.getElementById('phase-hint').textContent='';
   if(card.type==='crisis'){resolveCrisis(card);return;}
   if(card.type==='fundraising'){resolveFundraising(card);return;}
   if(card.type==='wild'){G.hand.push(card);addLog(`Drew: ${card.name}!`,'good');updateUI();showWildPicker();finishTurn();return;}
-  G.hand.push(card);addLog(`Drew ${card.type}: ${card.name}`,'neutral');updateUI();finishTurn();
+  G.hand.push(card);
+  addLog(`Drew ${card.type}: ${card.name}`,'neutral');
+  if(G.hand.length>5){
+    document.getElementById('phase-hint').textContent='Hand at 6 — apply or select 1 card to discard.';
+  } else {
+    document.getElementById('phase-hint').textContent='Apply to a foundation, or gain Budget next turn.';
+  }
+  updateUI();
+  // Don't call finishTurn here — player may still want to apply or discard
+  // finishTurn is called by applyTo/submitApp, or by the discard if over 5, or next gain
 }
 
 function resolveCrisis(card){
@@ -748,22 +764,15 @@ function pickWild(prog){
 // =====================================================
 //  TURN FINISH
 // =====================================================
+// finishTurn is only called by crisis/fundraising auto-resolution
+// Normal turns: gain → draw → optional apply → optional discard → next gain advances turn
 function finishTurn(){
   if(G.turn%5===0)doMaintenance();
   if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
-  G.turn++;G.gained=false;G.drawn=false;G.selected=[];
-  if(G.hand.length>5){
-    showTab('gameplay');
-    G.discarding=true;
-    updateUI();
-    pushN(`Hand limit! Discard 1 card before continuing.`,'n-maint',3000);
-    return;
-  }
-  G.discarding=false;
+  G.turn++;G.gained=false;G.drawn=false;G.selected=[];G.discarding=false;
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first.';
-  showTab('gameplay');
   updateUI();
 }
 
@@ -778,26 +787,19 @@ function doMaintenance(){
   });
 }
 
-// =====================================================
-//  DISCARD (exactly 1 card)
-// =====================================================
 function doDiscard(){
+  if(!G.drawn){pushN('Draw a card first, then discard if needed','n-deny',2000);return;}
   if(G.selected.length!==1){pushN('Select exactly 1 card to discard','n-deny',1800);return;}
   const idx=G.selected[0];
   const card=G.hand[idx];
   G.discard.push(card);
   G.hand.splice(idx,1);
   G.selected=[];
-  addLog(`Discarded: ${card.name}`,'neutral');
   G.discarding=false;
-  // If this was a forced discard after turn end and hand is now ≤5, start next turn
-  if(!G.gained && G.drawn){
-    if(G.hand.length<=5){
-      document.getElementById('btn-gain').disabled=false;
-      document.getElementById('btn-draw').disabled=true;
-      document.getElementById('phase-hint').textContent='Gain Budget first.';
-      showTab('gameplay');
-    }
+  addLog(`Discarded: ${card.name}`,'neutral');
+  pushN(`Discarded: ${card.name}`,'n-deny',2000);
+  if(G.hand.length<=5){
+    document.getElementById('phase-hint').textContent='Gain Budget to start next turn.';
   }
   updateUI();
 }
@@ -917,7 +919,7 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
 function toggleSel(i){
   const idx=G.selected.indexOf(i);
   if(idx>=0)G.selected.splice(idx,1);else G.selected.push(i);
-  renderHand('apply');updateChips();
+  renderHand();updateChips();updateDiscardBtn();
 }
 
 // =====================================================
@@ -958,12 +960,13 @@ function updateDiscardBtn(){
   const msg=document.getElementById('discard-msg');
   if(!btn)return;
   const selCount=G.selected.length;
-  // Discard button only works when exactly 1 card is selected
-  btn.disabled=selCount!==1;
+  const canDiscard=selCount===1&&G.drawn;
+  btn.disabled=!canDiscard;
   if(msg){
-    if(selCount===0)msg.textContent='Select exactly 1 card to discard.';
+    if(!G.drawn)msg.textContent='Draw a card first, then discard if needed.';
+    else if(selCount===0)msg.textContent='Select exactly 1 card to discard.';
     else if(selCount===1)msg.textContent=`Will discard: ${G.hand[G.selected[0]]?.name||'?'}`;
-    else msg.textContent=`${selCount} selected — discard allows only 1.`;
+    else msg.textContent=`${selCount} cards selected — select only 1 to discard.`;
   }
 }
 
@@ -1171,7 +1174,7 @@ function startGame(){
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first.';
-  addLog('Game started! You have 5 cards. Gain Budget, then apply or draw each turn.','neutral');
+  addLog('Game started! You have 5 cards. Gain Budget → Draw Card → apply or discard.','neutral');
   updateUI();
   try{ac();startMusic();}catch(e){}
 }
