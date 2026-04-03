@@ -21,7 +21,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 .screen.active{display:flex;}
 
 /* TITLE */
-#screen-title{align-items:center;justify-content:center;padding:24px 16px;text-align:center;gap:12px;}
+#screen-title{align-items:center;justify-content:flex-start;padding:20px 16px 32px;text-align:center;gap:10px;}
 .t-kicker{background:var(--yellow);color:var(--navy);font-family:'Special Elite',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:5px 14px;border:3px solid var(--navy);box-shadow:3px 3px 0 var(--navy);}
 .t-title{font-family:'Special Elite',serif;font-size:clamp(38px,9vw,78px);color:var(--white);line-height:.88;letter-spacing:-2px;text-shadow:5px 5px 0 var(--pink),10px 10px 0 var(--purple);}
 .t-sub{font-size:11px;color:var(--teal);letter-spacing:4px;text-transform:uppercase;}
@@ -33,7 +33,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 .fcol-a{background:rgba(200,208,220,.15);box-shadow:4px 4px 0 var(--gray);}
 .fcol-b{background:rgba(0,194,199,.1);box-shadow:4px 4px 0 var(--teal);}
 .fcol-name{font-family:'Special Elite',serif;font-size:13px;margin-bottom:3px;}
-.fcol-rate{font-size:10px;color:var(--yellow);margin-bottom:5px;}
+.fcol-rate{font-size:10px;color:var(--pink);margin-bottom:5px;font-weight:bold;}
 .fcol-prog{font-size:10px;color:var(--navy);line-height:1.8;}
 .fcol-gives{font-size:10px;color:var(--purple);margin-top:5px;font-weight:bold;}
 .t-cite{font-size:10px;color:var(--gray);font-style:italic;border-top:2px solid #ddd;padding-top:8px;margin-top:8px;line-height:1.6;}
@@ -236,12 +236,16 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
 
   <div class="t-card">
     <h3>How to Play</h3>
-    <p>You are the director of a nonprofit. Your goal: survive 30 turns and build programs. At the end, your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> (Community Impact Units) = your Budget + (Programs × 10). Compare with classmates during debrief.</p>
+    <p>You are the director of a nonprofit.<br>
+    Your goal: survive 30 turns and build programs.<br>
+    At the end, your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> (Community Impact Units) = your Budget + (Programs × 10).<br>
+    Compare with classmates during debrief.</p>
 
-    <p><strong>Each turn has two steps:</strong><br>
-    1. Hit <strong>Gain 1 Budget</strong> to collect your income.<br>
-    2. Hit <strong>Draw Card</strong> to end your turn. The card you draw resolves automatically.<br>
-    You may also <strong>apply to foundations</strong> or <strong>discard a card</strong> anytime before drawing. If you have more than 5 cards after drawing, you must discard one before your next turn.</p>
+    <p><strong>Each turn:</strong><br>
+    1. Hit <strong>Gain 1 Budget</strong> — collect your income for the turn.<br>
+    2. Optionally <strong>apply to a foundation</strong> or <strong>discard a card</strong> from your hand.<br>
+    3. Hit <strong>Draw Card</strong> to finish your turn and draw the next card.<br>
+    If you have more than 5 cards after drawing, you must discard one before your next turn.</p>
 
     <div class="found-cols">
       <div class="fcol fcol-a">
@@ -258,7 +262,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
       </div>
     </div>
 
-    <p>★ <strong>Housing</strong> is accepted by both foundations. You can apply to both at the same time — 1 Housing card, 3 action cards, 3 Budget — same cost, two chances.</p>
+    <p>★ <strong>Housing</strong> is accepted by both foundations. You can apply to both at the same time — 1 Housing card, 3 action cards, 3 Budget. Each foundation rolls independently, so you may get approved by one, both, or neither.</p>
     <p><strong>Restricted Budget</strong> can only be spent on program maintenance. <strong>Unrestricted Budget</strong> can be spent on anything.</p>
 
     <div class="t-cite">
@@ -289,31 +293,68 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('hand')">✋ Hand</button>
-    <button class="tab-btn"        onclick="showTab('apply')">📨 Apply</button>
-    <button class="tab-btn"        onclick="showTab('programs')">🏛 Programs</button>
-    <button class="tab-btn"        onclick="showTab('log')">📜 Log</button>
+    <button class="tab-btn"        onclick="showTab('howto')">📖 How to Play</button>
+    <button class="tab-btn active" onclick="showTab('gameplay')">🎮 Gameplay</button>
+    <button class="tab-btn"        onclick="showTab('tracker')">🏛 Programs &amp; Log</button>
   </div>
 
   <div id="notif-area"></div>
 
   <div class="tab-panels">
 
-    <!-- HAND TAB -->
-    <div class="tab-panel active" id="panel-hand">
-      <div class="maint-due" id="maint-due"></div>
-
-      <div class="turn-box">
-        <strong>Your turn:</strong> ① <strong>Gain Budget</strong> — collect 1 Budget per turn. &nbsp;②&nbsp;<strong>Draw a Card</strong> — this ends your turn. Card effects apply immediately.<br>
-        Before drawing, you may go to <strong>Apply</strong> to apply for grants or discard a card. If your hand reaches 6 cards after a draw, you must discard one before proceeding.
+    <!-- HOW TO PLAY TAB -->
+    <div class="tab-panel" id="panel-howto">
+      <div class="sec-lbl">📖 How to Play</div>
+      <div style="font-size:11px;line-height:1.8;color:var(--white);margin-bottom:10px;">
+        <strong>Each turn:</strong><br>
+        1. Hit <strong style="color:var(--yellow);">Gain 1 Budget</strong> to collect your income.<br>
+        2. Optionally go to <strong style="color:var(--teal);">Apply</strong> — apply for a grant or discard a card.<br>
+        3. Hit <strong style="color:var(--teal);">Draw Card</strong> to finish your turn.<br>
+        If your hand exceeds 5 cards, discard one before continuing.
       </div>
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div class="found-panel found-a">
+          <div class="found-name">Traditional Foundation</div>
+          <div style="font-size:10px;color:var(--pink);font-weight:bold;margin-bottom:3px;">Approval Rate: 20% (flat)</div>
+          <div class="found-progs">🏥 Health &nbsp;📚 Education &nbsp;🏠 Housing</div>
+          <div class="found-cost">Cost: 1 program + 3 action cards + 3 Budget<br>Gives: <strong>7 Restricted Budget</strong></div>
+        </div>
+        <div class="found-panel found-b">
+          <div class="found-name">Oak Foundation</div>
+          <div style="font-size:10px;color:var(--pink);font-weight:bold;margin-bottom:3px;" id="howto-oak-rate">Approval Rate: 35% → up to 80%</div>
+          <div class="found-progs">🌿 Env &amp; Climate &nbsp;✊ Human Rights &nbsp;🏠 Housing</div>
+          <div class="found-cost">Cost: 1 program + 3 action cards + 3 Budget<br>Gives: <strong>7 Unrestricted Budget + multi-year funding</strong></div>
+        </div>
+      </div>
+
+      <div style="background:rgba(244,220,38,.08);border:2px solid var(--yellow);padding:8px 11px;font-size:11px;line-height:1.7;margin-bottom:8px;">
+        🏠 <strong>Housing</strong> is accepted by both foundations. Select it with 3 action cards and 3 Budget, then tap <strong>Apply to Both</strong> — each foundation rolls independently. You may be approved by one, both, or neither.
+      </div>
+
+      <div style="background:rgba(107,47,217,.1);border:2px solid var(--purple);padding:8px 11px;font-size:11px;line-height:1.7;margin-bottom:8px;">
+        <strong>Restricted Budget</strong> can only pay for program maintenance.<br>
+        <strong>Unrestricted Budget</strong> can be spent on anything — applications, crises, fundraising events.
+      </div>
+
+      <div style="background:rgba(232,38,26,.08);border:2px solid var(--red);padding:8px 11px;font-size:11px;line-height:1.7;">
+        Every 5 turns, each active program costs <strong>3 Budget</strong> to maintain (Restricted first). If you can't pay, the program is dropped.<br>
+        At the end of 30 turns, each surviving program = <strong>10 CIU</strong>.
+      </div>
+    </div>
+
+    <!-- GAMEPLAY TAB (hand + apply merged) -->
+    <div class="tab-panel active" id="panel-gameplay">
+      <div class="maint-due" id="maint-due"></div>
+
+      <!-- TURN ACTIONS -->
       <div class="act-row">
         <button class="btn btn-yellow btn-sm" id="btn-gain" onclick="doGain()">+ Gain 1 Budget</button>
         <button class="btn btn-teal   btn-sm" id="btn-draw" onclick="doDraw()" disabled>Draw Card →</button>
         <span style="font-size:10px;color:var(--gray);" id="phase-hint">Gain Budget first.</span>
       </div>
 
+      <!-- BUDGET BOXES -->
       <div class="bboxes">
         <div class="bbox bbox-free">
           <div class="bbox-lbl">Unrestricted Budget</div>
@@ -327,51 +368,23 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
         </div>
       </div>
 
+      <!-- HAND -->
       <div class="sec-lbl">✋ Your Hand <span style="color:var(--gray);font-size:9px;" id="hand-count"></span></div>
-      <div class="hand-wrap" id="hand-dossier"></div>
+      <div class="hand-wrap" id="hand-apply" style="margin-bottom:8px;"></div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;">
-        <div class="found-panel found-a">
-          <div class="found-name">Traditional Foundation</div>
-          <div class="found-rate">Rate: 20%</div>
-          <div class="found-progs">🏥 Health &nbsp;📚 Education &nbsp;🏠 Housing</div>
-          <div class="found-cost">Cost: 1 prog + 3 action + 3 Budget<br>→ 7 Restricted Budget</div>
-        </div>
-        <div class="found-panel found-b">
-          <div class="found-name">Oak Foundation</div>
-          <div class="found-rate" id="fb-rate-hand">Rate: 35%</div>
-          <div class="found-progs">🌿 Env &amp; Climate &nbsp;✊ Human Rights &nbsp;🏠 Housing</div>
-          <div class="found-cost" id="fb-cost-hand">Cost: 1 prog + 3 action + 3 Budget<br>→ 7 Unrestricted + 🌟</div>
-          <div class="trust-box">
-            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:2px;">TRUST LADDER</div>
-            <div id="trust-pips"></div>
-            <div style="font-size:9px;margin-top:2px;" id="trust-lbl"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- APPLY TAB -->
-    <div class="tab-panel" id="panel-apply">
-      <div class="turn-box" style="font-size:10px;padding:6px 10px;margin-bottom:8px;">
-        Select cards below, then click an apply button. You can also discard one card if you need to reduce your hand. Applying ends your ability to draw — your hand refills automatically.
-      </div>
-
-      <div class="sec-lbl">✋ Select Cards <span style="color:var(--gray);font-size:9px;" id="apply-hand-count"></span></div>
-      <div class="hand-wrap" id="hand-apply"></div>
-
-      <!-- DISCARD row — right below hand, always visible -->
+      <!-- DISCARD ROW -->
       <div class="discard-row">
         <button class="btn btn-red btn-sm" id="btn-discard" onclick="doDiscard()">🗑 Discard 1 Card</button>
         <span style="font-size:10px;color:var(--gray);" id="discard-msg">Select exactly 1 card to discard.</span>
       </div>
 
-      <!-- THREE APPLY COLUMNS -->
+      <!-- APPLY — 3 columns -->
+      <div class="sec-lbl" style="margin-top:6px;">📨 Apply for Grants</div>
       <div class="apply-3col">
         <div class="apply-panel apply-panel-both">
           <div class="ap-name">🏠 Apply to Both</div>
-          <div class="ap-gives">+7 Restricted AND +7 Unrestricted (if approved)</div>
-          <div style="font-size:9px;color:var(--gray);margin-bottom:4px;">Housing only — same cost, two chances</div>
+          <div class="ap-gives">Approved by one, both, or neither</div>
+          <div style="font-size:9px;color:var(--gray);margin-bottom:4px;">Housing only · same cost</div>
           <div class="cost-chips" id="both-chips"></div>
           <button class="btn btn-teal btn-sm" id="btn-app-both" onclick="applyTo('BOTH')" style="margin-top:6px;width:100%;">Apply to Both</button>
         </div>
@@ -385,29 +398,43 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);p
         </div>
         <div class="apply-panel apply-panel-b" style="box-shadow:4px 4px 0 var(--purple);">
           <div class="ap-name">Oak Foundation</div>
-          <div class="ap-gives" id="oak-gives-lbl">+7 Unrestricted + 🌟</div>
+          <div class="ap-gives">+7 Unrestricted + multi-year funding</div>
           <div class="ap-rate" id="fb-rate-apply">Rate: 35%</div>
           <div style="font-size:9px;color:var(--gray);margin-bottom:4px;">🌿 Env &amp; Climate &nbsp;✊ Human Rights &nbsp;🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
           <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')" style="margin-top:6px;width:100%;">Apply to Oak</button>
         </div>
       </div>
-    </div>
 
-    <!-- PROGRAMS TAB -->
-    <div class="tab-panel" id="panel-programs">
-      <div class="sec-lbl">🏛 Programs</div>
-      <div style="font-size:11px;color:var(--gray);margin-bottom:10px;line-height:1.7;">
-        Every 5 turns, each program costs 3 Budget to maintain (Restricted first). Programs that can't be paid are dropped.<br>
-        Each active program = <strong>10 <span class="ciu-badge">CIU</span></strong> at game end.<br>
-        <span style="font-style:italic;font-size:10px;">CIU (Community Impact Units) measures your org's financial health and programmatic reach.</span>
+      <!-- FOUNDATIONS QUICK REF -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+        <div class="found-panel found-a">
+          <div class="found-name">Traditional Foundation</div>
+          <div class="found-rate">Rate: 20%</div>
+          <div class="found-progs">🏥 Health &nbsp;📚 Education &nbsp;🏠 Housing</div>
+          <div class="found-cost">→ 7 Restricted Budget</div>
+        </div>
+        <div class="found-panel found-b">
+          <div class="found-name">Oak Foundation</div>
+          <div class="found-rate" id="fb-rate-hand">Rate: 35%</div>
+          <div class="found-progs">🌿 Env &amp; Climate &nbsp;✊ Human Rights &nbsp;🏠 Housing</div>
+          <div class="found-cost" id="fb-cost-hand">→ 7 Unrestricted + multi-year funding</div>
+          <div class="trust-box">
+            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:2px;">TRUST LADDER</div>
+            <div id="trust-pips"></div>
+            <div style="font-size:9px;margin-top:2px;" id="trust-lbl"></div>
+          </div>
+        </div>
       </div>
-      <div id="prog-list"></div>
-      <div style="font-size:11px;color:var(--yellow);margin-top:8px;" id="prog-ciu">Projected CIU from programs: 0</div>
     </div>
 
-    <!-- LOG TAB -->
-    <div class="tab-panel" id="panel-log">
+    <!-- PROGRAMS & LOG TAB -->
+    <div class="tab-panel" id="panel-tracker">
+      <div class="sec-lbl">🏛 Your Programs</div>
+      <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">Every 5 turns: 3 Budget per program (Restricted first). Each active program = 10 <span class="ciu-badge">CIU</span> at game end.</div>
+      <div id="prog-list"></div>
+      <div style="font-size:11px;color:var(--yellow);margin-top:6px;margin-bottom:14px;" id="prog-ciu">Projected CIU from programs: 0</div>
+
       <div class="sec-lbl">📜 Game Log</div>
       <div id="log-entries"></div>
     </div>
@@ -589,7 +616,8 @@ function initGame(){
     discarding:false,
   };
   const full=shuffle(buildDeck());
-  const safe=full.filter(c=>c.type==='action'||c.type==='program'||c.type==='wild');
+  // Start hand: only actions and programs (no wild, no crisis, no fundraising)
+  const safe=full.filter(c=>c.type==='action'||c.type==='program');
   const rest=full.filter(c=>!safe.includes(c));
   G.hand=safe.slice(0,5);
   G.deck=shuffle([...safe.slice(5),...rest]);
@@ -724,9 +752,8 @@ function finishTurn(){
   if(G.turn%5===0)doMaintenance();
   if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
   G.turn++;G.gained=false;G.drawn=false;G.selected=[];
-  // If over 5 cards, stay on apply tab and force discard
   if(G.hand.length>5){
-    showTab('apply');
+    showTab('gameplay');
     G.discarding=true;
     updateUI();
     pushN(`Hand limit! Discard 1 card before continuing.`,'n-maint',3000);
@@ -736,7 +763,7 @@ function finishTurn(){
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first.';
-  showTab('hand');
+  showTab('gameplay');
   updateUI();
 }
 
@@ -769,7 +796,7 @@ function doDiscard(){
       document.getElementById('btn-gain').disabled=false;
       document.getElementById('btn-draw').disabled=true;
       document.getElementById('phase-hint').textContent='Gain Budget first.';
-      showTab('hand');
+      showTab('gameplay');
     }
   }
   updateUI();
@@ -824,7 +851,7 @@ function submitAppBoth(progCard,actionCards){
   addLog(`Applied 🏠 Housing to BOTH foundations. Cost: 3 Budget + 3 actions.`,'neutral');
   const rollA=Math.random(),rollB=Math.random(),rateB=oakRate();
   const approvedA=rollA<0.20,approvedB=rollB<rateB;
-  let html='<strong>🏠 Housing — Both Foundations</strong><br><br>';
+  let html='<strong>🏠 Housing — Both Foundations</strong><br><small style="color:#666;">Each foundation rolls independently</small><br><br>';
   if(approvedA){
     G.restricted+=7;
     G.programs.push({name:'Housing',source:'restricted',dropped:false,oakMultiyear:false,fromB:false});
@@ -906,17 +933,15 @@ function updateUI(){
   document.getElementById('free-disp').textContent=G.free;
   document.getElementById('restr-disp').textContent=G.restricted;
   const over=G.hand.length>5;
-  document.getElementById('hand-count').textContent=`(${G.hand.length}/5${over?' — OVER LIMIT':''})`;
-  const apc=document.getElementById('apply-hand-count');
-  if(apc)apc.textContent=`(${G.hand.length}/5${over?' — discard 1':''})`;
+  document.getElementById('hand-count').textContent=`(${G.hand.length}/5${over?' — discard 1':''})`;
   // Oak rate + cost
   const oc=oakCost();const rate=Math.round(oakRate()*100);
-  document.getElementById('fb-rate-hand').textContent=`Rate: ${rate}%`;
-  document.getElementById('fb-cost-hand').innerHTML=`Cost: 1 prog + ${oc.action} action + ${oc.budget} Budget<br>→ 7 Unrestricted + 🌟`;
-  document.getElementById('fb-rate-apply').textContent=`Rate: ${rate}%`;
-  document.getElementById('oak-gives-lbl').textContent=`+7 Unrestricted + 🌟`;
+  const fbrh=document.getElementById('fb-rate-hand');if(fbrh)fbrh.textContent=`Rate: ${rate}%`;
+  const fbch=document.getElementById('fb-cost-hand');if(fbch)fbch.innerHTML=`→ 7 Unrestricted + multi-year funding<br>Cost: 1 prog + ${oc.action} action + ${oc.budget} Budget`;
+  const fbra=document.getElementById('fb-rate-apply');if(fbra)fbra.textContent=`Rate: ${rate}%`;
+  const hora=document.getElementById('howto-oak-rate');if(hora)hora.textContent=`Approval Rate: ${rate}% → up to 80%`;
   renderTrust();
-  renderHand('dossier');renderHand('apply');
+  renderHand();
   renderPrograms();renderLog();updateChips();
   // Discard button state
   updateDiscardBtn();
@@ -950,8 +975,8 @@ function renderTrust(){
   if(lbl)lbl.textContent=`Next cost: ${oc.action} action + ${oc.budget} Budget`;
 }
 
-function renderHand(ctx){
-  const el=document.getElementById(ctx==='dossier'?'hand-dossier':'hand-apply');
+function renderHand(){
+  const el=document.getElementById('hand-apply');
   if(!el)return;
   if(!G.hand.length){el.innerHTML='<div class="empty-hand">Hand empty</div>';return;}
   el.innerHTML='';
@@ -963,7 +988,7 @@ function renderHand(ctx){
     const displayName=emoji?`${emoji} ${c.name}`:c.name;
     const bothBadge=c.name==='Housing'?'<div style="font-size:8px;margin-top:2px;background:var(--purple);color:var(--white);padding:1px 4px;display:inline-block;">★ BOTH</div>':'';
     div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div><div class="c-desc">${c.desc}</div>${bothBadge}<div class="c-chk">✓</div>`;
-    if(ctx==='apply')div.onclick=()=>toggleSel(i);
+    div.onclick=()=>toggleSel(i);
     el.appendChild(div);
   });
 }
@@ -1067,9 +1092,9 @@ function showTab(name){
   if(btn)btn.classList.add('active');
   const panel=document.getElementById('panel-'+name);
   if(panel)panel.classList.add('active');
-  if(name==='apply'){G.selected=[];renderHand('apply');updateChips();updateDiscardBtn();}
+  if(name==='gameplay'){G.selected=[];renderHand();updateChips();updateDiscardBtn();}
 }
-function viewLog(){showScreen('game');showTab('log');}
+function viewLog(){showScreen('game');showTab('tracker');}
 
 // =====================================================
 //  END SCREENS
@@ -1142,11 +1167,11 @@ function addLog(text,type){G.log.push({turn:G.turn,text,type});}
 // =====================================================
 function startGame(){
   initGame();
-  showScreen('game');showTab('hand');
+  showScreen('game');showTab('gameplay');
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first.';
-  addLog('Game started! You have 5 cards. Gain Budget, then draw each turn.','neutral');
+  addLog('Game started! You have 5 cards. Gain Budget, then apply or draw each turn.','neutral');
   updateUI();
   try{ac();startMusic();}catch(e){}
 }
