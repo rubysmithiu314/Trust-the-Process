@@ -738,28 +738,30 @@ function resolveFundraising(card){
   const total=G.free+G.restricted;
   const ico='💳';
 
-  // Zero budget case — lose Gain Budget this turn
+  // Zero budget case — lose Gain Budget this turn, must draw card
   if(total===0){
     addLog(`FUNDRAISING: ${card.name} — Zero budget. Lost this turn's income.`,'bad');
     G.discard.push(card);
-    G.gained=true; // block gain this turn
+    G.gained=true;  // block gain this turn
+    G.drawn=false;  // reset so player can actually draw the next card
     document.getElementById('btn-gain').disabled=true;
     document.getElementById('btn-draw').disabled=false;
     document.getElementById('phase-hint').textContent='No income this turn. Draw a card to continue.';
     showModal(ico,'Cultivation Failure — Income Lost',
       `<strong>${card.name}</strong><br><br>
        You had no budget to invest in donor cultivation, so your outreach fell flat.<br><br>
-       <strong style="color:#E8261A;">Your +1 Budget income for this turn is forfeited.</strong> You will not collect Budget at the start of next turn either — your next action is to draw a card and continue playing.<br><br>
+       <strong style="color:#E8261A;">Your +1 Budget income for this turn is forfeited.</strong> Drawing a card starts this turn — you will not collect Budget first.<br><br>
        <em>Donor relationships require investment. No investment, no return.</em>`,
-      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModalAndEnableDraw()'}]);
+      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModal()'}]);
     updateUI();return;
   }
 
-  // Can't afford (has some budget but not enough)
+  // Can't afford (has some budget but not enough) — lose income, must draw
   if(total<cost){
     addLog(`FUNDRAISING: ${card.name} — Can't afford (need ${cost} Budget). Opportunity lost.`,'bad');
     G.discard.push(card);
-    G.gained=true; // block gain this turn — cultivation opportunity means income forfeited
+    G.gained=true;  // block gain this turn
+    G.drawn=false;  // reset so player can actually draw
     document.getElementById('btn-gain').disabled=true;
     document.getElementById('btn-draw').disabled=false;
     document.getElementById('phase-hint').textContent='Opportunity missed. Draw a card to continue.';
@@ -768,7 +770,7 @@ function resolveFundraising(card){
        You couldn't invest enough in this cultivation opportunity, so it fell through.<br><br>
        <strong style="color:#E8261A;">Your +1 Budget income for this turn is forfeited.</strong> Draw a card to continue — no budget gain this turn.<br><br>
        <em>Donor cultivation costs money before it returns money. This is a core tension in nonprofit finance.</em>`,
-      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModalAndEnableDraw()'}]);
+      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModal()'}]);
     updateUI();return;
   }
 
@@ -781,12 +783,6 @@ function resolveFundraising(card){
     `<strong>${card.name}</strong><br><br>Spent <strong>${cost} Budget</strong> on donor cultivation.<br><br><em>Restricted funding cannot cover this — only unrestricted Budget paid. Another reason Oak Foundation's unrestricted grants matter.</em>`,
     'fund',[{lbl:'Worth It',fn:'closeModal()'}]);
   updateUI();finishTurn();
-}
-
-function closeModalAndEnableDraw(){
-  closeModal();
-  document.getElementById('btn-draw').disabled=false;
-  document.getElementById('phase-hint').textContent='Draw a card to continue (no income this turn).';
 }
 
 function resolveGift(card){
@@ -838,14 +834,21 @@ function finishTurn(){
 //  MAINTENANCE
 // =====================================================
 function doMaintenance(){
-  const active=G.programs.filter(p=>!p.dropped);
-  if(!active.length)return;
+  // Only charge programs that have been owned for at least 5 full turns
+  const allActive=G.programs.filter(p=>!p.dropped);
+  const chargeable=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))>=5);
+  const exempt=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))<5);
+  if(!chargeable.length){
+    if(exempt.length)addLog(`— Maintenance check: all programs newly funded, no charge yet —`,'neutral');
+    return;
+  }
   const cost=3;
-  const totalNeeded=active.length*cost;
+  const totalNeeded=chargeable.length*cost;
   const totalAvail=G.free+G.restricted;
-  addLog(`— Maintenance: ${active.length} program(s) × 3 Budget = ${totalNeeded} needed —`,'neutral');
+  addLog(`— Maintenance: ${chargeable.length} program(s) × 3 Budget = ${totalNeeded} needed —`,'neutral');
+  if(exempt.length)addLog(`(${exempt.length} newly funded program(s) not yet charged)`, 'neutral');
   if(totalAvail>=totalNeeded){
-    active.forEach(prog=>{
+    chargeable.forEach(prog=>{
       if(G.restricted>=cost){G.restricted-=cost;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');pushN(`−3 Restricted: ${prog.name}`,'n-maint');}
       else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(cost-fr);addLog(`Maintained "${prog.name}" (${fr}R+${cost-fr}U).`,'neutral');pushN(`−3 Budget: ${prog.name}`,'n-maint');}
       else{G.free-=cost;addLog(`Maintained "${prog.name}" (Unrestricted).`,'neutral');pushN(`−3 Unrestricted: ${prog.name}`,'n-maint');}
@@ -855,12 +858,12 @@ function doMaintenance(){
   }
   const canKeep=Math.floor(totalAvail/cost);
   if(canKeep===0){
-    active.forEach(prog=>{prog.dropped=true;addLog(`DROPPED "${prog.name}" — no budget.`,'bad');});
+    chargeable.forEach(prog=>{prog.dropped=true;addLog(`DROPPED "${prog.name}" — no budget.`,'bad');});
     G.free=0;G.restricted=0;
-    pushN('All programs dropped — no budget!','n-maint',4000);
+    pushN('Programs dropped — no budget for maintenance!','n-maint',4000);
     updateUI();return;
   }
-  showMaintenanceChoice(active,canKeep,cost);
+  showMaintenanceChoice(chargeable,canKeep,cost);
 }
 
 function showMaintenanceChoice(activeProgs,canKeep,costEach){
@@ -973,9 +976,10 @@ function findOrCreateProgram(name,source,oakMultiyear,fromB){
   const existing=G.programs.find(p=>p.name===name&&p.dropped);
   if(existing){
     existing.dropped=false;existing.source=source;existing.oakMultiyear=oakMultiyear;existing.fromB=fromB;
+    existing.acquiredTurn=G.turn; // reset maintenance clock on re-funding
     return false; // not new
   }
-  G.programs.push({name,source,dropped:false,oakMultiyear,fromB});
+  G.programs.push({name,source,dropped:false,oakMultiyear,fromB,acquiredTurn:G.turn});
   G.totalProgramsApproved++;
   return true; // new
 }
@@ -1068,12 +1072,12 @@ function updateUI(){
   const fbra=el('fb-rate-apply');if(fbra)fbra.textContent=`Rate: ${rate}%`;
   const hora=el('howto-oak-rate');if(hora)hora.textContent=`Rate: ${rate}% → up to 80%`;
   renderTrust();renderHand();renderProgDots();renderPrograms();renderLog();updateChips();updateDiscardBtn();
-  // Maintenance warning
-  const active=G.programs.filter(p=>!p.dropped);
+  // Maintenance warning - only for programs that will actually be charged
   const nextM=Math.ceil(G.turn/5)*5;const away=nextM-G.turn;
+  const chargeableWarn=G.programs.filter(p=>!p.dropped&&(nextM-(p.acquiredTurn||0))>=5);
   const mw=el('maint-due');
-  if(mw){mw.style.display=(active.length>0&&away<=2&&away>0)?'block':'none';
-    if(active.length>0&&away<=2&&away>0)mw.textContent=`⚠ Maintenance in ${away} turn(s): ${active.length} × 3 = ${active.length*3} Budget needed`;}
+  if(mw){mw.style.display=(chargeableWarn.length>0&&away<=2&&away>0)?'block':'none';
+    if(chargeableWarn.length>0&&away<=2&&away>0)mw.textContent=`⚠ Maintenance in ${away} turn(s): ${chargeableWarn.length} program(s) × 3 = ${chargeableWarn.length*3} Budget due`;}
 }
 
 function renderTrust(){
@@ -1310,8 +1314,8 @@ function showEndScreen(){
   document.getElementById('score-card').innerHTML=`
     <div style="font-family:'Special Elite',serif;font-size:14px;margin-bottom:9px;text-align:center;">Final Score — <span class="ciu-badge">CIU</span> Breakdown</div>
     <div style="font-size:10px;color:var(--gray);margin-bottom:7px;font-style:italic;">Community Impact Units: financial health + programmatic reach</div>
-    <div class="score-row"><span>Programs Funded (end of game)</span><span class="s-val">${active.length}/5</span></div>
-    <div class="score-row"><span>Total Programs Approved (all game)</span><span class="s-val">${G.totalProgramsApproved}</span></div>
+    <div class="score-row"><span>Programs funded at game end</span><span class="s-val">${active.length===0?'None':active.length===1?'1 program':active.length+' programs'}</span></div>
+    <div class="score-row"><span>Total grants approved</span><span class="s-val">${G.totalProgramsApproved}</span></div>
     <div class="score-row"><span>Unrestricted Budget</span><span class="s-val">${G.free}</span></div>
     <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restricted}</span></div>
     ${bonusRow}
