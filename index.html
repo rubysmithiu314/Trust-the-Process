@@ -245,9 +245,9 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
   <h1 class="t-title">Trust<br>the<br>Process</h1>
   <div class="t-sub">Oak Foundation Case Study</div>
   <div class="t-card">
-    <h3>How to Play — 30-Turn Fiscal Cycle</h3>
+    <h3>How to Play</h3>
     <p>You are the director of a nonprofit.<br>
-    Your goal: survive 30 turns and build programs.<br>
+    Your goal: survive a <strong>30-Turn Fiscal Cycle</strong> and build programs.<br>
     Your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> (Community Impact Units) = Budget + (Programs × 10).<br>
     Compare with classmates during debrief.</p>
     <p><strong>Each turn:</strong><br>
@@ -311,8 +311,9 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
 
     <!-- HOW TO PLAY -->
     <div class="tab-panel" id="panel-howto">
-      <div class="sec-lbl">📖 How to Play — 30-Turn Fiscal Cycle</div>
+      <div class="sec-lbl">📖 How to Play</div>
       <div style="font-size:11px;line-height:1.85;color:var(--white);margin-bottom:10px;">
+        Your goal: survive a <strong>30-Turn Fiscal Cycle</strong> and build programs.<br><br>
         1. Hit <strong style="color:var(--yellow);">Gain 1 Budget</strong> — collect your income. Each gain starts a new turn.<br>
         2. Hit <strong style="color:var(--teal);">Draw Card</strong> — draw your next card.<br>
         3. Optionally <strong style="color:var(--teal);">apply to a foundation</strong> for funding.<br>
@@ -374,7 +375,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
           <div class="hand-wrap" id="hand-apply"></div>
         </div>
         <div class="dots-section">
-          <div class="dots-label">Programs <span id="prog-count-lbl">0/5</span></div>
+          <div class="dots-label">Programs</div>
           <div id="prog-dots-row"></div>
         </div>
       </div>
@@ -577,7 +578,7 @@ const ACTION_EMOJI={'Submit Report':'📎','Admin Costs':'👥','Justify Costs':
 
 function buildDeck(){
   const d=[];
-  [['Submit Report','📎'],['Admin Costs','👥'],['Justify Costs','💲']].forEach(([n,e])=>{
+  [['Submit Report','🗂'],['Admin Costs','👥'],['Justify Costs','💲']].forEach(([n,e])=>{
     for(let i=0;i<4;i++)d.push({type:'action',name:n,emoji:e,desc:'Required for grant applications'});
   });
   d.push(...[
@@ -648,7 +649,7 @@ function pushN(txt,cls,dur=2400){
 // =====================================================
 function refillHand(){
   let attempts=0;
-  while(G.hand.length<5&&attempts<100){
+  while(G.hand.length<5&&attempts<200){
     attempts++;
     if(!G.deck.length){
       if(!G.discard.length)break;
@@ -656,9 +657,10 @@ function refillHand(){
       addLog('Deck reshuffled from discard.','neutral');
     }
     const card=G.deck.pop();
-    if(card.type==='crisis'||card.type==='fundraising'){
+    // Skip non-hand cards during refill — push back and continue
+    if(card.type==='crisis'||card.type==='fundraising'||card.type==='wild'||card.type==='gift'){
       G.deck.unshift(card);
-      if(G.deck.every(c=>c.type==='crisis'||c.type==='fundraising'))break;
+      if(G.deck.every(c=>c.type==='crisis'||c.type==='fundraising'||c.type==='wild'||c.type==='gift'))break;
       continue;
     }
     G.hand.push(card);
@@ -698,7 +700,11 @@ function doDraw(){
   if(card.type==='fundraising'){resolveFundraising(card);return;}
   if(card.type==='gift'){resolveGift(card);return;}
   if(card.type==='wild'){
+    // Wild: consumed from game, show picker immediately
     addLog(`Drew: ${card.name}! Choose a program.`,'good');
+    G.drawn=true; // mark drawn so turn tracking works
+    document.getElementById('btn-gain').disabled=false;
+    document.getElementById('phase-hint').textContent='Choose a program below.';
     updateUI();showWildPicker();return;
   }
   G.hand.push(card);
@@ -731,40 +737,56 @@ function resolveFundraising(card){
   const cost=card.cost||1;
   const total=G.free+G.restricted;
   const ico='💳';
-  // Zero budget + fundraising card = lose gain budget this turn
+
+  // Zero budget case — lose Gain Budget this turn
   if(total===0){
-    addLog(`FUNDRAISING: ${card.name} — Zero budget. Lost this turn's income due to lack of donor cultivation.`,'bad');
+    addLog(`FUNDRAISING: ${card.name} — Zero budget. Lost this turn's income.`,'bad');
     G.discard.push(card);
-    G.gained=true; // can't gain this turn
+    G.gained=true; // block gain this turn
     document.getElementById('btn-gain').disabled=true;
-    showModal(ico,'Cultivation Failure',
-      `<strong>${card.name}</strong><br><br>You had no budget to invest in donor cultivation, so your outreach fell flat.<br><br><strong>You lose your income for this turn.</strong> Gain Budget is skipped — draw a card to continue.<br><br><em>Donor relationships require investment. No investment, no return.</em>`,
-      'crisis',[{lbl:'Draw to Continue',fn:'closeModalAndDraw()'}]);
+    document.getElementById('btn-draw').disabled=false;
+    document.getElementById('phase-hint').textContent='No income this turn. Draw a card to continue.';
+    showModal(ico,'Cultivation Failure — Income Lost',
+      `<strong>${card.name}</strong><br><br>
+       You had no budget to invest in donor cultivation, so your outreach fell flat.<br><br>
+       <strong style="color:#E8261A;">Your +1 Budget income for this turn is forfeited.</strong> You will not collect Budget at the start of next turn either — your next action is to draw a card and continue playing.<br><br>
+       <em>Donor relationships require investment. No investment, no return.</em>`,
+      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModalAndEnableDraw()'}]);
     updateUI();return;
   }
+
+  // Can't afford (has some budget but not enough)
   if(total<cost){
-    addLog(`FUNDRAISING: ${card.name} — Can't afford (${cost} Budget). Skipped.`,'bad');
+    addLog(`FUNDRAISING: ${card.name} — Can't afford (need ${cost} Budget). Opportunity lost.`,'bad');
     G.discard.push(card);
-    showModal(ico,'Fundraising Missed',
-      `<strong>${card.name}</strong> costs ${cost} Budget to host.<br><br>You couldn't afford it — opportunity lost.<br><br><em>Donor cultivation costs money before it returns money.</em>`,
-      'fund',[{lbl:'Noted',fn:'closeModal()'}]);
-    finishTurn();return;
+    G.gained=true; // block gain this turn — cultivation opportunity means income forfeited
+    document.getElementById('btn-gain').disabled=true;
+    document.getElementById('btn-draw').disabled=false;
+    document.getElementById('phase-hint').textContent='Opportunity missed. Draw a card to continue.';
+    showModal(ico,'Fundraising Opportunity Missed — Income Lost',
+      `<strong>${card.name}</strong> requires <strong>${cost} Budget</strong> to host.<br><br>
+       You couldn't invest enough in this cultivation opportunity, so it fell through.<br><br>
+       <strong style="color:#E8261A;">Your +1 Budget income for this turn is forfeited.</strong> Draw a card to continue — no budget gain this turn.<br><br>
+       <em>Donor cultivation costs money before it returns money. This is a core tension in nonprofit finance.</em>`,
+      'crisis',[{lbl:'Draw Card to Continue',fn:'closeModalAndEnableDraw()'}]);
+    updateUI();return;
   }
+
+  // Can afford — pay and continue normally
   let rem=cost;if(G.free>=rem){G.free-=rem;}else{rem-=G.free;G.free=0;G.restricted-=rem;}
   G.discard.push(card);
   addLog(`FUNDRAISING: ${card.name} — spent ${cost} Budget.`,'neutral');
   pushN(`${ico} ${card.name}: −${cost} Budget`,'n-fund');
   showModal(ico,'Fundraising Expense',
-    `<strong>${card.name}</strong><br><br>Spent ${cost} Budget on donor cultivation.<br><br><em>Restricted funding cannot cover this — only unrestricted Budget paid. Another reason Oak Foundation's unrestricted grants matter.</em>`,
+    `<strong>${card.name}</strong><br><br>Spent <strong>${cost} Budget</strong> on donor cultivation.<br><br><em>Restricted funding cannot cover this — only unrestricted Budget paid. Another reason Oak Foundation's unrestricted grants matter.</em>`,
     'fund',[{lbl:'Worth It',fn:'closeModal()'}]);
   updateUI();finishTurn();
 }
 
-function closeModalAndDraw(){
+function closeModalAndEnableDraw(){
   closeModal();
-  // Draw card to continue the turn (budget gain already lost)
   document.getElementById('btn-draw').disabled=false;
-  document.getElementById('phase-hint').textContent='Draw a card to continue.';
+  document.getElementById('phase-hint').textContent='Draw a card to continue (no income this turn).';
 }
 
 function resolveGift(card){
@@ -1018,7 +1040,12 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
 // =====================================================
 function toggleSel(i){
   const idx=G.selected.indexOf(i);
-  if(idx>=0)G.selected.splice(idx,1);else G.selected.push(i);
+  if(idx>=0){
+    G.selected.splice(idx,1);
+  }else{
+    if(G.selected.length>=4){pushN('Max 4 cards selected (1 program + 3 actions)','n-deny',1800);return;}
+    G.selected.push(i);
+  }
   renderHand();updateChips();updateDiscardBtn();
 }
 
@@ -1051,10 +1078,11 @@ function updateUI(){
 
 function renderTrust(){
   const pips=document.getElementById('trust-pips');
-  if(pips)pips.innerHTML=[...Array(5)].map((_,i)=>`<span class="t-pip${i<G.oakApprovals?' on':''}"></span>`).join('');
+  // 3 pips: pip 0 = always yellow (started relationship), pips 1-2 unlock with approvals
+  if(pips)pips.innerHTML=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
   const oc=oakCost();
   const lbl=document.getElementById('trust-lbl');
-  if(lbl)lbl.textContent=`Next cost: ${oc.action} action + ${oc.budget} Budget`;
+  if(lbl)lbl.textContent=`Next: ${oc.action} action + ${oc.budget} Budget`;
 }
 
 function renderHand(){
@@ -1080,33 +1108,38 @@ function renderHand(){
 
 function renderProgDots(){
   const row=document.getElementById('prog-dots-row');
-  const countLbl=document.getElementById('prog-count-lbl');
   if(!row)return;
-  // Show 5 dots, right-to-left (flex-direction:row-reverse)
-  const activeProgs=G.programs.filter(p=>!p.dropped);
-  const count=activeProgs.length;
-  if(countLbl)countLbl.textContent=`${count}/5`;
+  // Always show all 5 program types. Gray = not funded. Pink = funded (active). Gray+dim = dropped.
+  // If same program funded multiple times, show count badge.
   row.innerHTML='';
-  // Build 5 slots. Fill from right (index 0 = rightmost due to row-reverse)
-  for(let i=0;i<5;i++){
+  PROG_NAMES.forEach(progName=>{
+    const activeCount=G.programs.filter(p=>p.name===progName&&!p.dropped).length;
+    const droppedCount=G.programs.filter(p=>p.name===progName&&p.dropped).length;
+    const hasFunding=activeCount>0;
+    const onlyDropped=activeCount===0&&droppedCount>0;
+
     const dot=document.createElement('div');
-    if(i<G.programs.length){
-      const prog=G.programs[G.programs.length-1-i]; // newest on right
-      if(prog.dropped){
-        dot.className='prog-dot dropped';
-        dot.textContent=PROG_EMOJI[prog.name]||'📋';
-        dot.title=prog.name+' (dropped)';
-      }else{
-        dot.className='prog-dot active';
-        dot.textContent=PROG_EMOJI[prog.name]||'📋';
-        dot.title=prog.name;
-      }
+    dot.style.cssText='position:relative;width:32px;height:32px;border:3px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:3px 3px 0 var(--navy);flex-shrink:0;';
+    dot.title=progName;
+
+    if(hasFunding){
+      dot.style.background='var(--pink)';
+    }else if(onlyDropped){
+      dot.style.background='var(--gray)';dot.style.opacity='.4';
     }else{
-      dot.className='prog-dot empty';
-      dot.title='No program';
+      dot.style.background='rgba(255,255,255,0.07)';dot.style.borderStyle='dashed';
+    }
+    dot.textContent=PROG_EMOJI[progName]||'📋';
+
+    // Count badge if more than 1
+    if(activeCount>1){
+      const badge=document.createElement('div');
+      badge.style.cssText='position:absolute;top:-6px;right:-6px;background:var(--yellow);color:var(--navy);border:2px solid var(--navy);border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;font-family:DM Mono,monospace;';
+      badge.textContent=activeCount;
+      dot.appendChild(badge);
     }
     row.appendChild(dot);
-  }
+  });
 }
 
 function renderPrograms(){
@@ -1277,7 +1310,8 @@ function showEndScreen(){
   document.getElementById('score-card').innerHTML=`
     <div style="font-family:'Special Elite',serif;font-size:14px;margin-bottom:9px;text-align:center;">Final Score — <span class="ciu-badge">CIU</span> Breakdown</div>
     <div style="font-size:10px;color:var(--gray);margin-bottom:7px;font-style:italic;">Community Impact Units: financial health + programmatic reach</div>
-    <div class="score-row"><span>Programs Funded</span><span class="s-val">${active.length}/${G.totalProgramsApproved} approved</span></div>
+    <div class="score-row"><span>Programs Funded (end of game)</span><span class="s-val">${active.length}/5</span></div>
+    <div class="score-row"><span>Total Programs Approved (all game)</span><span class="s-val">${G.totalProgramsApproved}</span></div>
     <div class="score-row"><span>Unrestricted Budget</span><span class="s-val">${G.free}</span></div>
     <div class="score-row"><span>Restricted Budget (not counted)</span><span style="color:var(--gray);">${G.restricted}</span></div>
     ${bonusRow}
