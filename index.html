@@ -97,7 +97,11 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
 .bbox-note{font-size:9px;color:var(--gray);margin-top:2px;}
 
 /* ---- PROGRAM DOTS (top right of gameplay) ---- */
-#prog-dots-row{display:flex;flex-direction:row-reverse;gap:4px;align-items:center;}
+#prog-dots-row{display:flex;flex-direction:row-reverse;gap:6px;align-items:flex-start;}
+
+/* Each program group: dot + countdown strip below */
+.prog-group{display:flex;flex-direction:column;align-items:center;gap:3px;}
+
 .prog-dot{
   width:32px;height:32px;border:3px solid var(--navy);
   display:flex;align-items:center;justify-content:center;
@@ -108,7 +112,39 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
 .prog-dot.active{background:var(--pink);box-shadow:3px 3px 0 var(--navy);}
 .prog-dot.dropped{background:var(--gray);opacity:.5;}
 .prog-dot.empty{background:rgba(255,255,255,.07);border-style:dashed;}
-.prog-dot-lbl{font-size:8px;color:var(--gray);white-space:nowrap;}
+
+/* Multi-funding badge on dot */
+.prog-dot-count{
+  position:absolute;top:-7px;right:-7px;
+  background:var(--yellow);color:var(--navy);
+  border:2px solid var(--navy);border-radius:50%;
+  width:16px;height:16px;font-size:8px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;
+}
+
+/* Maintenance countdown strip */
+.prog-maint-strip{
+  display:flex;flex-direction:column;gap:2px;
+  align-items:center;
+  max-width:48px;
+}
+.maint-tick{
+  font-size:8px;line-height:1.2;
+  white-space:nowrap;
+  padding:1px 3px;
+  border-left:2px solid;
+}
+.maint-tick.unrestr{
+  color:#FF6B35;border-color:#FF6B35;
+}
+.maint-tick.restr{
+  color:#c8b3ff;border-color:var(--purple);
+}
+.maint-tick.urgent{
+  color:var(--red) !important;border-color:var(--red) !important;
+  font-weight:bold;
+}
 
 /* ---- HAND ROW ---- */
 .hand-and-dots{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
@@ -249,6 +285,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
     <p>You are the director of a nonprofit.<br>
     Your goal: survive a <strong>30-Turn Fiscal Cycle</strong> and build programs.<br>
     Your <strong>Final <span class="ciu-badge">CIU</span> Score</strong> (Community Impact Units) = Budget + (Programs × 10).<br>
+    The budget goal is <strong>70</strong> — you can surpass it.<br>
     Compare with classmates during debrief.</p>
     <p><strong>Each turn:</strong><br>
     1. Hit <strong>Gain 1 Budget</strong> — collect income. Each time you gain budget, a new turn begins.<br>
@@ -260,13 +297,13 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         <div class="fcol-name">Traditional Foundation</div>
         <div class="fcol-rate">Approval Rate: 20% (flat)</div>
         <div class="fcol-prog">🏥 Health &nbsp; 📚 Education &nbsp; 🏠 Housing</div>
-        <div class="fcol-gives">Gives: 7 Restricted Budget</div>
+        <div class="fcol-gives">Gives: 9 Restricted Budget</div>
       </div>
       <div class="fcol fcol-b">
         <div class="fcol-name">Oak Foundation</div>
         <div class="fcol-rate">Approval Rate: 35% → up to 80%</div>
         <div class="fcol-prog">🌿 Env &amp; Climate &nbsp; ✊ Human Rights &nbsp; 🏠 Housing</div>
-        <div class="fcol-gives">Gives: 7 Unrestricted + multi-year bonus</div>
+        <div class="fcol-gives">Gives: 9 Unrestricted + multi-year bonus</div>
       </div>
     </div>
     <p>🏠 <strong>Housing</strong> is accepted by both foundations. Apply to both at once for the same cost — each foundation rolls independently. You may be approved by one, both, or neither.</p>
@@ -286,10 +323,10 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
     <div class="bbar-wrap">
       <div class="bbar-lbl">BUDGET</div>
       <div class="bbar-outer">
-        <div class="bbar-track"><div class="bbar-fill" id="bbar" style="width:10%"></div></div>
+        <div class="bbar-track"><div class="bbar-fill" id="bbar" style="width:4%"></div></div>
         <div class="bbar-flag">🏁</div>
       </div>
-      <div class="bbar-val" id="bbar-val">3/30</div>
+      <div class="bbar-val" id="bbar-val">3/70</div>
       <div class="restr-pill" id="restr-pill">Restricted: 0</div>
     </div>
     <div class="snd-wrap">
@@ -313,7 +350,8 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
     <div class="tab-panel" id="panel-howto">
       <div class="sec-lbl">📖 How to Play</div>
       <div style="font-size:11px;line-height:1.85;color:var(--white);margin-bottom:10px;">
-        Your goal: survive a <strong>30-Turn Fiscal Cycle</strong> and build programs.<br><br>
+        Your goal: survive a <strong>30-Turn Fiscal Cycle</strong> and build programs.<br>
+        Budget target is <strong>70</strong> — you can exceed it. Final score is Budget + (Programs × 10).<br><br>
         1. Hit <strong style="color:var(--yellow);">Gain 1 Budget</strong> — collect your income. Each gain starts a new turn.<br>
         2. Hit <strong style="color:var(--teal);">Draw Card</strong> — draw your next card.<br>
         3. Optionally <strong style="color:var(--teal);">apply to a foundation</strong> for funding.<br>
@@ -324,13 +362,13 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
           <div class="found-name">Traditional Foundation</div>
           <div style="font-size:10px;color:var(--pink);font-weight:bold;margin-bottom:3px;">Rate: 20% (flat)</div>
           <div class="found-progs">🏥 Health &nbsp; 📚 Education &nbsp; 🏠 Housing</div>
-          <div class="found-cost">Cost: 1 prog + 3 action + 3 Budget → 7 Restricted</div>
+          <div class="found-cost">Cost: 1 prog + 3 action + 3 Budget → 9 Restricted</div>
         </div>
         <div class="found-panel found-b">
           <div class="found-name">Oak Foundation</div>
           <div style="font-size:10px;color:var(--pink);font-weight:bold;margin-bottom:3px;" id="howto-oak-rate">Rate: 35% → up to 80%</div>
           <div class="found-progs">🌿 Env &amp; Climate &nbsp; ✊ Human Rights &nbsp; 🏠 Housing</div>
-          <div class="found-cost">Gives 7 Unrestricted + multi-year bonus at game end</div>
+          <div class="found-cost">Gives 9 Unrestricted + multi-year bonus at game end</div>
         </div>
       </div>
       <div style="background:rgba(244,220,38,.08);border:2px solid var(--yellow);padding:7px 10px;font-size:11px;line-height:1.7;margin-bottom:7px;">
@@ -398,7 +436,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         </div>
         <div class="apply-panel apply-panel-a">
           <div class="ap-name">Traditional Foundation</div>
-          <div class="ap-gives">+7 Restricted Budget</div>
+          <div class="ap-gives">+9 Restricted Budget</div>
           <div class="ap-rate">Rate: 20%</div>
           <div style="font-size:9px;color:var(--gray);margin-bottom:3px;">🏥 Health · 📚 Education · 🏠 Housing</div>
           <div class="cost-chips" id="fa-chips"></div>
@@ -406,7 +444,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         </div>
         <div class="apply-panel apply-panel-b">
           <div class="ap-name">Oak Foundation</div>
-          <div class="ap-gives">+7 Unrestricted + multi-year</div>
+          <div class="ap-gives">+9 Unrestricted + multi-year</div>
           <div class="ap-rate" id="fb-rate-apply">Rate: 35%</div>
           <div style="font-size:9px;color:var(--gray);margin-bottom:3px;">🌿 Env · ✊ Human Rights · 🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
@@ -573,7 +611,6 @@ const ALL_P=['Health','Education','Housing','Environment & Climate','Human Right
 const PROG_NAMES=['Health','Education','Housing','Environment & Climate','Human Rights'];
 const CRISIS_ICO={'Overhead Cost':'💸','Rent Due':'🏢','Infrastructure Crisis':'🔧'};
 const PROG_EMOJI={'Health':'🏥','Education':'📚','Housing':'🏠','Environment & Climate':'🌿','Human Rights':'✊'};
-// Action card emojis — greyed out via card-action bg
 const ACTION_EMOJI={'Submit Report':'📎','Admin Costs':'👥','Justify Costs':'💲'};
 
 function buildDeck(){
@@ -593,7 +630,6 @@ function buildDeck(){
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Donor Meal',   desc:'Cultivation — costs 1 Budget',cost:1})),
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Donor Gift',   desc:'Cultivation — costs 1 Budget',cost:1})),
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Event',        desc:'Costs 3 Budget',cost:3})),
-    // Major Gift cultivation card
     {type:'gift',name:'Major Gift',desc:'A cultivation success! +3 Unrestricted Budget',value:3},
     {type:'wild',name:'Job Switch',desc:'Choose any program card for your hand'},
   ]);
@@ -605,14 +641,14 @@ function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.
 //  GAME STATE
 // =====================================================
 let G={};
-let HISTORY=[]; // persists across page session
+let HISTORY=[];
 
 function initGame(){
   G={
     turn:1,maxTurns:30,
     free:3,restricted:0,
     hand:[],deck:[],discard:[],
-    programs:[],  // {name,source,dropped,oakMultiyear,fromB}
+    programs:[],
     log:[],
     oakApprovals:0,
     gained:false,drawn:false,
@@ -634,6 +670,23 @@ function faProgs(){return['Health','Education','Housing'];}
 function fbProgs(){return['Environment & Climate','Human Rights','Housing'];}
 
 // =====================================================
+//  MAINTENANCE COUNTDOWN HELPERS
+// =====================================================
+// Returns turns until next maintenance charge for a program acquired at acquiredTurn
+// Maintenance fires every 5 turns (turns 5,10,15,20,25,30)
+// A program is charged if (maintTurn - acquiredTurn) >= 5
+function turnsUntilMaint(acquiredTurn, currentTurn) {
+  // Find the next maintenance turn >= currentTurn
+  const maintTurns = [5,10,15,20,25,30];
+  for (const mt of maintTurns) {
+    if (mt >= currentTurn && (mt - acquiredTurn) >= 5) {
+      return mt - currentTurn;
+    }
+  }
+  return null; // no more maintenance charges
+}
+
+// =====================================================
 //  NOTIFICATIONS
 // =====================================================
 function pushN(txt,cls,dur=2400){
@@ -650,30 +703,20 @@ function pushN(txt,cls,dur=2400){
 function refillHand(){
   const needed=5-G.hand.length;
   if(needed<=0)return;
-
-  // Separate all cards in deck+discard into fillable vs non-fillable
   const allCards=[...G.deck,...G.discard];
   const fillable=shuffle(allCards.filter(c=>c.type==='action'||c.type==='program'));
   const nonFillable=allCards.filter(c=>c.type!=='action'&&c.type!=='program');
-
-  // Take up to `needed` from fillable, add to hand
   const toAdd=fillable.splice(0,needed);
   G.hand.push(...toAdd);
-
-  // Rebuild deck from remaining fillable + non-fillable, reshuffled
   G.deck=shuffle([...fillable,...nonFillable]);
   G.discard=[];
-
-  if(toAdd.length>0){
-    addLog(`Hand refilled: +${toAdd.length} card(s).`,'neutral');
-  }
+  if(toAdd.length>0){addLog(`Hand refilled: +${toAdd.length} card(s).`,'neutral');}
 }
 
 // =====================================================
 //  TURN ACTIONS
 // =====================================================
 function doGain(){
-  // Each call to doGain = new turn (if previous turn had a draw)
   if(G.drawn){
     if(G.hand.length>5){pushN('Discard 1 card first','n-maint',2000);return;}
     if(G.turn%5===0)doMaintenance();
@@ -702,9 +745,8 @@ function doDraw(){
   if(card.type==='fundraising'){resolveFundraising(card);return;}
   if(card.type==='gift'){resolveGift(card);return;}
   if(card.type==='wild'){
-    // Wild: consumed from game, show picker immediately
     addLog(`Drew: ${card.name}! Choose a program.`,'good');
-    G.drawn=true; // mark drawn so turn tracking works
+    G.drawn=true;
     document.getElementById('btn-gain').disabled=false;
     document.getElementById('phase-hint').textContent='Choose a program below.';
     updateUI();showWildPicker();return;
@@ -739,13 +781,10 @@ function resolveFundraising(card){
   const cost=card.cost||1;
   const total=G.free+G.restricted;
   const ico='💳';
-
-  // Zero budget case — lose Gain Budget this turn, must draw card
   if(total===0){
     addLog(`FUNDRAISING: ${card.name} — Zero budget. Lost this turn's income.`,'bad');
     G.discard.push(card);
-    G.gained=true;  // block gain this turn
-    G.drawn=false;  // reset so player can actually draw the next card
+    G.gained=true;G.drawn=false;
     document.getElementById('btn-gain').disabled=true;
     document.getElementById('btn-draw').disabled=false;
     document.getElementById('phase-hint').textContent='No income this turn. Draw a card to continue.';
@@ -757,13 +796,10 @@ function resolveFundraising(card){
       'crisis',[{lbl:'Draw Card to Continue',fn:'closeModal()'}]);
     updateUI();return;
   }
-
-  // Can't afford (has some budget but not enough) — lose income, must draw
   if(total<cost){
     addLog(`FUNDRAISING: ${card.name} — Can't afford (need ${cost} Budget). Opportunity lost.`,'bad');
     G.discard.push(card);
-    G.gained=true;  // block gain this turn
-    G.drawn=false;  // reset so player can actually draw
+    G.gained=true;G.drawn=false;
     document.getElementById('btn-gain').disabled=true;
     document.getElementById('btn-draw').disabled=false;
     document.getElementById('phase-hint').textContent='Opportunity missed. Draw a card to continue.';
@@ -775,8 +811,6 @@ function resolveFundraising(card){
       'crisis',[{lbl:'Draw Card to Continue',fn:'closeModal()'}]);
     updateUI();return;
   }
-
-  // Can afford — pay and continue normally
   let rem=cost;if(G.free>=rem){G.free-=rem;}else{rem-=G.free;G.free=0;G.restricted-=rem;}
   G.discard.push(card);
   addLog(`FUNDRAISING: ${card.name} — spent ${cost} Budget.`,'neutral');
@@ -820,7 +854,7 @@ function pickWild(prog){
 }
 
 // =====================================================
-//  TURN FINISH (crisis/fundraising/gift only)
+//  TURN FINISH
 // =====================================================
 function finishTurn(){
   if(G.turn%5===0)doMaintenance();
@@ -836,7 +870,6 @@ function finishTurn(){
 //  MAINTENANCE
 // =====================================================
 function doMaintenance(){
-  // Only charge programs that have been owned for at least 5 full turns
   const allActive=G.programs.filter(p=>!p.dropped);
   const chargeable=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))>=5);
   const exempt=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))<5);
@@ -848,7 +881,7 @@ function doMaintenance(){
   const totalNeeded=chargeable.length*cost;
   const totalAvail=G.free+G.restricted;
   addLog(`— Maintenance: ${chargeable.length} program(s) × 3 Budget = ${totalNeeded} needed —`,'neutral');
-  if(exempt.length)addLog(`(${exempt.length} newly funded program(s) not yet charged)`, 'neutral');
+  if(exempt.length)addLog(`(${exempt.length} newly funded program(s) not yet charged)`,'neutral');
   if(totalAvail>=totalNeeded){
     chargeable.forEach(prog=>{
       if(G.restricted>=cost){G.restricted-=cost;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');pushN(`−3 Restricted: ${prog.name}`,'n-maint');}
@@ -964,14 +997,14 @@ function applyTo(which){
     if(!mp){pushN('Need a Traditional Foundation program','n-deny',2000);return;}
     if(acts.length<3){pushN('Need 3 action cards','n-deny',2000);return;}
     if(G.free<3){pushN('Need 3 unrestricted Budget','n-deny',2000);return;}
-    submitApp('A',mp,acts.slice(0,3),3,0.20,'restricted',7);
+    submitApp('A',mp,acts.slice(0,3),3,0.20,'restricted',9);
   }else{
     const mp=progs.find(c=>fbProgs().includes(c.name));
     if(!mp){pushN('Need an Oak Foundation program','n-deny',2000);return;}
     const oc=oakCost();
     if(acts.length<oc.action){pushN(`Need ${oc.action} action card(s) for Oak`,'n-deny',2000);return;}
     if(G.free<oc.budget){pushN(`Need ${oc.budget} Budget for Oak`,'n-deny',2000);return;}
-    submitApp('B',mp,acts.slice(0,oc.action),oc.budget,oakRate(),'unrestricted',7);
+    submitApp('B',mp,acts.slice(0,oc.action),oc.budget,oakRate(),'unrestricted',9);
   }
 }
 
@@ -987,18 +1020,17 @@ function removeUsedCards(progCard,actionCards){
   G.selected=[];
 }
 
-// Find existing active program slot for this name (for re-funding dropped programs)
 function findOrCreateProgram(name,source,oakMultiyear,fromB){
-  // If player previously had this program and it's dropped, revive it
   const existing=G.programs.find(p=>p.name===name&&p.dropped);
   if(existing){
     existing.dropped=false;existing.source=source;existing.oakMultiyear=oakMultiyear;existing.fromB=fromB;
-    existing.acquiredTurn=G.turn; // reset maintenance clock on re-funding
-    return false; // not new
+    existing.acquiredTurn=G.turn;
+    return false;
   }
+  // Allow multiple instances of same program
   G.programs.push({name,source,dropped:false,oakMultiyear,fromB,acquiredTurn:G.turn});
   G.totalProgramsApproved++;
-  return true; // new
+  return true;
 }
 
 function submitAppBoth(progCard,actionCards){
@@ -1009,15 +1041,15 @@ function submitAppBoth(progCard,actionCards){
   const approvedA=rollA<0.20,approvedB=rollB<rateB;
   let html='<strong>🏠 Housing — Both Foundations</strong><br><small style="color:#666;">Each foundation rolls independently</small><br><br>';
   if(approvedA){
-    G.restricted+=7;findOrCreateProgram('Housing','restricted',false,false);
-    html+=`<span style="color:var(--green);">✓ Traditional: APPROVED — +7 Restricted</span><br>`;
-    addLog(`Traditional Foundation APPROVED Housing! +7 Restricted.`,'good');
+    G.restricted+=9;findOrCreateProgram('Housing','restricted',false,false);
+    html+=`<span style="color:var(--green);">✓ Traditional: APPROVED — +9 Restricted</span><br>`;
+    addLog(`Traditional Foundation APPROVED Housing! +9 Restricted.`,'good');
   }else{html+=`<span style="color:var(--red);">✗ Traditional: Denied (20% rate)</span><br>`;addLog(`Traditional DENIED Housing.`,'bad');}
   html+='<br>';
   if(approvedB){
-    G.oakApprovals++;G.free+=7;findOrCreateProgram('Housing','unrestricted',true,true);
-    html+=`<span style="color:var(--teal);">✓ Oak: APPROVED — +7 Unrestricted<br>Multi-year bonus at game end<br>New Oak rate: ${Math.round(oakRate()*100)}%</span>`;
-    addLog(`Oak Foundation APPROVED Housing! +7 Unrestricted. Trust: ${G.oakApprovals}.`,'good');
+    G.oakApprovals++;G.free+=9;findOrCreateProgram('Housing','unrestricted',true,true);
+    html+=`<span style="color:var(--teal);">✓ Oak: APPROVED — +9 Unrestricted<br>Multi-year bonus at game end<br>New Oak rate: ${Math.round(oakRate()*100)}%</span>`;
+    addLog(`Oak Foundation APPROVED Housing! +9 Unrestricted. Trust: ${G.oakApprovals}.`,'good');
   }else{html+=`<span style="color:var(--red);">✗ Oak: Denied (${Math.round(rateB*100)}% rate)</span>`;addLog(`Oak DENIED Housing.`,'bad');}
   if(approvedA||approvedB)SFX.approve();else SFX.deny();
   refillHand();
@@ -1041,7 +1073,7 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
     refillHand();
     showModal('🎉',`${which==='A'?'Traditional':'Oak'} Foundation Approved!`,
       `${PROG_EMOJI[progCard.name]||'📋'} <strong>${progCard.name}</strong> ${isNew?'added':'funding renewed'}!<br><br>
-       +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>Multi-year funding! This program earns +7 Unrestricted at game end if it survives.':''}`,
+       +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>Multi-year funding! This program earns +9 Unrestricted at game end if it survives.':''}`,
       'win',[{lbl:'Great!',fn:'closeModal()'}]);
   }else{
     SFX.deny();
@@ -1061,9 +1093,8 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
 // =====================================================
 function toggleSel(i){
   const idx=G.selected.indexOf(i);
-  if(idx>=0){
-    G.selected.splice(idx,1);
-  }else{
+  if(idx>=0){G.selected.splice(idx,1);}
+  else{
     if(G.selected.length>=4){pushN('Max 4 cards selected (1 program + 3 actions)','n-deny',1800);return;}
     G.selected.push(i);
   }
@@ -1076,10 +1107,11 @@ function toggleSel(i){
 function updateUI(){
   const el=id=>document.getElementById(id);
   el('turn-pill').textContent=`Turn ${G.turn}/30 — Fiscal Cycle`;
-  const pct=Math.min(100,(G.free/30)*100);
+  // Budget bar: out of 70
+  const pct=Math.min(100,(G.free/70)*100);
   const bar=el('bbar');
-  bar.style.width=pct+'%';bar.className='bbar-fill'+(G.free<=4?' danger':G.free<=9?' warn':'');
-  el('bbar-val').textContent=`${G.free}/30`;
+  bar.style.width=pct+'%';bar.className='bbar-fill'+(G.free<=8?' danger':G.free<=18?' warn':'');
+  el('bbar-val').textContent=`${G.free}/70`;
   el('restr-pill').textContent=`Restricted: ${G.restricted}`;
   el('free-disp').textContent=G.free;
   el('restr-disp').textContent=G.restricted;
@@ -1089,7 +1121,7 @@ function updateUI(){
   const fbra=el('fb-rate-apply');if(fbra)fbra.textContent=`Rate: ${rate}%`;
   const hora=el('howto-oak-rate');if(hora)hora.textContent=`Rate: ${rate}% → up to 80%`;
   renderTrust();renderHand();renderProgDots();renderPrograms();renderLog();updateChips();updateDiscardBtn();
-  // Maintenance warning - only for programs that will actually be charged
+  // Maintenance warning
   const nextM=Math.ceil(G.turn/5)*5;const away=nextM-G.turn;
   const chargeableWarn=G.programs.filter(p=>!p.dropped&&(nextM-(p.acquiredTurn||0))>=5);
   const mw=el('maint-due');
@@ -1099,7 +1131,6 @@ function updateUI(){
 
 function renderTrust(){
   const pips=document.getElementById('trust-pips');
-  // 3 pips: pip 0 = always yellow (started relationship), pips 1-2 unlock with approvals
   if(pips)pips.innerHTML=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
   const oc=oakCost();
   const lbl=document.getElementById('trust-lbl');
@@ -1113,7 +1144,6 @@ function renderHand(){
   G.hand.forEach((c,i)=>{
     const sel=G.selected.includes(i);
     const div=document.createElement('div');
-    // Gift card gets its own class
     const cls=c.type==='gift'?'card-gift':(`card-${c.type}`);
     div.className=`card ${cls}${sel?' sel':''}`;
     let displayName=c.name;
@@ -1130,36 +1160,77 @@ function renderHand(){
 function renderProgDots(){
   const row=document.getElementById('prog-dots-row');
   if(!row)return;
-  // Always show all 5 program types. Gray = not funded. Pink = funded (active). Gray+dim = dropped.
-  // If same program funded multiple times, show count badge.
   row.innerHTML='';
+
   PROG_NAMES.forEach(progName=>{
-    const activeCount=G.programs.filter(p=>p.name===progName&&!p.dropped).length;
-    const droppedCount=G.programs.filter(p=>p.name===progName&&p.dropped).length;
-    const hasFunding=activeCount>0;
-    const onlyDropped=activeCount===0&&droppedCount>0;
+    const activeInstances=G.programs.filter(p=>p.name===progName&&!p.dropped);
+    const droppedInstances=G.programs.filter(p=>p.name===progName&&p.dropped);
+    const hasFunding=activeInstances.length>0;
+    const onlyDropped=activeInstances.length===0&&droppedInstances.length>0;
 
+    // Build the group container (dot + countdown strip)
+    const group=document.createElement('div');
+    group.className='prog-group';
+
+    // --- Dot ---
     const dot=document.createElement('div');
-    dot.style.cssText='position:relative;width:32px;height:32px;border:3px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:3px 3px 0 var(--navy);flex-shrink:0;';
+    dot.className='prog-dot';
     dot.title=progName;
-
     if(hasFunding){
-      dot.style.background='var(--pink)';
+      dot.classList.add('active');
     }else if(onlyDropped){
-      dot.style.background='var(--gray)';dot.style.opacity='.4';
+      dot.classList.add('dropped');
     }else{
-      dot.style.background='rgba(255,255,255,0.07)';dot.style.borderStyle='dashed';
+      dot.classList.add('empty');
     }
     dot.textContent=PROG_EMOJI[progName]||'📋';
 
-    // Count badge if more than 1
-    if(activeCount>1){
+    // Multi-funding count badge
+    if(activeInstances.length>1){
       const badge=document.createElement('div');
-      badge.style.cssText='position:absolute;top:-6px;right:-6px;background:var(--yellow);color:var(--navy);border:2px solid var(--navy);border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;font-family:DM Mono,monospace;';
-      badge.textContent=activeCount;
+      badge.className='prog-dot-count';
+      badge.textContent=activeInstances.length;
       dot.appendChild(badge);
     }
-    row.appendChild(dot);
+    group.appendChild(dot);
+
+    // --- Maintenance countdown strip ---
+    // Only show if there are active instances
+    if(activeInstances.length>0){
+      const strip=document.createElement('div');
+      strip.className='prog-maint-strip';
+
+      // One ticker per active instance, sorted by turns-until-maint ascending
+      const tickers=activeInstances.map(prog=>{
+        const turns=turnsUntilMaint(prog.acquiredTurn||0, G.turn);
+        return{prog,turns};
+      }).sort((a,b)=>{
+        if(a.turns===null)return 1;
+        if(b.turns===null)return -1;
+        return a.turns-b.turns;
+      });
+
+      tickers.forEach(({prog,turns})=>{
+        const tick=document.createElement('div');
+        const isUnrestr=prog.source==='unrestricted';
+        tick.className='maint-tick '+(isUnrestr?'unrestr':'restr');
+
+        if(turns===null){
+          tick.textContent=(isUnrestr?'U':'R')+' ✓done';
+        }else if(turns===0){
+          tick.classList.add('urgent');
+          tick.textContent=(isUnrestr?'U':'R')+' NOW!';
+        }else{
+          if(turns<=2)tick.classList.add('urgent');
+          tick.textContent=(isUnrestr?'U':'R')+' −'+turns+'t';
+        }
+        strip.appendChild(tick);
+      });
+
+      group.appendChild(strip);
+    }
+
+    row.appendChild(group);
   });
 }
 
@@ -1179,7 +1250,7 @@ function renderPrograms(){
       <div class="prog-info">
         <div class="prog-name">${p.name}</div>
         <div class="prog-meta">${p.dropped?'DROPPED — could not pay maintenance':'Active — 3 Budget every 5 turns'}</div>
-        ${p.oakMultiyear&&!p.dropped?'<div class="prog-multi">Multi-year Oak funding — +7 unrestricted at game end</div>':''}
+        ${p.oakMultiyear&&!p.dropped?'<div class="prog-multi">Multi-year Oak funding — +9 unrestricted at game end</div>':''}
       </div>
       <div class="prog-badge badge-${p.source==='unrestricted'?'u':'r'}">${p.source==='unrestricted'?'Unrestricted':'Restricted'}</div>
     `;
@@ -1234,7 +1305,6 @@ function updateChips(){
   const fbcc=document.getElementById('fb-chips');
   if(fbcc)fbcc.innerHTML=`<div class="chip ${bP?'met':'unmet'}">Program ${bP?'✓':'✗'}</div>${oc.action>0?`<div class="chip ${bA?'met':'unmet'}">${oc.action} Action(${acts.length}) ${bA?'✓':'✗'}</div>`:'<div class="chip met">No Actions ✓</div>'}${oc.budget>0?`<div class="chip ${bB?'met':'unmet'}">${oc.budget} Budget ${bB?'✓':'✗'}</div>`:'<div class="chip met">No Budget ✓</div>'}`;
   const btb=document.getElementById('btn-app-b');if(btb)btb.disabled=!(bP&&bA&&bB);
-  // Traditional button highlight: when FA criteria met, use teal not gray
   if(bta){
     bta.className=bta.disabled?'btn btn-gray btn-sm':'btn btn-teal btn-sm';
     bta.style.width='100%';
@@ -1313,10 +1383,9 @@ function showEndScreen(){
   let bonus=0;
   if(!G.multiyearPaid){
     G.multiyearPaid=true;
-    active.filter(p=>p.oakMultiyear&&p.fromB).forEach(p=>{G.free+=7;bonus+=7;addLog(`Multi-year Oak Funding: +7 Unrestricted for "${p.name}"!`,'good');});
+    active.filter(p=>p.oakMultiyear&&p.fromB).forEach(p=>{G.free+=9;bonus+=9;addLog(`Multi-year Oak Funding: +9 Unrestricted for "${p.name}"!`,'good');});
   }
   const progCIU=active.length*10;const finalCIU=G.free+progCIU;
-  // Save to history (only completed games)
   HISTORY.push({
     game:HISTORY.length+1,
     ciu:finalCIU,budget:G.free,
