@@ -648,22 +648,24 @@ function pushN(txt,cls,dur=2400){
 //  REFILL HAND
 // =====================================================
 function refillHand(){
-  let attempts=0;
-  while(G.hand.length<5&&attempts<200){
-    attempts++;
-    if(!G.deck.length){
-      if(!G.discard.length)break;
-      G.deck=shuffle([...G.discard]);G.discard=[];
-      addLog('Deck reshuffled from discard.','neutral');
-    }
-    const card=G.deck.pop();
-    // Skip non-hand cards during refill — push back and continue
-    if(card.type==='crisis'||card.type==='fundraising'||card.type==='wild'||card.type==='gift'){
-      G.deck.unshift(card);
-      if(G.deck.every(c=>c.type==='crisis'||c.type==='fundraising'||c.type==='wild'||c.type==='gift'))break;
-      continue;
-    }
-    G.hand.push(card);
+  const needed=5-G.hand.length;
+  if(needed<=0)return;
+
+  // Separate all cards in deck+discard into fillable vs non-fillable
+  const allCards=[...G.deck,...G.discard];
+  const fillable=shuffle(allCards.filter(c=>c.type==='action'||c.type==='program'));
+  const nonFillable=allCards.filter(c=>c.type!=='action'&&c.type!=='program');
+
+  // Take up to `needed` from fillable, add to hand
+  const toAdd=fillable.splice(0,needed);
+  G.hand.push(...toAdd);
+
+  // Rebuild deck from remaining fillable + non-fillable, reshuffled
+  G.deck=shuffle([...fillable,...nonFillable]);
+  G.discard=[];
+
+  if(toAdd.length>0){
+    addLog(`Hand refilled: +${toAdd.length} card(s).`,'neutral');
   }
 }
 
@@ -858,9 +860,15 @@ function doMaintenance(){
   }
   const canKeep=Math.floor(totalAvail/cost);
   if(canKeep===0){
-    chargeable.forEach(prog=>{prog.dropped=true;addLog(`DROPPED "${prog.name}" — no budget.`,'bad');});
+    chargeable.forEach(prog=>{prog.dropped=true;addLog(`DROPPED "${prog.name}" — no budget for maintenance.`,'bad');});
     G.free=0;G.restricted=0;
-    pushN('Programs dropped — no budget for maintenance!','n-maint',4000);
+    const names=chargeable.map(p=>PROG_EMOJI[p.name]+' '+p.name).join(', ');
+    pushN(`Programs dropped: ${names}!`,'n-maint',5000);
+    showModal('💔','Programs Dropped — No Budget',
+      `You couldn't afford maintenance for any of your programs.<br><br>
+       <strong style="color:#E8261A;">Dropped: ${names}</strong><br><br>
+       <em>Without funding, programs cannot continue. This is the reality of restricted grant cycles — when the money runs out, the work stops.</em>`,
+      'crisis',[{lbl:'Understood',fn:'closeModal()'}]);
     updateUI();return;
   }
   showMaintenanceChoice(chargeable,canKeep,cost);
@@ -897,14 +905,23 @@ function maintToggle(cb){
 function confirmMaintenance(){
   closeModal();
   const chosen=new Set(G._mCh);
+  const dropped=[];
   G._mP.forEach((prog,i)=>{
     if(chosen.has(i)){
       if(G.restricted>=G._mC){G.restricted-=G._mC;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');}
       else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(G._mC-fr);addLog(`Maintained "${prog.name}" (mixed).`,'neutral');}
       else{G.free-=G._mC;addLog(`Maintained "${prog.name}" (Unrestricted).`,'neutral');}
-      pushN(`Kept: ${prog.name}`,'n-approve',2200);SFX.maint();
-    }else{prog.dropped=true;addLog(`DROPPED "${prog.name}" by choice.`,'bad');pushN(`Dropped: ${prog.name}`,'n-maint',2200);}
+      pushN(`✓ Kept: ${prog.name}`,'n-approve',2200);SFX.maint();
+    }else{
+      prog.dropped=true;
+      dropped.push(prog);
+      addLog(`DROPPED "${prog.name}" by choice.`,'bad');
+    }
   });
+  if(dropped.length){
+    const names=dropped.map(p=>PROG_EMOJI[p.name]+' '+p.name).join(', ');
+    pushN(`Program(s) dropped: ${names}`,'n-maint',4000);
+  }
   delete G._mP;delete G._mK;delete G._mC;delete G._mCh;
   updateUI();
 }
