@@ -415,6 +415,17 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         <div class="dots-section">
           <div class="dots-label">Programs</div>
           <div id="prog-dots-row"></div>
+          <div style="font-size:8px;color:var(--gray);margin-top:5px;text-align:right;line-height:1.6;max-width:120px;">
+            <span style="color:#FF6B35;">U</span>=unrestricted &nbsp; <span style="color:#c8b3ff;">R</span>=restricted<br>
+            −#t = turns until maint.<br>
+            <span style="color:var(--red);">red = 2 turns or less</span>
+          </div>
+          <!-- TRUST LADDER moved here so always visible -->
+          <div class="trust-box" style="margin-top:7px;text-align:left;max-width:120px;">
+            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:2px;">🌿 OAK TRUST</div>
+            <div id="trust-pips"></div>
+            <div style="font-size:9px;margin-top:2px;" id="trust-lbl"></div>
+          </div>
         </div>
       </div>
 
@@ -448,12 +459,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
           <div class="ap-rate" id="fb-rate-apply">Rate: 35%</div>
           <div style="font-size:9px;color:var(--gray);margin-bottom:3px;">🌿 Env · ✊ Human Rights · 🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
-          <div class="trust-box" style="margin-bottom:5px;">
-            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:2px;">TRUST LADDER</div>
-            <div id="trust-pips"></div>
-            <div style="font-size:9px;margin-top:2px;" id="trust-lbl"></div>
-          </div>
-          <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')" style="width:100%;">Apply to Oak</button>
+          <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')" style="width:100%;margin-top:5px;">Apply to Oak</button>
         </div>
       </div>
     </div>
@@ -1150,8 +1156,10 @@ function renderHand(){
     if(c.type==='action'&&c.emoji)displayName=`${c.emoji} ${c.name}`;
     if(c.type==='program')displayName=`${PROG_EMOJI[c.name]||'📋'} ${c.name}`;
     if(c.type==='gift')displayName=`🎁 ${c.name}`;
+    // Desc: strip emoji prefix from foundation name in desc line (just show plain text)
+    const cleanDesc = c.type==='program' ? c.desc.replace(/^[^\s]+\s/,'') : c.desc;
     const bothBadge=c.name==='Housing'?'<div style="font-size:8px;margin-top:2px;background:var(--purple);color:var(--white);padding:1px 4px;display:inline-block;">★ BOTH</div>':'';
-    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div><div class="c-desc">${c.desc}</div>${bothBadge}<div class="c-chk">✓</div>`;
+    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div><div class="c-desc">${cleanDesc}</div>${bothBadge}<div class="c-chk">✓</div>`;
     div.onclick=()=>toggleSel(i);
     el.appendChild(div);
   });
