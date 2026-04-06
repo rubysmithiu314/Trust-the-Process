@@ -337,7 +337,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
 
   <div class="tabs">
     <button class="tab-btn"        onclick="showTab('howto')">📖 How to Play</button>
-    <button class="tab-btn active" onclick="showTab('gameplay')">🎮 Gameplay</button>
+    <button class="tab-btn active" onclick="showTab('gameplay')">🎮 The Board</button>
     <button class="tab-btn"        onclick="showTab('tracker')">🏛 Programs &amp; Log</button>
     <button class="tab-btn"        onclick="showTab('leaderboard')">🏆 Leaderboard</button>
   </div>
@@ -453,12 +453,18 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
           <div class="cost-chips" id="fa-chips"></div>
           <button class="btn btn-gray btn-sm" id="btn-app-a" onclick="applyTo('A')" style="margin-top:5px;width:100%;">Apply to Traditional</button>
         </div>
-        <div class="apply-panel apply-panel-b">
+        <div class="apply-panel apply-panel-b" style="position:relative;">
           <div class="ap-name">Oak Foundation</div>
           <div class="ap-gives">+9 Unrestricted + multi-year</div>
           <div class="ap-rate" id="fb-rate-apply">Rate: 35%</div>
           <div style="font-size:9px;color:var(--gray);margin-bottom:3px;">🌿 Env · ✊ Human Rights · 🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
+          <!-- Trust ladder top-right -->
+          <div style="position:absolute;top:6px;right:7px;background:rgba(244,220,38,.13);border:2px solid var(--yellow);padding:4px 6px;text-align:center;min-width:62px;">
+            <div style="color:var(--yellow);font-size:8px;letter-spacing:1px;margin-bottom:2px;">TRUST</div>
+            <div id="trust-pips-oak"></div>
+            <div style="font-size:8px;margin-top:2px;color:var(--white);" id="trust-lbl-oak"></div>
+          </div>
           <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')" style="width:100%;margin-top:5px;">Apply to Oak</button>
         </div>
       </div>
@@ -723,11 +729,15 @@ function refillHand(){
 //  TURN ACTIONS
 // =====================================================
 function doGain(){
+  // If we just finished drawing last turn, advance the turn counter now
   if(G.drawn){
     if(G.hand.length>5){pushN('Discard 1 card first','n-maint',2000);return;}
+    // Run maintenance if this completed turn is a multiple of 5
     if(G.turn%5===0)doMaintenance();
-    if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
-    G.turn++;G.drawn=false;G.gained=false;G.selected=[];G.discarding=false;
+    // Hard stop: if we just finished turn 30, end the game
+    if(G.turn>=G.maxTurns){showEndScreen();return;}
+    G.turn++;
+    G.drawn=false;G.gained=false;G.selected=[];G.discarding=false;
   }
   if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
   G.free++;G.gained=true;SFX.gain();
@@ -864,7 +874,8 @@ function pickWild(prog){
 // =====================================================
 function finishTurn(){
   if(G.turn%5===0)doMaintenance();
-  if(G.turn>=G.maxTurns){setTimeout(()=>showEndScreen(),280);return;}
+  // Hard stop at turn 30
+  if(G.turn>=G.maxTurns){showEndScreen();return;}
   G.turn++;G.gained=false;G.drawn=false;G.selected=[];G.discarding=false;
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
@@ -1088,7 +1099,7 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
     refillHand();
     showModal('❌',`${which==='A'?'Traditional':'Oak'} Foundation Denied`,
       `Application rejected. Rate: <strong>${Math.round(rate*100)}%</strong><br><br>
-       ${which==='B'?'Each Oak approval raises your rate and lowers your costs.':'The Traditional Foundation\'s 20% rate never improves. Consider building Oak Foundation trust.'}`,
+       ${which==='B'?'Each Oak approval raises your rate and lowers your costs.':'Keep applying — grant funding is a numbers game. Build your reserves and try again.'}`,
       'crisis',[{lbl:'Keep Going',fn:'closeModal()'}]);
   }
   updateUI();
@@ -1136,11 +1147,19 @@ function updateUI(){
 }
 
 function renderTrust(){
-  const pips=document.getElementById('trust-pips');
-  if(pips)pips.innerHTML=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
+  const pipsHtml=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
   const oc=oakCost();
+  const costTxt=`${oc.action}act+${oc.budget}$`;
+  // Sidebar trust
+  const pips=document.getElementById('trust-pips');
+  if(pips)pips.innerHTML=pipsHtml;
   const lbl=document.getElementById('trust-lbl');
   if(lbl)lbl.textContent=`Next: ${oc.action} action + ${oc.budget} Budget`;
+  // Oak panel trust (compact)
+  const pipsOak=document.getElementById('trust-pips-oak');
+  if(pipsOak)pipsOak.innerHTML=pipsHtml;
+  const lblOak=document.getElementById('trust-lbl-oak');
+  if(lblOak)lblOak.textContent=costTxt;
 }
 
 function renderHand(){
