@@ -382,6 +382,10 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         Every 5 turns: each active program costs <strong>3 Budget</strong> (Restricted first, then Unrestricted). Can't pay? Choose which to keep.<br>
         Each surviving program at 30 turns = <strong>10 CIU</strong>.
       </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(255,255,255,.15);text-align:center;">
+        <div style="font-size:10px;color:var(--gray);margin-bottom:8px;">Need a fresh start? Restart anytime — your leaderboard history is kept.</div>
+        <button class="btn btn-red btn-sm" onclick="confirmRestart()" style="font-size:12px;">↺ Restart Game</button>
+      </div>
     </div>
 
     <!-- GAMEPLAY -->
@@ -631,18 +635,21 @@ function buildDeck(){
     for(let i=0;i<4;i++)d.push({type:'action',name:n,emoji:e,desc:'Required for grant applications'});
   });
   d.push(...[
-    ...Array(2).fill(0).map(()=>({type:'program',name:'Health',           desc:'🏥 Traditional Foundation only'})),
-    ...Array(2).fill(0).map(()=>({type:'program',name:'Education',        desc:'📚 Traditional Foundation only'})),
-    ...Array(3).fill(0).map(()=>({type:'program',name:'Housing',          desc:'🏠 Both foundations'})),
-    ...Array(2).fill(0).map(()=>({type:'program',name:'Environment & Climate',desc:'🌿 Oak Foundation only'})),
-    ...Array(2).fill(0).map(()=>({type:'program',name:'Human Rights',     desc:'✊ Oak Foundation only'})),
+    ...Array(2).fill(0).map(()=>({type:'program',name:'Health',           desc:'Traditional Foundation only'})),
+    ...Array(2).fill(0).map(()=>({type:'program',name:'Education',        desc:'Traditional Foundation only'})),
+    ...Array(3).fill(0).map(()=>({type:'program',name:'Housing',          desc:'Both foundations'})),
+    ...Array(2).fill(0).map(()=>({type:'program',name:'Environment & Climate',desc:'Oak Foundation only'})),
+    ...Array(2).fill(0).map(()=>({type:'program',name:'Human Rights',     desc:'Oak Foundation only'})),
     ...Array(2).fill(0).map(()=>({type:'crisis',name:'Overhead Cost',     desc:'Auto-deducts 1 Budget'})),
     ...Array(2).fill(0).map(()=>({type:'crisis',name:'Rent Due',          desc:'Auto-deducts 1 Budget'})),
     ...Array(2).fill(0).map(()=>({type:'crisis',name:'Infrastructure Crisis',desc:'Auto-deducts 1 Budget'})),
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Donor Meal',   desc:'Cultivation — costs 1 Budget',cost:1})),
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Donor Gift',   desc:'Cultivation — costs 1 Budget',cost:1})),
     ...Array(3).fill(0).map(()=>({type:'fundraising',name:'Event',        desc:'Costs 3 Budget',cost:3})),
+    // Two copies of each special card for reliability
     {type:'gift',name:'Major Gift',desc:'A cultivation success! +3 Unrestricted Budget',value:3},
+    {type:'gift',name:'Major Gift',desc:'A cultivation success! +3 Unrestricted Budget',value:3},
+    {type:'wild',name:'Job Switch',desc:'Choose any program card for your hand'},
     {type:'wild',name:'Job Switch',desc:'Choose any program card for your hand'},
   ]);
   return d;
@@ -669,11 +676,34 @@ function initGame(){
     discarding:false,
     totalProgramsApproved:0,
   };
-  const full=shuffle(buildDeck());
+  const full=buildDeck();
   const safe=full.filter(c=>c.type==='action'||c.type==='program');
-  const rest=full.filter(c=>!safe.includes(c));
-  G.hand=safe.slice(0,5);
-  G.deck=shuffle([...safe.slice(5),...rest]);
+  const specials=full.filter(c=>c.type==='gift'||c.type==='wild');
+  const rest=full.filter(c=>c.type!=='action'&&c.type!=='program'&&c.type!=='gift'&&c.type!=='wild');
+
+  // Start hand: 5 safe cards
+  const safeShuffled=shuffle(safe);
+  G.hand=safeShuffled.slice(0,5);
+
+  // Build main deck from remaining safe + non-special rest, shuffled
+  const mainDeck=shuffle([...safeShuffled.slice(5),...rest]);
+
+  // Guarantee special cards appear in two windows: turns ~8-14 and ~18-24
+  // Deck is drawn from the end (pop), so index 0 = drawn last, high index = drawn soonest
+  // Total deck size ≈ 40. We want specials at positions 26-32 and 14-20 from end
+  // Shuffle specials, place one in first window, one in second
+  const specialsShuffled=shuffle(specials);
+  // Insert first special at a random position in the first third (drawn around turns 8-14)
+  const pos1=Math.floor(mainDeck.length*0.55)+Math.floor(Math.random()*6);
+  const pos2=Math.floor(mainDeck.length*0.25)+Math.floor(Math.random()*6);
+  mainDeck.splice(Math.min(pos1,mainDeck.length),0,specialsShuffled[0]);
+  if(specialsShuffled[1])mainDeck.splice(Math.min(pos2,mainDeck.length),0,specialsShuffled[1]);
+  // Add any remaining specials at random spots in the lower half
+  for(let i=2;i<specialsShuffled.length;i++){
+    const pos=Math.floor(Math.random()*Math.floor(mainDeck.length*0.4));
+    mainDeck.splice(pos,0,specialsShuffled[i]);
+  }
+  G.deck=mainDeck;
 }
 
 function oakRate(){return Math.min(.80,.35+G.oakApprovals*.15);}
@@ -1453,6 +1483,14 @@ function startGame(){
   addLog('Fiscal cycle begins! 30 turns. Gain Budget → Draw Card → Apply or Discard.','neutral');
   updateUI();
   try{ac();startMusic();}catch(e){}
+}
+function confirmRestart(){
+  showModal('↺','Restart Game?',
+    'Your current game will end without saving to the leaderboard.<br><br>Your past completed games are kept.',
+    'crisis',[
+      {lbl:'Yes, Restart',fn:'startGame();closeModal()'},
+      {lbl:'Keep Playing',fn:'closeModal()'}
+    ]);
 }
 function resetGame(){stopMusic();_ac=null;showScreen('title');}
 </script>
