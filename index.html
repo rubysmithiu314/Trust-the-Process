@@ -225,11 +225,11 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
 .badge-r{background:var(--purple);color:var(--white);}
 
 /* ---- LOG ---- */
-.log-entry{font-size:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:6px;line-height:1.5;}
-.l-t{color:var(--yellow);font-weight:500;width:36px;flex-shrink:0;}
+.log-entry{font-size:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:6px;line-height:1.5;align-items:flex-start;}
+.l-t{color:rgba(244,220,38,.6);font-size:9px;width:28px;flex-shrink:0;padding-top:1px;}
 .l-good{color:var(--teal);}
-.l-bad{color:var(--red);}
-.l-neutral{color:var(--gray);}
+.l-bad{color:#ff7070;}
+.l-neutral{color:rgba(255,255,255,.55);}
 
 /* ---- LEADERBOARD TAB ---- */
 .lb-row{display:grid;grid-template-columns:36px 1fr auto auto auto;gap:8px;align-items:center;padding:7px 10px;border:2px solid var(--navy);margin-bottom:5px;font-size:11px;}
@@ -480,7 +480,8 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
       <div style="font-size:10px;color:var(--gray);margin-bottom:7px;">Every 5 turns: 3 Budget per program (Restricted first). Each active program = 10 <span class="ciu-badge">CIU</span> at game end.</div>
       <div id="prog-list"></div>
       <div style="font-size:11px;color:var(--yellow);margin-top:6px;margin-bottom:12px;" id="prog-ciu">Projected CIU: 0</div>
-      <div class="sec-lbl">📜 Game Log</div>
+      <div class="sec-lbl" style="margin-top:12px;">📋 Activity Log</div>
+      <div style="font-size:9px;color:var(--gray);margin-bottom:6px;">Key events only — grants, crises, maintenance, special cards.</div>
       <div id="log-entries"></div>
     </div>
 
@@ -752,7 +753,7 @@ function refillHand(){
   G.hand.push(...toAdd);
   G.deck=shuffle([...fillable,...nonFillable]);
   G.discard=[];
-  if(toAdd.length>0){addLog(`Hand refilled: +${toAdd.length} card(s).`,'neutral');}
+  if(toAdd.length>0){/* silent refill */}
 }
 
 // =====================================================
@@ -771,7 +772,6 @@ function doGain(){
   }
   if(G.gained){pushN('Already gained this turn!','n-budget',1400);return;}
   G.free++;G.gained=true;SFX.gain();
-  addLog(`+1 Budget (Unrestricted: ${G.free})`,'neutral');
   pushN(`+1 Budget`,'n-budget');
   document.getElementById('btn-gain').disabled=true;
   document.getElementById('btn-draw').disabled=false;
@@ -782,7 +782,7 @@ function doGain(){
 function doDraw(){
   if(!G.gained){pushN('Gain your Budget first!','n-budget',1400);return;}
   if(G.drawn)return;
-  if(!G.deck.length){G.deck=shuffle([...G.discard]);G.discard=[];addLog('Deck reshuffled.','neutral');}
+  if(!G.deck.length){G.deck=shuffle([...G.discard]);G.discard=[];}
   if(!G.deck.length){G.drawn=true;document.getElementById('phase-hint').textContent='Apply or gain Budget next turn.';updateUI();return;}
   const card=G.deck.pop();
   G.drawn=true;SFX.draw();
@@ -791,14 +791,13 @@ function doDraw(){
   if(card.type==='fundraising'){resolveFundraising(card);return;}
   if(card.type==='gift'){resolveGift(card);return;}
   if(card.type==='wild'){
-    addLog(`Drew: ${card.name}! Choose a program.`,'good');
+    addLog(`🃏 Job Switch drawn — pick a program card.`,'good');
     G.drawn=true;
     document.getElementById('btn-gain').disabled=false;
     document.getElementById('phase-hint').textContent='Choose a program below.';
     updateUI();showWildPicker();return;
   }
   G.hand.push(card);
-  addLog(`Drew ${card.type}: ${card.name}`,'neutral');
   document.getElementById('phase-hint').textContent=G.hand.length>5?'Hand at 6 — discard 1, then gain Budget.':'Apply to a foundation, or gain Budget next turn.';
   document.getElementById('btn-gain').disabled=false;
   updateUI();
@@ -808,13 +807,13 @@ function resolveCrisis(card){
   SFX.crisis();
   const ico=CRISIS_ICO[card.name]||'⚠️';
   if(G.free+G.restricted<1){
-    addLog(`CRISIS: ${card.name} — Cannot pay! ELIMINATED.`,'bad');
+    addLog(`${ico} ${card.name} — out of funds. Eliminated.`,'bad');
     G.discard.push(card);
     setTimeout(()=>showEliminated(),350);return;
   }
   if(G.restricted>=1)G.restricted--;else G.free--;
   G.discard.push(card);
-  addLog(`CRISIS ${ico} ${card.name} — paid 1 Budget.`,'bad');
+  addLog(`${ico} Crisis: ${card.name} — −1 Budget`,'bad');
   pushN(`${ico} Crisis! −1 Budget`,'n-maint');
   showModal(ico,'Crisis!',
     `<strong>${card.name}</strong><br><br>1 Budget deducted.<br><br><em>Real nonprofits face constant unexpected costs. Restricted funding can't cover emergencies like this — only unrestricted reserves can.</em>`,
@@ -828,7 +827,7 @@ function resolveFundraising(card){
   const total=G.free+G.restricted;
   const ico='💳';
   if(total===0){
-    addLog(`FUNDRAISING: ${card.name} — Zero budget. Lost this turn's income.`,'bad');
+    addLog(`💳 ${card.name} — no budget. Lost income this turn.`,'bad');
     G.discard.push(card);
     G.gained=true;G.drawn=false;
     document.getElementById('btn-gain').disabled=true;
@@ -843,7 +842,7 @@ function resolveFundraising(card){
     updateUI();return;
   }
   if(total<cost){
-    addLog(`FUNDRAISING: ${card.name} — Can't afford (need ${cost} Budget). Opportunity lost.`,'bad');
+    addLog(`💳 ${card.name} — couldn't cover cost. Lost income this turn.`,'bad');
     G.discard.push(card);
     G.gained=true;G.drawn=false;
     document.getElementById('btn-gain').disabled=true;
@@ -859,7 +858,7 @@ function resolveFundraising(card){
   }
   let rem=cost;if(G.free>=rem){G.free-=rem;}else{rem-=G.free;G.free=0;G.restricted-=rem;}
   G.discard.push(card);
-  addLog(`FUNDRAISING: ${card.name} — spent ${cost} Budget.`,'neutral');
+  addLog(`💳 ${card.name} — −${cost} Budget on cultivation`,'neutral');
   pushN(`${ico} ${card.name}: −${cost} Budget`,'n-fund');
   showModal(ico,'Fundraising Expense',
     `<strong>${card.name}</strong><br><br>Spent <strong>${cost} Budget</strong> on donor cultivation.<br><br><em>Restricted funding cannot cover this — only unrestricted Budget paid. Another reason Oak Foundation's unrestricted grants matter.</em>`,
@@ -871,7 +870,7 @@ function resolveGift(card){
   SFX.gift();
   G.free+=card.value||3;
   G.discard.push(card);
-  addLog(`MAJOR GIFT: +${card.value} Unrestricted Budget! Cultivation success.`,'good');
+  addLog(`🎁 Major Gift — +${card.value} unrestricted`,'good');
   pushN(`🎁 Major Gift: +${card.value} Budget!`,'n-approve',3000);
   showModal('🎁','Major Gift Cultivation Success!',
     `A donor moved to the next stage of giving!<br><br><strong>+${card.value} Unrestricted Budget</strong> received.<br><br><em>This reflects what happens when long-term relationship building pays off — unrestricted, no strings attached.</em>`,
@@ -893,7 +892,7 @@ function pickWild(prog){
     (prog==='Health'||prog==='Education')?PROG_EMOJI[prog]+' Traditional Foundation only':
     PROG_EMOJI[prog]+' Oak Foundation only';
   G.hand.push({type:'program',name:prog,desc});
-  addLog(`Job Switch: Chose ${prog}. Wild card removed from game.`,'good');
+  addLog(`🃏 Job Switch → ${PROG_EMOJI[prog]||''} ${prog} added to hand`,'good');
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('phase-hint').textContent='Apply or gain Budget next turn.';
   updateUI();
@@ -921,26 +920,26 @@ function doMaintenance(){
   const chargeable=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))>=5);
   const exempt=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))<5);
   if(!chargeable.length){
-    if(exempt.length)addLog(`— Maintenance check: all programs newly funded, no charge yet —`,'neutral');
+    if(exempt.length){/* newly funded, no log needed */}
     return;
   }
   const cost=3;
   const totalNeeded=chargeable.length*cost;
   const totalAvail=G.free+G.restricted;
-  addLog(`— Maintenance: ${chargeable.length} program(s) × 3 Budget = ${totalNeeded} needed —`,'neutral');
-  if(exempt.length)addLog(`(${exempt.length} newly funded program(s) not yet charged)`,'neutral');
+  addLog(`🔧 Maintenance due — ${chargeable.length} program(s) × −3 Budget`,'neutral');
+  if(exempt.length){/* newly funded exempt, silent */}
   if(totalAvail>=totalNeeded){
     chargeable.forEach(prog=>{
-      if(G.restricted>=cost){G.restricted-=cost;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');pushN(`−3 Restricted: ${prog.name}`,'n-maint');}
-      else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(cost-fr);addLog(`Maintained "${prog.name}" (${fr}R+${cost-fr}U).`,'neutral');pushN(`−3 Budget: ${prog.name}`,'n-maint');}
-      else{G.free-=cost;addLog(`Maintained "${prog.name}" (Unrestricted).`,'neutral');pushN(`−3 Unrestricted: ${prog.name}`,'n-maint');}
+      if(G.restricted>=cost){G.restricted-=cost;pushN(`−3 Restricted: ${prog.name}`,'n-maint');}
+      else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(cost-fr);pushN(`−3 Budget: ${prog.name}`,'n-maint');}
+      else{G.free-=cost;pushN(`−3 Unrestricted: ${prog.name}`,'n-maint');}
       SFX.maint();
     });
     updateUI();return;
   }
   const canKeep=Math.floor(totalAvail/cost);
   if(canKeep===0){
-    chargeable.forEach(prog=>{prog.dropped=true;addLog(`DROPPED "${prog.name}" — no budget for maintenance.`,'bad');});
+    chargeable.forEach(prog=>{prog.dropped=true;addLog(`💔 ${PROG_EMOJI[prog.name]||''} ${prog.name} — dropped, couldn't pay maintenance`,'bad');});
     G.free=0;G.restricted=0;
     const names=chargeable.map(p=>PROG_EMOJI[p.name]+' '+p.name).join(', ');
     pushN(`Programs dropped: ${names}!`,'n-maint',5000);
@@ -988,14 +987,14 @@ function confirmMaintenance(){
   const dropped=[];
   G._mP.forEach((prog,i)=>{
     if(chosen.has(i)){
-      if(G.restricted>=G._mC){G.restricted-=G._mC;addLog(`Maintained "${prog.name}" (Restricted).`,'neutral');}
-      else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(G._mC-fr);addLog(`Maintained "${prog.name}" (mixed).`,'neutral');}
-      else{G.free-=G._mC;addLog(`Maintained "${prog.name}" (Unrestricted).`,'neutral');}
+      if(G.restricted>=G._mC){G.restricted-=G._mC;}
+      else if(G.restricted>0){const fr=G.restricted;G.restricted=0;G.free-=(G._mC-fr);}
+      else{G.free-=G._mC;}
       pushN(`✓ Kept: ${prog.name}`,'n-approve',2200);SFX.maint();
     }else{
       prog.dropped=true;
       dropped.push(prog);
-      addLog(`DROPPED "${prog.name}" by choice.`,'bad');
+      addLog(`💔 ${PROG_EMOJI[prog.name]||''} ${prog.name} — dropped by choice`,'bad');
     }
   });
   if(dropped.length){
@@ -1016,7 +1015,6 @@ function doDiscard(){
   const card=G.hand[idx];
   G.discard.push(card);G.hand.splice(idx,1);
   G.selected=[];G.discarding=false;
-  addLog(`Discarded: ${card.name}`,'neutral');
   pushN(`Discarded: ${card.name}`,'n-deny',1800);
   if(G.hand.length<=5){
     document.getElementById('phase-hint').textContent='Apply or gain Budget to start next turn.';
@@ -1083,21 +1081,21 @@ function findOrCreateProgram(name,source,oakMultiyear,fromB){
 function submitAppBoth(progCard,actionCards){
   SFX.apply();G.free-=3;
   removeUsedCards(progCard,actionCards);
-  addLog(`Applied 🏠 Housing to BOTH foundations.`,'neutral');
+  addLog(`📨 Applied 🏠 Housing to both foundations`,'neutral');
   const rollA=Math.random(),rollB=Math.random(),rateB=oakRate();
   const approvedA=rollA<0.20,approvedB=rollB<rateB;
   let html='<strong>🏠 Housing — Both Foundations</strong><br><small style="color:#666;">Each foundation rolls independently</small><br><br>';
   if(approvedA){
     G.restricted+=9;findOrCreateProgram('Housing','restricted',false,false);
     html+=`<span style="color:var(--green);">✓ Traditional: APPROVED — +9 Restricted</span><br>`;
-    addLog(`Traditional Foundation APPROVED Housing! +9 Restricted.`,'good');
-  }else{html+=`<span style="color:var(--red);">✗ Traditional: Denied (20% rate)</span><br>`;addLog(`Traditional DENIED Housing.`,'bad');}
+    addLog(`✅ Traditional approved 🏠 Housing — +9 restricted`,'good');
+  }else{html+=`<span style="color:var(--red);">✗ Traditional: Denied (20% rate)</span><br>`;addLog(`❌ Traditional denied 🏠 Housing`,'bad');}
   html+='<br>';
   if(approvedB){
     G.oakApprovals++;G.free+=9;findOrCreateProgram('Housing','unrestricted',true,true);
     html+=`<span style="color:var(--teal);">✓ Oak: APPROVED — +9 Unrestricted<br>Multi-year bonus at game end<br>New Oak rate: ${Math.round(oakRate()*100)}%</span>`;
-    addLog(`Oak Foundation APPROVED Housing! +9 Unrestricted. Trust: ${G.oakApprovals}.`,'good');
-  }else{html+=`<span style="color:var(--red);">✗ Oak: Denied (${Math.round(rateB*100)}% rate)</span>`;addLog(`Oak DENIED Housing.`,'bad');}
+    addLog(`✅ Oak approved 🏠 Housing — +9 unrestricted · trust now ${G.oakApprovals}`,'good');
+  }else{html+=`<span style="color:var(--red);">✗ Oak: Denied (${Math.round(rateB*100)}% rate)</span>`;addLog(`❌ Oak denied 🏠 Housing`,'bad');}
   if(approvedA||approvedB)SFX.approve();else SFX.deny();
   refillHand();
   showModal('🏠','Dual Application Results',html,(approvedA||approvedB)?'win':'crisis',[{lbl:'Continue',fn:'closeModal()'}]);
@@ -1107,7 +1105,9 @@ function submitAppBoth(progCard,actionCards){
 function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
   SFX.apply();G.free-=budgetCost;
   removeUsedCards(progCard,actionCards);
-  addLog(`Applied to ${which==='A'?'Traditional':'Oak'} Foundation (${progCard.name}). Rate:${Math.round(rate*100)}%`,'neutral');
+  const foundName=which==='A'?'Traditional':'Oak';
+  const progEmoji=PROG_EMOJI[progCard.name]||'';
+  addLog(`📨 Applied to ${foundName} — ${progEmoji} ${progCard.name}`,'neutral');
   const roll=Math.random();
   if(roll<rate){
     SFX.approve();
@@ -1115,19 +1115,20 @@ function submitApp(which,progCard,actionCards,budgetCost,rate,fundType,award){
     if(which==='B')G.oakApprovals++;
     if(fundType==='unrestricted')G.free+=award;else G.restricted+=award;
     const isNew=findOrCreateProgram(progCard.name,fundType,isMultiyear,which==='B');
-    addLog(`APPROVED by ${which==='A'?'Traditional':'Oak'} Foundation! ${progCard.name} +${award} ${fundType}.`+(isMultiyear?' [Multi-year]':''),'good');
+    const trustNote=which==='B'?` · trust now ${G.oakApprovals}`:'';
+    addLog(`✅ ${foundName} approved ${progEmoji} ${progCard.name} — +${award} ${fundType==='unrestricted'?'unrestricted':'restricted'}${isMultiyear?' · multi-year':''}${trustNote}`,'good');
     pushN(`✓ Approved! +${award} ${fundType}`,'n-approve',3000);
     refillHand();
-    showModal('🎉',`${which==='A'?'Traditional':'Oak'} Foundation Approved!`,
-      `${PROG_EMOJI[progCard.name]||'📋'} <strong>${progCard.name}</strong> ${isNew?'added':'funding renewed'}!<br><br>
+    showModal('🎉',`${foundName} Approved!`,
+      `${progEmoji} <strong>${progCard.name}</strong> ${isNew?'added':'funding renewed'}!<br><br>
        +${award} ${fundType} Budget received.${which==='B'?`<br>Oak Trust: ${G.oakApprovals} → New rate: ${Math.round(oakRate()*100)}%`:''}${isMultiyear?'<br><br>Multi-year funding! This program earns +9 Unrestricted at game end if it survives.':''}`,
       'win',[{lbl:'Great!',fn:'closeModal()'}]);
   }else{
     SFX.deny();
-    addLog(`DENIED by ${which==='A'?'Traditional':'Oak'} Foundation (${Math.round(rate*100)}% rate).`,'bad');
-    pushN(`✗ Denied by ${which==='A'?'Traditional':'Oak'} Foundation`,'n-deny',2200);
+    addLog(`❌ ${foundName} denied ${progEmoji} ${progCard.name} — ${Math.round(rate*100)}% rate`,'bad');
+    pushN(`✗ Denied by ${foundName}`,'n-deny',2200);
     refillHand();
-    showModal('❌',`${which==='A'?'Traditional':'Oak'} Foundation Denied`,
+    showModal('❌',`${foundName} Denied`,
       `Application rejected. Rate: <strong>${Math.round(rate*100)}%</strong><br><br>
        ${which==='B'?'Each Oak approval raises your rate and lowers your costs.':'Keep applying — grant funding is a numbers game. Build your reserves and try again.'}`,
       'crisis',[{lbl:'Keep Going',fn:'closeModal()'}]);
@@ -1319,9 +1320,17 @@ function renderPrograms(){
 
 function renderLog(){
   const el=document.getElementById('log-entries');if(!el)return;
-  el.innerHTML=[...G.log].reverse().map(e=>
-    `<div class="log-entry"><div class="l-t">T${e.turn}</div><div class="l-text l-${e.type}">${e.text}</div></div>`
-  ).join('');
+  if(!G.log.length){el.innerHTML='<div style="color:var(--gray);font-size:10px;font-style:italic;">Nothing yet — events will appear here.</div>';return;}
+  // Show most recent first, max 40 entries to keep it clean
+  const entries=[...G.log].reverse().slice(0,40);
+  el.innerHTML=entries.map(e=>{
+    const dot=e.type==='good'?'var(--teal)':e.type==='bad'?'var(--red)':'rgba(255,255,255,.2)';
+    return `<div class="log-entry">
+      <div style="width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:5px;"></div>
+      <div class="l-t">T${e.turn}</div>
+      <div class="l-text l-${e.type}">${e.text}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderLeaderboard(){
@@ -1440,7 +1449,7 @@ function showEndScreen(){
   let bonus=0;
   if(!G.multiyearPaid){
     G.multiyearPaid=true;
-    active.filter(p=>p.oakMultiyear&&p.fromB).forEach(p=>{G.free+=9;bonus+=9;addLog(`Multi-year Oak Funding: +9 Unrestricted for "${p.name}"!`,'good');});
+    active.filter(p=>p.oakMultiyear&&p.fromB).forEach(p=>{G.free+=9;bonus+=9;addLog(`🌿 Multi-year Oak payout — +9 unrestricted for ${PROG_EMOJI[p.name]||''} ${p.name}`,'good');});
   }
   const progCIU=active.length*10;const finalCIU=G.free+progCIU;
   HISTORY.push({
@@ -1480,7 +1489,7 @@ function startGame(){
   document.getElementById('btn-gain').disabled=false;
   document.getElementById('btn-draw').disabled=true;
   document.getElementById('phase-hint').textContent='Gain Budget first — this starts your fiscal cycle.';
-  addLog('Fiscal cycle begins! 30 turns. Gain Budget → Draw Card → Apply or Discard.','neutral');
+  addLog('🚀 Fiscal cycle started — 30 turns to build your programs','neutral');
   updateUI();
   try{ac();startMusic();}catch(e){}
 }
