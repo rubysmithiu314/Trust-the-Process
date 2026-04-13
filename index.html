@@ -424,12 +424,6 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
             −#t = turns until maint.<br>
             <span style="color:var(--red);">red = 2 turns or less</span>
           </div>
-          <!-- TRUST LADDER moved here so always visible -->
-          <div class="trust-box" style="margin-top:7px;text-align:left;max-width:120px;">
-            <div style="color:var(--yellow);font-size:9px;letter-spacing:1px;margin-bottom:2px;">🌿 OAK TRUST</div>
-            <div id="trust-pips"></div>
-            <div style="font-size:9px;margin-top:2px;" id="trust-lbl"></div>
-          </div>
         </div>
       </div>
 
@@ -1181,12 +1175,7 @@ function renderTrust(){
   const pipsHtml=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
   const oc=oakCost();
   const costTxt=`${oc.action}act+${oc.budget}$`;
-  // Sidebar trust
-  const pips=document.getElementById('trust-pips');
-  if(pips)pips.innerHTML=pipsHtml;
-  const lbl=document.getElementById('trust-lbl');
-  if(lbl)lbl.textContent=`Next: ${oc.action} action + ${oc.budget} Budget`;
-  // Oak panel trust (compact)
+  // Oak panel trust (compact, top-right corner of Oak apply box)
   const pipsOak=document.getElementById('trust-pips-oak');
   if(pipsOak)pipsOak.innerHTML=pipsHtml;
   const lblOak=document.getElementById('trust-lbl-oak');
@@ -1206,10 +1195,28 @@ function renderHand(){
     if(c.type==='action'&&c.emoji)displayName=`${c.emoji} ${c.name}`;
     if(c.type==='program')displayName=`${PROG_EMOJI[c.name]||'📋'} ${c.name}`;
     if(c.type==='gift')displayName=`🎁 ${c.name}`;
-    // Desc: strip emoji prefix from foundation name in desc line (just show plain text)
-    const cleanDesc = c.type==='program' ? c.desc.replace(/^[^\s]+\s/,'') : c.desc;
-    const bothBadge=c.name==='Housing'?'<div style="font-size:8px;margin-top:2px;background:var(--purple);color:var(--white);padding:1px 4px;display:inline-block;">★ BOTH</div>':'';
-    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div><div class="c-desc">${cleanDesc}</div>${bothBadge}<div class="c-chk">✓</div>`;
+
+    // For program cards: show foundation eligibility as small colored badges
+    let extraHtml='';
+    if(c.type==='program'){
+      const isTrad=FA_P.includes(c.name);
+      const isOak=FB_P.includes(c.name);
+      if(isTrad&&isOak){
+        // Housing — both
+        extraHtml=`<div style="display:flex;gap:3px;margin-top:4px;flex-wrap:wrap;">
+          <span style="font-size:8px;padding:1px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);">Traditional</span>
+          <span style="font-size:8px;padding:1px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);">Oak</span>
+        </div>`;
+      }else if(isTrad){
+        extraHtml=`<div style="margin-top:4px;"><span style="font-size:8px;padding:1px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);">Traditional only</span></div>`;
+      }else if(isOak){
+        extraHtml=`<div style="margin-top:4px;"><span style="font-size:8px;padding:1px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);">Oak only</span></div>`;
+      }
+    } else {
+      extraHtml=`<div class="c-desc">${c.desc}</div>`;
+    }
+
+    div.innerHTML=`<div class="c-lbl">${c.type}</div><div class="c-name">${displayName}</div>${extraHtml}<div class="c-chk">✓</div>`;
     div.onclick=()=>toggleSel(i);
     el.appendChild(div);
   });
