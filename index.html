@@ -308,6 +308,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
     </div>
     <p>🏠 <strong>Housing</strong> is accepted by both foundations. Apply to both at once for the same cost — each foundation rolls independently. You may be approved by one, both, or neither.</p>
     <p><strong>Restricted Budget</strong> pays program maintenance only. <strong>Unrestricted Budget</strong> pays for anything.</p>
+    <p>Every <strong>7 turns</strong>, each active program costs <strong>3 Budget</strong> to maintain (Restricted first). Can't pay? Choose which programs to keep.</p>
     <div class="t-cite">
       Traditional Foundation modeled at 20% approval (GrantWatch, 2025). Oak Foundation modeled at 35–80% — reflecting how established funder relationships improve success rates (Funding for Good, 2020).
     </div>
@@ -379,7 +380,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
         <strong>Unrestricted Budget</strong> — anything: applications, crises, events.
       </div>
       <div style="background:rgba(232,38,26,.08);border:2px solid var(--red);padding:7px 10px;font-size:11px;line-height:1.7;">
-        Every 5 turns: each active program costs <strong>3 Budget</strong> (Restricted first, then Unrestricted). Can't pay? Choose which to keep.<br>
+        Every 7 turns: each active program costs <strong>3 Budget</strong> (Restricted first, then Unrestricted). Can't pay? Choose which to keep.<br>
         Each surviving program at 30 turns = <strong>10 CIU</strong>.
       </div>
       <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(255,255,255,.15);text-align:center;">
@@ -472,7 +473,7 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
     <!-- PROGRAMS & LOG -->
     <div class="tab-panel" id="panel-tracker">
       <div class="sec-lbl">🏛 Your Programs</div>
-      <div style="font-size:10px;color:var(--gray);margin-bottom:7px;">Every 5 turns: 3 Budget per program (Restricted first). Each active program = 10 <span class="ciu-badge">CIU</span> at game end.</div>
+      <div style="font-size:10px;color:var(--gray);margin-bottom:7px;">Every 7 turns: 3 Budget per program (Restricted first). Each active program = 10 <span class="ciu-badge">CIU</span> at game end.</div>
       <div id="prog-list"></div>
       <div style="font-size:11px;color:var(--yellow);margin-top:6px;margin-bottom:12px;" id="prog-ciu">Projected CIU: 0</div>
       <div class="sec-lbl" style="margin-top:12px;">📋 Activity Log</div>
@@ -711,13 +712,12 @@ function fbProgs(){return['Environment & Climate','Human Rights','Housing'];}
 //  MAINTENANCE COUNTDOWN HELPERS
 // =====================================================
 // Returns turns until next maintenance charge for a program acquired at acquiredTurn
-// Maintenance fires every 5 turns (turns 5,10,15,20,25,30)
-// A program is charged if (maintTurn - acquiredTurn) >= 5
+// Maintenance fires every 7 turns (turns 7,14,21,28)
+// A program is charged if (maintTurn - acquiredTurn) >= 7
 function turnsUntilMaint(acquiredTurn, currentTurn) {
-  // Find the next maintenance turn >= currentTurn
-  const maintTurns = [5,10,15,20,25,30];
+  const maintTurns = [7,14,21,28];
   for (const mt of maintTurns) {
-    if (mt >= currentTurn && (mt - acquiredTurn) >= 5) {
+    if (mt >= currentTurn && (mt - acquiredTurn) >= 7) {
       return mt - currentTurn;
     }
   }
@@ -758,8 +758,8 @@ function doGain(){
   // If we just finished drawing last turn, advance the turn counter now
   if(G.drawn){
     if(G.hand.length>5){pushN('Discard 1 card first','n-maint',2000);return;}
-    // Run maintenance if this completed turn is a multiple of 5
-    if(G.turn%5===0)doMaintenance();
+    // Run maintenance if this completed turn is a multiple of 7
+    if(G.turn%7===0)doMaintenance();
     // Hard stop: if we just finished turn 30, end the game
     if(G.turn>=G.maxTurns){showEndScreen();return;}
     G.turn++;
@@ -897,7 +897,7 @@ function pickWild(prog){
 //  TURN FINISH
 // =====================================================
 function finishTurn(){
-  if(G.turn%5===0)doMaintenance();
+  if(G.turn%7===0)doMaintenance();
   // Hard stop at turn 30
   if(G.turn>=G.maxTurns){showEndScreen();return;}
   G.turn++;G.gained=false;G.drawn=false;G.selected=[];G.discarding=false;
@@ -912,8 +912,8 @@ function finishTurn(){
 // =====================================================
 function doMaintenance(){
   const allActive=G.programs.filter(p=>!p.dropped);
-  const chargeable=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))>=5);
-  const exempt=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))<5);
+  const chargeable=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))>=7);
+  const exempt=allActive.filter(p=>(G.turn-(p.acquiredTurn||0))<7);
   if(!chargeable.length){
     if(exempt.length){/* newly funded, no log needed */}
     return;
@@ -1164,9 +1164,11 @@ function updateUI(){
   const fbra=el('fb-rate-apply');if(fbra)fbra.textContent=`Rate: ${rate}%`;
   const hora=el('howto-oak-rate');if(hora)hora.textContent=`Rate: ${rate}% → up to 80%`;
   renderTrust();renderHand();renderProgDots();renderPrograms();renderLog();updateChips();updateDiscardBtn();
-  // Maintenance warning
-  const nextM=Math.ceil(G.turn/5)*5;const away=nextM-G.turn;
-  const chargeableWarn=G.programs.filter(p=>!p.dropped&&(nextM-(p.acquiredTurn||0))>=5);
+  // Maintenance warning — fires at turns 7,14,21,28
+  const maintTurns=[7,14,21,28];
+  const nextM=maintTurns.find(t=>t>=G.turn)||null;
+  const away=nextM?nextM-G.turn:null;
+  const chargeableWarn=nextM?G.programs.filter(p=>!p.dropped&&(nextM-(p.acquiredTurn||0))>=7):[];
   const mw=el('maint-due');
   if(mw){mw.style.display=(chargeableWarn.length>0&&away<=2&&away>0)?'block':'none';
     if(chargeableWarn.length>0&&away<=2&&away>0)mw.textContent=`⚠ Maintenance in ${away} turn(s): ${chargeableWarn.length} program(s) × 3 = ${chargeableWarn.length*3} Budget due`;}
@@ -1314,7 +1316,7 @@ function renderPrograms(){
       <div class="prog-icon">${icons[p.name]||'📋'}</div>
       <div class="prog-info">
         <div class="prog-name">${p.name}</div>
-        <div class="prog-meta">${p.dropped?'DROPPED — could not pay maintenance':'Active — 3 Budget every 5 turns'}</div>
+        <div class="prog-meta">${p.dropped?'DROPPED — could not pay maintenance':'Active — 3 Budget every 7 turns'}</div>
         ${p.oakMultiyear&&!p.dropped?'<div class="prog-multi">Multi-year Oak funding — +9 unrestricted at game end</div>':''}
       </div>
       <div class="prog-badge badge-${p.source==='unrestricted'?'u':'r'}">${p.source==='unrestricted'?'Unrestricted':'Restricted'}</div>
