@@ -458,10 +458,11 @@ body{font-family:'DM Mono',monospace;background:var(--navy);color:var(--white);}
           <div style="font-size:9px;color:var(--gray);margin-bottom:3px;">🌿 Env · ✊ Human Rights · 🏠 Housing</div>
           <div class="cost-chips" id="fb-chips"></div>
           <!-- Trust ladder top-right -->
-          <div style="position:absolute;top:6px;right:7px;background:rgba(244,220,38,.13);border:2px solid var(--yellow);padding:4px 6px;text-align:center;min-width:62px;">
-            <div style="color:var(--yellow);font-size:8px;letter-spacing:1px;margin-bottom:2px;">TRUST</div>
-            <div id="trust-pips-oak"></div>
-            <div style="font-size:8px;margin-top:2px;color:var(--white);" id="trust-lbl-oak"></div>
+          <div style="position:absolute;top:6px;right:7px;background:rgba(244,220,38,.13);border:2px solid var(--yellow);padding:5px 7px;text-align:left;min-width:90px;max-width:110px;">
+            <div style="color:var(--yellow);font-size:8px;letter-spacing:1px;margin-bottom:3px;">🌿 TRUST LADDER</div>
+            <div id="trust-pips-oak" style="margin-bottom:3px;"></div>
+            <div style="font-size:8px;color:var(--white);line-height:1.5;" id="trust-lbl-oak"></div>
+            <div style="font-size:8px;color:rgba(255,255,255,.55);line-height:1.4;margin-top:3px;border-top:1px solid rgba(244,220,38,.3);padding-top:3px;">More trust = fewer action cards &amp; less budget to apply</div>
           </div>
           <button class="btn btn-teal btn-sm" id="btn-app-b" onclick="applyTo('B')" style="width:100%;margin-top:5px;">Apply to Oak</button>
         </div>
@@ -1174,8 +1175,8 @@ function updateUI(){
 function renderTrust(){
   const pipsHtml=[...Array(3)].map((_,i)=>`<span class="t-pip${(i===0||i<=G.oakApprovals)?' on':''}"></span>`).join('');
   const oc=oakCost();
-  const costTxt=`${oc.action}act+${oc.budget}$`;
-  // Oak panel trust (compact, top-right corner of Oak apply box)
+  const rate=Math.round(oakRate()*100);
+  const costTxt=`Cost: ${oc.action} action${oc.action!==1?'s':''} + ${oc.budget} budget`;
   const pipsOak=document.getElementById('trust-pips-oak');
   if(pipsOak)pipsOak.innerHTML=pipsHtml;
   const lblOak=document.getElementById('trust-lbl-oak');
@@ -1202,15 +1203,14 @@ function renderHand(){
       const isTrad=FA_P.includes(c.name);
       const isOak=FB_P.includes(c.name);
       if(isTrad&&isOak){
-        // Housing — both
-        extraHtml=`<div style="display:flex;gap:3px;margin-top:4px;flex-wrap:wrap;">
-          <span style="font-size:8px;padding:1px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);">Traditional</span>
-          <span style="font-size:8px;padding:1px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);">Oak</span>
+        extraHtml=`<div style="display:flex;flex-direction:column;gap:2px;margin-top:5px;">
+          <span style="font-size:8px;padding:2px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);line-height:1.3;">Traditional Foundation</span>
+          <span style="font-size:8px;padding:2px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);line-height:1.3;">Oak Foundation</span>
         </div>`;
       }else if(isTrad){
-        extraHtml=`<div style="margin-top:4px;"><span style="font-size:8px;padding:1px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);">Traditional only</span></div>`;
+        extraHtml=`<div style="margin-top:5px;"><span style="font-size:8px;padding:2px 4px;background:#8892A4;color:#fff;border:1px solid rgba(0,0,0,.2);display:inline-block;line-height:1.3;">Traditional Foundation only</span></div>`;
       }else if(isOak){
-        extraHtml=`<div style="margin-top:4px;"><span style="font-size:8px;padding:1px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);">Oak only</span></div>`;
+        extraHtml=`<div style="margin-top:5px;"><span style="font-size:8px;padding:2px 4px;background:#00C2C7;color:#0D1B3E;border:1px solid rgba(0,0,0,.2);display:inline-block;line-height:1.3;">Oak Foundation only</span></div>`;
       }
     } else {
       extraHtml=`<div class="c-desc">${c.desc}</div>`;
